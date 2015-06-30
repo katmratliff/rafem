@@ -1,0 +1,43 @@
+# Avulsion module parameters
+
+# Space
+shape: [10000, 5000] # Length x Width
+spacing: [10, 10]    # dx, dy
+n0: 100              # upstream elevation (not needed after coupling)
+max_rand: 0.00001    # max height of a random perturbation
+nslope: 0.0001       # initial landscape slope
+
+# Time
+time_max: 5          # length of model run (years)
+spinup: 0            # spin up time of model run (years)
+dt_day: 73           # timestep (days)
+
+# Sea level & subsidence parameters
+Initial_SL: 0        # initial sea level
+SLRR_m: 0.025        # sea level rise rate (m/yr)
+IRR_m: 0.005         # rate that inlet cell rises (subsidence)
+
+# river characteristics
+ch_width: 2000.      # characteristic channel width (m)
+ch_depth: 5.0        # characteristic channel depth (m)
+init_cut_frac: 1     # fraction of channel depth initially cut into landscape
+nu: 50000            # diffusion coefficent, m^3/day (7533 for MS Riv.)
+
+# Avulsion parameters
+super_ratio: 1       # normalized superelevation ratio to trigger avulsion
+short_path: 1        # flag for using shortest path to complete avulsion
+
+# Floodplain and Wetland parameters
+WL_Z: 0.5              # elevation that wetlands maintain above SL
+WL_dist: 6             # cell distance beyond channel that wetlands exist
+blanket_rate_m: 0.005  # "blanket" deposition (frac. of IRR)
+splay_dep_m: 0.005     # splay deposition
+splay_type: 2          # size/type of splay
+### Splay types: ###
+    # splay_type = 0: no splay deposition
+    # splay_type = 1: just the first failed avulsion river cell
+    # splay_type = 2: first failed cell and adjacent cells
+
+# Saving information
+savefiles: 0         # flag for saving files
+savespacing: 1       # save files at every "x" timesteps
