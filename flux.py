@@ -2,11 +2,11 @@
 
 def calc_qs(nu, riv_x, riv_y, n, dx, dy, dt):
 
-	sed_flux = 0
-	dist = 0
+    sed_flux = 0
+    dist = 0
 
-	if (((riv_x[-2]/dx) - (riv_x[-1]/dx) == 0) and
-        (riv_y[-2]/dy) - (riv_y[-1]/dy) == -2):
+    if (((riv_x[-2]/dx) - (riv_x[-1]/dx) == 0)
+        and (riv_y[-2]/dy) - (riv_y[-1]/dy) == -1):
             
             dist = 1
     
@@ -21,7 +21,7 @@ def calc_qs(nu, riv_x, riv_y, n, dx, dy, dt):
             dist = 1
 
     elif (((riv_x[-2]/dx) - (riv_x[-1]/dx) == 1)
-        and (riv_y[-2]/dy) - (riv_y[-1]/dy) == -2):
+        and (riv_y[-2]/dy) - (riv_y[-1]/dy) == -1):
             
             dist = math.sqrt(2)
 
@@ -30,7 +30,7 @@ def calc_qs(nu, riv_x, riv_y, n, dx, dy, dt):
             
             dist = math.sqrt(2)
 
-	sed_flux = - (nu*dt) * ((n[riv_x[-1]/dx][riv_y[-1]/dy] - 
-				n[riv_x[-2]/dx][riv_y[-2]/dy]) / dist)
+    sed_flux = - (nu*dt) * ((n[riv_x[-1]/dx][riv_y[-1]/dy] - 
+			n[riv_x[-2]/dx][riv_y[-2]/dy]) / dist)
 
-	return (sed_flux)
+    return (sed_flux)

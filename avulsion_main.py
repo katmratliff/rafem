@@ -14,6 +14,7 @@ import prof
 import SLR
 import FP
 import downcut
+import flux
 from avulsion_utils import read_params_from_file
 
 def initialize(fname):
@@ -249,6 +250,8 @@ def main ():
 
     while params['k'] < params['kmax']:
         update(params)
+
+    # print "sediment flux = %f" % params['sed_flux']
 
     finalize()
 
