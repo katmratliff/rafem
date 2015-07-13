@@ -17,9 +17,9 @@ def read_params_from_file(fname):
     with open(fname, 'r') as fp:
         params = yaml.load(fp)
 
-    params.setdefault('shape', (10, 20))
-    params.setdefault('spacing', (1., 1.))
-    params.setdefault('alpha', 1)
-    params.setdefault('end_time', 100.)
+#    params.setdefault('shape', (10, 20))
+#    params.setdefault('spacing', (1., 1.))
+#    params.setdefault('alpha', 1)
+#    params.setdefault('end_time', 100.)
 
     return params

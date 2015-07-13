@@ -51,7 +51,7 @@ def initialize(fname):
     k = 0
 
     # Sea level and subsidence parameters
-    SL = params['Initial_SL']                   # initializes SL array
+    SL = [params['Initial_SL']]                   # initializes SL array
     SLRR = (params['SLRR_m'] / 31536000) * dt  # sea level rise rate in m/s per timestep
     IRR = (params['IRR_m'] / 31536000) * dt    # inlet rise rate in m/s per timestep
 
@@ -94,6 +94,7 @@ def initialize(fname):
     params['kmax'] = kmax
     params['save_after'] = save_after
     params['time'] = time
+    params['k'] = k
     params['SLRR'] = SLRR
     params['IRR'] = IRR
     params['init_cut'] = init_cut
@@ -137,7 +138,7 @@ def initialize(fname):
     return params
 
 def update(params):
-   """ Update avulsion model one time step. """
+    """ Update avulsion model one time step. """
 
     # begin time loop and main program
     # for k in range(kmax):
@@ -146,6 +147,7 @@ def update(params):
     SL = params['SL'] + [params['k'] * params['SLRR']]
     current_SL = SL[-1]
     params['SL'] = SL
+    params['current_SL'] = current_SL
 
     ### future work: SLRR can be a vector to change rates ###
 
@@ -157,7 +159,6 @@ def update(params):
                         params['current_SL'], params['ch_depth'],
                         params['short_path'], params['dn_fp'], params['splay_type'],
                         params['splay_dep'])
-
     params['riv_x'] = riv_x
     params['riv_y'] = riv_y
     params['SEL'] = SEL
@@ -173,8 +174,8 @@ def update(params):
         params['avulsions'] = avulsions
     
     # raise first two rows by inlet rise rate (subsidence)
-    params['n'][0][:] = params['n'][0][:] + (IRR)
-    params['n'][1][:] = params['n'][1][:] + (IRR)
+    params['n'][0][:] = params['n'][0][:] + (params['IRR'])
+    params['n'][1][:] = params['n'][1][:] + (params['IRR'])
 
     # change elevations according to sea level rise (SLRR)
     n, rc_flag = SLR.elev_change(params['imax'], params['jmax'],
@@ -207,7 +208,10 @@ def update(params):
     params['n'] = n
     params['dn_fp'] = dn_fp
 
-    # here we will calculate flux (?)
+    # calculate sediment flux
+    sed_flux = flux.calc_qs(params['nu'], params['riv_x'], params['riv_y'], params['n'],
+                params['dx'], params['dy'], params['dt'])
+    params['sed_flux'] = sed_flux
 
     # create a river profile array
     profile = prof.make_profile(params['dx'], params['dy'], params['n'], params['riv_x'],
@@ -232,10 +236,8 @@ def update(params):
     if params['savefiles'] == 1:
         np.savetxt('avulsions', params['avulsions'], fmt='%.3f')
 
-    k += 1
-    time += params['dt']
-    params['k'] = k
-    params['time'] = time
+    params['k'] += 1
+    params['time'] += params['dt']
 
 def finalize():
     """Finalize the avulsion model."""
