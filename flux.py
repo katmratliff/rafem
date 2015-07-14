@@ -1,32 +1,34 @@
 #! /usr/local/bin/python
 
+import math
+
 def calc_qs(nu, riv_x, riv_y, n, dx, dy, dt):
 
     sed_flux = 0
     dist = 0
 
-    if (((riv_x[-2]/dx) - (riv_x[-1]/dx) == 0)
-        and (riv_y[-2]/dy) - (riv_y[-1]/dy) == -1):
+    if (((riv_x[-1]/dx) - (riv_x[-2]/dx) == 0)
+        and (riv_y[-1]/dy) - (riv_y[-2]/dy) == -1):
             
             dist = 1
     
-    elif (((riv_x[-2]/dx) - (riv_x[-1]/dx) == 0)
-        and (riv_y[-2]/dy) - (riv_y[-1]/dy) == 1):
+    elif (((riv_x[-1]/dx) - (riv_x[-2]/dx) == 0)
+        and (riv_y[-1]/dy) - (riv_y[-2]/dy) == 1):
     
             dist = 1
             
-    elif (((riv_x[-2]/dx) - (riv_x[-1]/dx) == 1)
-        and (riv_y[-2]/dy) - (riv_y[-1]/dy) == 0):
+    elif (((riv_x[-1]/dx) - (riv_x[-2]/dx) == 1)
+        and (riv_y[-1]/dy) - (riv_y[-2]/dy) == 0):
 
             dist = 1
 
-    elif (((riv_x[-2]/dx) - (riv_x[-1]/dx) == 1)
-        and (riv_y[-2]/dy) - (riv_y[-1]/dy) == -1):
+    elif (((riv_x[-1]/dx) - (riv_x[-2]/dx) == 1)
+        and (riv_y[-1]/dy) - (riv_y[-2]/dy) == -1):
             
             dist = math.sqrt(2)
 
-    elif (((riv_x[-2]/dx) - (riv_x[-1]/dx) == 1)
-        and (riv_y[-2]/dy) - (riv_y[-1]/dy) == 1):
+    elif (((riv_x[-1]/dx) - (riv_x[-2]/dx) == 1)
+        and (riv_y[-1]/dy) - (riv_y[-2]/dy) == 1):
             
             dist = math.sqrt(2)
 

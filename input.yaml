@@ -1,8 +1,8 @@
 # Avulsion module parameters
 
 # Space
-shape: [10000, 5000] # Length x Width
-spacing: [10, 10]    # dx, dy
+shape: [1000, 500] # Length x Width (km)
+spacing: [10, 10]    # dx, dy (km)
 n0: 100              # upstream elevation (not needed after coupling)
 max_rand: 0.00001    # max height of a random perturbation
 nslope: 0.0001       # initial landscape slope
@@ -14,7 +14,7 @@ dt_day: 73           # timestep (days)
 
 # Sea level & subsidence parameters
 Initial_SL: 0        # initial sea level
-SLRR_m: 0.025        # sea level rise rate (m/yr)
+SLRR_m: 0.015        # sea level rise rate (m/yr)
 IRR_m: 0.005         # rate that inlet cell rises (subsidence)
 
 # river characteristics

@@ -240,6 +240,8 @@ def update(params):
     params['k'] += 1
     params['time'] += params['dt']
 
+    # print "sediment flux = %f" % params['sed_flux']
+
 def finalize():
     """Finalize the avulsion model."""
     pass
@@ -251,7 +253,7 @@ def main ():
     while params['k'] < params['kmax']:
         update(params)
 
-    # print "sediment flux = %f" % params['sed_flux']
+    print "sediment flux = %f" % params['sed_flux']
 
     finalize()
 
