@@ -21,7 +21,7 @@ IRR_m: 0.005         # rate that inlet cell rises (subsidence)
 ch_width: 2000.      # characteristic channel width (m)
 ch_depth: 5.0        # characteristic channel depth (m)
 init_cut_frac: 1     # fraction of channel depth initially cut into landscape
-nu: 50000            # diffusion coefficent, m^3/day (7533 for MS Riv.)
+nu: 10000            # diffusion coefficent, m^3/day (7533 for MS Riv.)
 
 # Avulsion parameters
 super_ratio: 1       # normalized superelevation ratio to trigger avulsion

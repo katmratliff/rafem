@@ -17,234 +17,252 @@ import downcut
 import flux
 from avulsion_utils import read_params_from_file
 
-def initialize(fname):
-    """ initialize the avulsion module """
+def __init__(self):
+    self._shape = (1000, 500)
+    self._spacing = (10, 10)
+    self._n0 = 100
+    self._max_rand = 0.00001
+    self._nslope = 0.0001
+    self._spinup = 0
+    self._dt_day = 73
+    self._Initial_SL = 0
+    self._SLRR_m = 0.015
+    self._IRR_m = 0.005
+    self._ch_width = 2000.
+    self._ch_depth = 5.0
+    self._init_cut_frac = 1
+    self._nu = 10000
+    self._super_ratio = 1
+    self._short_path = 1
+    self.time_max = 1
 
-    params = read_params_from_file('input.yaml')
 
-    # Spatial parameters
-    length, width = params['shape']
-    dx_km, dy_km = params['spacing']
-    L = length * 1000       # convert to meters
-    W = width * 1000
-    dx = dx_km * 1000
-    dy = dy_km * 1000
+    def initialize(self, fname):
+        """ initialize the avulsion module """
 
-    imax = L/dx + 1
-    jmax = W/dy + 1
-    x = np.zeros((imax, jmax))   # longitudinal space
-    y = np.zeros((imax, jmax))   # transverse space
-    n = np.zeros((imax, jmax))   # eta, elevation
-    dn_rc = np.zeros((imax))       # change in elevation along river course
-    dn_fp = np.zeros((imax, jmax))     # change in elevation due to floodplain dep
-    riv_x = [0]             # defines first x river locations
-    riv_y = [W/2]          # defines first y river locations
-    profile = np.zeros((imax))  # elevation profile of river course
-    avulsions = [(0, 0, 0, 0, 0, 0)]    # initializes timestep/avulsions array
+        params = read_params_from_file('input.yaml')
 
-    # Time parameters
-    dt = (params['dt_day'] *60*60*24)     # convert timestep to seconds
-    time_max_s = (params['time_max'] * 31536000)  # length of model run in seconds
-    spinup_s = (params['spinup'] * 31536000)  # length of spinup in seconds
-    kmax = spinup_s/dt + time_max_s/dt + 1  # max number of timesteps
-    save_after = spinup_s/dt        # save files after this point
-    time = 0.
-    k = 0
+        # Spatial parameters
+        length, width = params['shape']
+        dx_km, dy_km = params['spacing']
+        L = length * 1000       # convert to meters
+        W = width * 1000
+        dx = dx_km * 1000
+        dy = dy_km * 1000
 
-    # Sea level and subsidence parameters
-    SL = [params['Initial_SL']]                   # initializes SL array
-    SLRR = (params['SLRR_m'] / 31536000) * dt  # sea level rise rate in m/s per timestep
-    IRR = (params['IRR_m'] / 31536000) * dt    # inlet rise rate in m/s per timestep
+        imax = L/dx + 1
+        jmax = W/dy + 1
+        x = np.zeros((imax, jmax))   # longitudinal space
+        y = np.zeros((imax, jmax))   # transverse space
+        n = np.zeros((imax, jmax))   # eta, elevation
+        dn_rc = np.zeros((imax))       # change in elevation along river course
+        dn_fp = np.zeros((imax, jmax))     # change in elevation due to floodplain dep
+        riv_x = [0]             # defines first x river locations
+        riv_y = [W/2]          # defines first y river locations
+        profile = np.zeros((imax))  # elevation profile of river course
+        avulsions = [(0, 0, 0, 0, 0, 0)]    # initializes timestep/avulsions array
 
-    # River parameters
-    init_cut = params['init_cut_frac'] * params['ch_depth']
+        # Time parameters
+        dt = (params['dt_day'] *60*60*24)     # convert timestep to seconds
+        time_max_s = (params['time_max'] * 31536000)  # length of model run in seconds
+        spinup_s = (params['spinup'] * 31536000)  # length of spinup in seconds
+        kmax = spinup_s/dt + time_max_s/dt + 1  # max number of timesteps
+        save_after = spinup_s/dt        # save files after this point
+        time = 0.
+        k = 0
 
-    # Floodplain and wetland characteristics
-    blanket_rate = (params['blanket_rate_m'] / 31536000) * dt    # blanket deposition in m/s
-    splay_dep = (params['splay_dep_m'] / 31536000) * dt       # splay deposition in m/s
+        # Sea level and subsidence parameters
+        SL = [params['Initial_SL']]                   # initializes SL array
+        SLRR = (params['SLRR_m'] / 31536000) * dt  # sea level rise rate in m/s per timestep
+        IRR = (params['IRR_m'] / 31536000) * dt    # inlet rise rate in m/s per timestep
 
-    # Initialize elevation grid
-    for i in range(imax):
-        for j in range(jmax):
-            x[i][j] = i * dx
-            y[i][j] = j * dy
-            n[i][j] = params['n0'] - (params['nslope'] * float(x[i][j]) \
-                      + params['max_rand'] * np.random.rand())
-            j += 1
-        i += 1
+        # River parameters
+        init_cut = params['init_cut_frac'] * params['ch_depth']
 
-    params['L'] = L
-    params['W'] = W
-    params['dx'] = dx
-    params['dy'] = dy
-    params['imax'] = imax
-    params['jmax'] = jmax
-    params['x'] = x
-    params['y'] = y
-    params['n'] = n
-    params['dn_rc'] = dn_rc
-    params['dn_fp'] = dn_fp
-    params['riv_x'] = riv_x
-    params['riv_y'] = riv_y
-    params['profile'] = profile
-    params['SL'] = SL
-    params['avulsions'] = avulsions
-    params['dt'] = dt
-    params['time_max_s'] = time_max_s
-    params['spinup_s'] = spinup_s
-    params['kmax'] = kmax
-    params['save_after'] = save_after
-    params['time'] = time
-    params['k'] = k
-    params['SLRR'] = SLRR
-    params['IRR'] = IRR
-    params['init_cut'] = init_cut
-    params['blanket_rate'] = blanket_rate
-    params['splay_dep'] = splay_dep
+        # Floodplain and wetland characteristics
+        blanket_rate = (params['blanket_rate_m'] / 31536000) * dt    # blanket deposition in m/s
+        splay_dep = (params['splay_dep_m'] / 31536000) * dt       # splay deposition in m/s
 
-    # Determine initial river course
-    riv_x, riv_y = steep_desc.find_course(params['dx'], params['dy'], params['imax'],
-                   params['jmax'], params['n'], params['riv_x'], params['riv_y'])
-    params['riv_x'] = riv_x
-    params['riv_y'] = riv_y
+        # Initialize elevation grid
+        for i in range(imax):
+            for j in range(jmax):
+                x[i][j] = i * dx
+                y[i][j] = j * dy
+                n[i][j] = params['n0'] - (params['nslope'] * float(x[i][j]) \
+                          + params['max_rand'] * np.random.rand())
+                j += 1
+            i += 1
 
-    # downcut into new river course by amount determined by init_cut
-    n = downcut.cut_init(params['dx'], params['dy'], params['riv_x'], params['riv_y'],
-        params['n'], params['init_cut'])
-    params['n'] = n
+        self._L = L
+        self._W = W
+        self._dx = dx
+        self._dy = dy
+        self._imax = imax
+        self._jmax = jmax
+        self._x = x
+        self._y = y
+        self.n = n
+        self.dn_rc = dn_rc
+        self.dn_fp = dn_fp
+        self.riv_x = riv_x
+        self.riv_y = riv_y
+        self.profile = profile
+        self.SL = SL
+        self.avulsions = avulsions
+        self.dt = dt
+        self.time_max_s = time_max_s
+        self.spinup_s = spinup_s
+        self.kmax = kmax
+        self.save_after = save_after
+        self.time = time
+        self.k = k
+        self.SLRR = SLRR
+        self.IRR = IRR
+        self.init_cut = init_cut
+        self.blanket_rate = blanket_rate
+        self.splay_dep = splay_dep
 
-    # smooth initial river course elevations using linear diffusion equation
-    n, dn_rc = diffuse.smooth_rc(params['dx'], params['dy'], params['nu'], params['dt'],
-               params['riv_x'], params['riv_y'], params['n'], params['nslope'])
-    params['n'] = n
-    params['dn_rc'] = dn_rc
+        # Determine initial river course
+        riv_x, riv_y = steep_desc.find_course(params['dx'], params['dy'], params['imax'],
+                       params['jmax'], params['n'], params['riv_x'], params['riv_y'])
+        self.riv_x = riv_x
+        self.riv_y = riv_y
 
-    # Determine initial river profile
-    profile = prof.make_profile(params['dx'], params['dy'], params['n'], params['riv_x'],
-              params['riv_y'], params['profile'])
-    params['profile'] = profile
+        # downcut into new river course by amount determined by init_cut
+        n = downcut.cut_init(params['dx'], params['dy'], params['riv_x'], params['riv_y'],
+            params['n'], params['init_cut'])
+        self.n = n
 
-    # make directories and save initial condition files
-    if params['savefiles'] == 1:
-        # os.mkdir("run" + str(run_num) + "_out")
-        os.mkdir("elev_grid")
-        os.mkdir("riv_course")
-        os.mkdir("profile")
-        os.mkdir("dn_fp")
-    #   saves initial conditions
-    #    np.savetxt('elev_grid/elev_0.out', n, fmt='%f')
-    #    np.savetxt('riv_course/riv_0.out', zip(riv_x, riv_y), fmt='%i')
-    #    np.savetxt('profile/prof_0.out', profile, fmt='%f')
+        # smooth initial river course elevations using linear diffusion equation
+        n, dn_rc = diffuse.smooth_rc(params['dx'], params['dy'], params['nu'], params['dt'],
+                   params['riv_x'], params['riv_y'], params['n'], params['nslope'])
+        self.n = n
+        self.n = dn_rc
 
-    return params
+        # Determine initial river profile
+        profile = prof.make_profile(params['dx'], params['dy'], params['n'], params['riv_x'],
+                  params['riv_y'], params['profile'])
+        self.profile = profile
 
-def update(params):
-    """ Update avulsion model one time step. """
+        # make directories and save initial condition files
+        if params['savefiles'] == 1:
+            # os.mkdir("run" + str(run_num) + "_out")
+            os.mkdir("elev_grid")
+            os.mkdir("riv_course")
+            os.mkdir("profile")
+            os.mkdir("dn_fp")
+        #   saves initial conditions
+        #    np.savetxt('elev_grid/elev_0.out', n, fmt='%f')
+        #    np.savetxt('riv_course/riv_0.out', zip(riv_x, riv_y), fmt='%i')
+        #    np.savetxt('profile/prof_0.out', profile, fmt='%f')
 
-    # begin time loop and main program
-    # for k in range(kmax):
+    def update(self):
+        """ Update avulsion model one time step. """
 
-    # determine current sea level
-    SL = params['SL'] + [params['k'] * params['SLRR']]
-    current_SL = SL[-1]
-    params['SL'] = SL
-    params['current_SL'] = current_SL
+        # begin time loop and main program
+        # for k in range(kmax):
 
-    ### future work: SLRR can be a vector to change rates ###
+        # determine current sea level
+        SL = params['SL'] + [params['k'] * params['SLRR']]
+        current_SL = SL[-1]
+        params['SL'] = SL
+        params['current_SL'] = current_SL
 
-    # determine if there is an avulsion & find new path if so
-    riv_x, riv_y, loc, SEL, SER, n, dn_fp, avulsion_type, length_new_sum, \
-        length_old = avulse.find_avulsion(params['dx'], params['dy'], 
-                        params['imax'], params['jmax'], params['riv_x'],
-                        params['riv_y'], params['n'], params['super_ratio'],
-                        params['current_SL'], params['ch_depth'],
-                        params['short_path'], params['dn_fp'], params['splay_type'],
-                        params['splay_dep'])
-    params['riv_x'] = riv_x
-    params['riv_y'] = riv_y
-    params['SEL'] = SEL
-    params['SER'] = SER
-    params['n'] = n
-    params['dn_fp'] = dn_fp
+        ### future work: SLRR can be a vector to change rates ###
 
-    # save timestep and avulsion location if there was one
-    if len(loc) != 0:
-        avulsions = (params['avulsions'] + [(params['k']*params['dt']/86400,
-                    loc[-1], avulsion_type, length_old, length_new_sum,
-                    current_SL)])
-        params['avulsions'] = avulsions
-    
-    # raise first two rows by inlet rise rate (subsidence)
-    params['n'][0][:] = params['n'][0][:] + (params['IRR'])
-    params['n'][1][:] = params['n'][1][:] + (params['IRR'])
+        # determine if there is an avulsion & find new path if so
+        riv_x, riv_y, loc, SEL, SER, n, dn_fp, avulsion_type, length_new_sum, \
+            length_old = avulse.find_avulsion(params['dx'], params['dy'], 
+                            params['imax'], params['jmax'], params['riv_x'],
+                            params['riv_y'], params['n'], params['super_ratio'],
+                            params['current_SL'], params['ch_depth'],
+                            params['short_path'], params['dn_fp'], params['splay_type'],
+                            params['splay_dep'])
+        params['riv_x'] = riv_x
+        params['riv_y'] = riv_y
+        params['SEL'] = SEL
+        params['SER'] = SER
+        params['n'] = n
+        params['dn_fp'] = dn_fp
 
-    # change elevations according to sea level rise (SLRR)
-    n, rc_flag = SLR.elev_change(params['imax'], params['jmax'],
-                    params['current_SL'], params['n'], params['riv_x'],
-                    params['riv_y'], params['ch_depth'], params['dx'],
-                    params['dy'])
-    params['n'] = n
-    params['rc_flag'] = rc_flag
+        # save timestep and avulsion location if there was one
+        if len(loc) != 0:
+            avulsions = (params['avulsions'] + [(params['k']*params['dt']/86400,
+                        loc[-1], avulsion_type, length_old, length_new_sum,
+                        current_SL)])
+            params['avulsions'] = avulsions
+        
+        # raise first two rows by inlet rise rate (subsidence)
+        params['n'][0][:] = params['n'][0][:] + (params['IRR'])
+        params['n'][1][:] = params['n'][1][:] + (params['IRR'])
 
-    # smooth river course elevations using linear diffusion equation
-    n, dn_rc = diffuse.smooth_rc(params['dx'], params['dy'], params['nu'],
-                params['dt'], params['riv_x'], params['riv_y'], params['n'],
-                params['nslope'])
-    params['n'] = n
-    params['dn_rc'] = dn_rc
+        # change elevations according to sea level rise (SLRR)
+        n, rc_flag = SLR.elev_change(params['imax'], params['jmax'],
+                        params['current_SL'], params['n'], params['riv_x'],
+                        params['riv_y'], params['ch_depth'], params['dx'],
+                        params['dy'])
+        params['n'] = n
+        params['rc_flag'] = rc_flag
 
-    # Floodplain sedimentation
-    n, dn_fp = FP.dep_blanket(params['dy'], params['dx'], params['imax'],
-                params['jmax'], params['current_SL'], params['blanket_rate'],
-                params['n'], params['riv_x'], params['riv_y'], params['ch_depth'])
-    params['n'] = n
-    params['dn_fp'] = dn_fp
-    
-    # Wetland sedimentation
-    ### no wetlands in first version of coupling to CEM ###
-    n, dn_fp = FP.wetlands(params['dx'], params['dy'], params['imax'], 
-                params['jmax'], params['current_SL'], params['WL_Z'], 
-                params['WL_dist'], params['n'], params['riv_x'], params['riv_y'],
-                params['x'], params['y'], params['dn_fp'])
-    params['n'] = n
-    params['dn_fp'] = dn_fp
+        # smooth river course elevations using linear diffusion equation
+        n, dn_rc = diffuse.smooth_rc(params['dx'], params['dy'], params['nu'],
+                    params['dt'], params['riv_x'], params['riv_y'], params['n'],
+                    params['nslope'])
+        params['n'] = n
+        params['dn_rc'] = dn_rc
 
-    # calculate sediment flux
-    sed_flux = flux.calc_qs(params['nu'], params['riv_x'], params['riv_y'], params['n'],
-                params['dx'], params['dy'], params['dt'])
-    params['sed_flux'] = sed_flux
+        # Floodplain sedimentation
+        n, dn_fp = FP.dep_blanket(params['dy'], params['dx'], params['imax'],
+                    params['jmax'], params['current_SL'], params['blanket_rate'],
+                    params['n'], params['riv_x'], params['riv_y'], params['ch_depth'])
+        params['n'] = n
+        params['dn_fp'] = dn_fp
+        
+        # Wetland sedimentation
+        ### no wetlands in first version of coupling to CEM ###
+        n, dn_fp = FP.wetlands(params['dx'], params['dy'], params['imax'], 
+                    params['jmax'], params['current_SL'], params['WL_Z'], 
+                    params['WL_dist'], params['n'], params['riv_x'], params['riv_y'],
+                    params['x'], params['y'], params['dn_fp'])
+        params['n'] = n
+        params['dn_fp'] = dn_fp
 
-    # create a river profile array
-    profile = prof.make_profile(params['dx'], params['dy'], params['n'], params['riv_x'],
-              params['riv_y'], params['profile'])
-    params['profile'] = profile
+        # calculate sediment flux
+        sed_flux = flux.calc_qs(params['nu'], params['riv_x'], params['riv_y'], params['n'],
+                    params['dx'], params['dy'], params['dt'])
+        params['sed_flux'] = sed_flux
 
-    # save files
-    if params['savefiles'] == 1:
-        if params['k'] >= params['save_after']:
-            if params['k'] % params['savespacing'] == 0:
-                np.savetxt('elev_grid/elev_' + str(params['k']*params['dt']/86400 
-                            - (params['save_after'])) + '.out', params['n'], fmt='%.6f')
-                np.savetxt('riv_course/riv_' + str(params['k']*params['dt']/86400
-                            - (params['save_after'])) + '.out',
-                            zip(params['riv_x'], params['riv_y']), fmt='%i')
-                np.savetxt('profile/prof_' + str(params['k']*params['dt']/86400
-                            - (params['save_after'])) + '.out',
-                            params['profile'], fmt='%.6f')
-                np.savetxt('dn_fp/dn_fp_' + str(params['k']*params['dt']/86400
-                            - (params['save_after'])) + '.out',
-                            params['dn_fp'], fmt='%.6f')
-    if params['savefiles'] == 1:
-        np.savetxt('avulsions', params['avulsions'], fmt='%.3f')
+        # create a river profile array
+        profile = prof.make_profile(params['dx'], params['dy'], params['n'], params['riv_x'],
+                  params['riv_y'], params['profile'])
+        params['profile'] = profile
 
-    params['k'] += 1
-    params['time'] += params['dt']
+        # save files
+        if params['savefiles'] == 1:
+            if params['k'] >= params['save_after']:
+                if params['k'] % params['savespacing'] == 0:
+                    np.savetxt('elev_grid/elev_' + str(params['k']*params['dt']/86400 
+                                - (params['save_after'])) + '.out', params['n'], fmt='%.6f')
+                    np.savetxt('riv_course/riv_' + str(params['k']*params['dt']/86400
+                                - (params['save_after'])) + '.out',
+                                zip(params['riv_x'], params['riv_y']), fmt='%i')
+                    np.savetxt('profile/prof_' + str(params['k']*params['dt']/86400
+                                - (params['save_after'])) + '.out',
+                                params['profile'], fmt='%.6f')
+                    np.savetxt('dn_fp/dn_fp_' + str(params['k']*params['dt']/86400
+                                - (params['save_after'])) + '.out',
+                                params['dn_fp'], fmt='%.6f')
+        if params['savefiles'] == 1:
+            np.savetxt('avulsions', params['avulsions'], fmt='%.3f')
 
-    # print "sediment flux = %f" % params['sed_flux']
+        params['k'] += 1
+        params['time'] += params['dt']
 
-def finalize():
-    """Finalize the avulsion model."""
-    pass
+        # print "sediment flux = %f" % params['sed_flux']
+
+    def finalize():
+        """Finalize the avulsion model."""
+        pass
 
 def main ():
 
