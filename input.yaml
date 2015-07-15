@@ -39,5 +39,5 @@ splay_type: 2          # size/type of splay
     # splay_type = 2: first failed cell and adjacent cells
 
 # Saving information
-savefiles: 0         # flag for saving files
+savefiles: 1         # flag for saving files
 savespacing: 1       # save files at every "x" timesteps

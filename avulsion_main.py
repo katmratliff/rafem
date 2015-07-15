@@ -199,32 +199,17 @@ class River_Module(object):
         self.profile = prof.make_profile(self._dx, self._dy, self.n, self.riv_x,
                                          self.riv_y, self.profile)
 
-        # save files
-        ### pull saving files out and into main?? ###
-        if self.savefiles == 1:
-            if self.k >= self.save_after:
-                if self.k % self.savespacing == 0:
-                    np.savetxt('elev_grid/elev_' + str(self.k*self.dt/86400 
-                                - self.save_after) + '.out', self.n, fmt='%.6f')
-                    np.savetxt('riv_course/riv_' + str(self.k*self.dt/86400
-                                - self.save_after) + '.out',
-                                zip(self.riv_x, self.riv_y), fmt='%i')
-                    np.savetxt('profile/prof_' + str(self.k*self.dt/86400
-                                - self.save_after) + '.out',
-                                self.profile, fmt='%.6f')
-                    np.savetxt('dn_fp/dn_fp_' + str(self.k*self.dt/86400
-                                - self.save_after) + '.out',
-                                self.dn_fp, fmt='%.6f')
-        if self.savefiles == 1:
-            np.savetxt('avulsions', self.avulsions, fmt='%.3f')
-
         self.k += 1
         self.time += self.dt
 
         print "sediment flux = %f" % self.sed_flux
 
     def finalize(self):
-        """Clean up"""
+        """Clean up & save avulsion file"""
+        
+        if self.savefiles == 1:
+            np.savetxt('avulsions', self.avulsions, fmt='%.3f')
+            
         pass
 
 def main ():
@@ -233,6 +218,22 @@ def main ():
 
     while model.k < model.kmax:
         model.update()
+
+        # save files
+        if model.savefiles == 1:
+            if model.k >= model.save_after:
+                if model.k % model.savespacing == 0:
+                    np.savetxt('elev_grid/elev_' + str(model.k*model.dt/86400 
+                                - model.save_after) + '.out', model.n, fmt='%.6f')
+                    np.savetxt('riv_course/riv_' + str(model.k*model.dt/86400
+                                - model.save_after) + '.out',
+                                zip(model.riv_x, model.riv_y), fmt='%i')
+                    np.savetxt('profile/prof_' + str(model.k*model.dt/86400
+                                - model.save_after) + '.out',
+                                model.profile, fmt='%.6f')
+                    np.savetxt('dn_fp/dn_fp_' + str(model.k*model.dt/86400
+                                - model.save_after) + '.out',
+                                model.dn_fp, fmt='%.6f')
 
     model.finalize()
 
