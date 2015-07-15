@@ -18,6 +18,10 @@ import flux
 from avulsion_utils import read_params_from_file
 
 class River_Module(object):
+    # is this where we map our var names to CSDMS standard names?
+    _input_var_names = ('sea_shoreline')
+    _output_var_names = ('river_mouth_location',
+                         'channel_water_sediment~bedload__volume_flow_rate')
 
     def __init__(self):
         self._shape = (1000, 500)
@@ -194,10 +198,11 @@ class River_Module(object):
         self.sed_flux = flux.calc_qs(self.nu, self.riv_x, self.riv_y, self.n,
                                      self._dx, self._dy, self.dt)
 
-
         # create a river profile array
         self.profile = prof.make_profile(self._dx, self._dy, self.n, self.riv_x,
                                          self.riv_y, self.profile)
+
+        self.riv_mouth = (self.riv_x[-1], self.riv_y[-1])
 
         self.k += 1
         self.time += self.dt
