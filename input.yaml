@@ -8,20 +8,20 @@ max_rand: 0.00001    # max height of a random perturbation
 nslope: 0.0001       # initial landscape slope
 
 # Time
-time_max: 1          # length of model run (years)
+time_max: 1000       # length of model run (years)
 spinup: 0            # spin up time of model run (years)
 dt_day: 73           # timestep (days)
 
 # Sea level & subsidence parameters
 Initial_SL: 0        # initial sea level
-SLRR_m: 0.015        # sea level rise rate (m/yr)
+SLRR_m: 0.025        # sea level rise rate (m/yr)
 IRR_m: 0.005         # rate that inlet cell rises (subsidence)
 
 # river characteristics
 ch_width: 2000.      # characteristic channel width (m)
 ch_depth: 5.0        # characteristic channel depth (m)
 init_cut_frac: 1     # fraction of channel depth initially cut into landscape
-nu: 10000            # diffusion coefficent, m^3/day (7533 for MS Riv.)
+nu: 50000            # diffusion coefficent, m^3/day (7533 for MS Riv.)
 
 # Avulsion parameters
 super_ratio: 1       # normalized superelevation ratio to trigger avulsion

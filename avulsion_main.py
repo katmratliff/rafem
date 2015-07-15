@@ -158,9 +158,9 @@ class River_Module(object):
 
         # save timestep and avulsion location if there was one
         if len(self.loc) != 0:
-            self.avulsions = (self.avulsions + [self.k*(self.dt/86400),
+            self.avulsions = self.avulsions + [(self.k*(self.dt/86400),
                         self.loc[-1], self.avulsion_type, self.length_old,
-                        self.length_new_sum, self.current_SL])
+                        self.length_new_sum, self.current_SL)]
         
         # raise first two rows by inlet rise rate (subsidence)
         self.n[0][:] = self.n[0][:] + (self.IRR)
@@ -202,14 +202,13 @@ class River_Module(object):
         self.k += 1
         self.time += self.dt
 
-        print "sediment flux = %f" % self.sed_flux
+        # print "sediment flux = %f" % self.sed_flux
 
     def finalize(self):
         """Clean up & save avulsion file"""
         
         if self.savefiles == 1:
-            np.savetxt('avulsions', self.avulsions, fmt='%.3f')
-            
+            np.savetxt('avulsions', self.avulsions, fmt='%i %i %i %.3f %.3f %.3f')
         pass
 
 def main ():
