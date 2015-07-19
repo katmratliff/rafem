@@ -154,6 +154,8 @@ class River_Module(object):
         ### future work: SLRR can be a vector to change rates ###
 
         # determine if there is an avulsion & find new path if so
+        ### need to change this to look for shoreline after coupling ###
+        ### (instead of looking for sea level)
         self.riv_x, self.riv_y, self.loc, self.SEL, self.SER, self.n, \
             self.dn_fp, self.avulsion_type, self.length_new_sum, self.length_old \
             = avulse.find_avulsion(self._dx, self._dy, self._imax, self._jmax,
@@ -172,6 +174,7 @@ class River_Module(object):
         self.n[1][:] = self.n[1][:] + (self.IRR)
 
         # change elevations according to sea level rise (SLRR)
+        ### needs to be changed to subtracting elevation once coupled ###
         self.n, self.rc_flag = SLR.elev_change(self._imax, self._jmax,
                                                self.current_SL, self.n, self.riv_x,
                                                self.riv_y, self._ch_depth, self._dx,
