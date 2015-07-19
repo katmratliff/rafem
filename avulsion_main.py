@@ -18,6 +18,7 @@ import flux
 from avulsion_utils import read_params_from_file
 
 class River_Module(object):
+    _name = 'Avulsion module'
     # is this where we map our var names to CSDMS standard names?
     _input_var_names = ('sea_shoreline')
     _output_var_names = ('river_mouth_location',
@@ -215,6 +216,32 @@ class River_Module(object):
         if self.savefiles == 1:
             np.savetxt('avulsions', self.avulsions, fmt='%i %i %i %.3f %.3f %.3f')
         pass
+
+    def get_component_name(self):
+        """Name of the component."""
+        return self._name
+
+    def get_input_var_names(self):
+        """Get names of input variables."""
+        return self._input_var_names
+
+    def get_output_var_names(self):
+        """Get names of output variables."""
+        return self._output_var_names
+
+    @property
+    def river_mouth_location(self):
+        return self.riv_mouth
+
+    @property
+    # include full name below? tilde doesn't look like it works here
+    def sediment_flux(self):
+        return self.sed_flux
+
+    @shoreline.setter
+    def sea_shoreline(self, sea_shoreline):
+        self.shoreline = sea_shoreline
+
 
 def main ():
     model = River_Module()
