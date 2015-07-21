@@ -17,7 +17,7 @@ import downcut
 import flux
 from avulsion_utils import read_params_from_file
 
-class River_Module(object):
+class River_Module(Bmi):
     _name = 'Avulsion module'
     # is this where we map our var names to CSDMS standard names?
     _input_var_names = ('sea_shoreline')
@@ -25,6 +25,7 @@ class River_Module(object):
                          'channel_water_sediment~bedload__volume_flow_rate')
 
     def __init__(self):
+        self._values = {}
         self._shape = (1000, 500)
         self._spacing = (10, 10)
         self._n0 = 100
@@ -90,6 +91,8 @@ class River_Module(object):
         self.init_cut = params['init_cut_frac'] * params['ch_depth']
         self.super_ratio = params['super_ratio']
         self.short_path = params['short_path']
+        self.riv_mouth = None
+        self.sed_flux = 0
 
         # Floodplain and wetland characteristics
         self.WL_Z = params['WL_Z']
@@ -140,6 +143,11 @@ class River_Module(object):
         #    np.savetxt('elev_grid/elev_0.out', n, fmt='%f')
         #    np.savetxt('riv_course/riv_0.out', zip(riv_x, riv_y), fmt='%i')
         #    np.savetxt('profile/prof_0.out', profile, fmt='%f')
+
+        self._values = {
+            'river_mouth_location': riv_mouth,
+            'channel_water_sediment~bedload__volume_flow_rate': sed_flux
+        }
 
     def update(self):
         """ Update avulsion model one time step. """
@@ -220,31 +228,39 @@ class River_Module(object):
             np.savetxt('avulsions', self.avulsions, fmt='%i %i %i %.3f %.3f %.3f')
         pass
 
+    def get_value_ref(self, river_mouth_location):
+        return self._values[river_mouth_location]
+
+    def get_value_ref(self, channel_water_sediment~bedload__volume_flow_rate):
+        return self._values[channel_water_sediment~bedload__volume_flow_rate]
+
+    def get_value(self, river_mouth_location):
+        # not sure what's the most appropriate CSDMS river mouth location name?
+        return self.get_value_ref(river_mouth_location).copy()
+
+    def get_value(self, channel_water_sediment~bedload__volume_flow_rate):
+        # tilde doesn't look like it works here?
+        return self.get_value_ref(channel_water_sediment~bedload__volume_flow_rate).copy()
+
+    def set_value(self, sea_shoreline, src):
+        shoreline = self.get_value_ref(sea_shoreline)
+        shoreline[:] = src
+
     def get_component_name(self):
-        """Name of the component."""
         return self._name
 
     def get_input_var_names(self):
-        """Get names of input variables."""
         return self._input_var_names
 
     def get_output_var_names(self):
-        """Get names of output variables."""
         return self._output_var_names
 
-    @property
-    def river_mouth_location(self):
-        return self.riv_mouth
+    def get_current_time(self):
+        return self._model.time/86400
 
-    @property
-    # include full name below? tilde doesn't look like it works here
-    def sediment_flux(self):
-        return self.sed_flux
-
-    @shoreline.setter
-    def sea_shoreline(self, sea_shoreline):
-        self.shoreline = sea_shoreline
-
+    def get_time_step(self):
+        """Time step of model."""
+        return self._model.dt/86400
 
 def main ():
     model = River_Module()
