@@ -149,6 +149,8 @@ class River_Module(Bmi):
             'channel_water_sediment~bedload__volume_flow_rate': sed_flux
         }
 
+        ### need to add self.var_units (talk to brad) ###
+
     def update(self):
         """ Update avulsion model one time step. """
 
