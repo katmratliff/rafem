@@ -16,11 +16,12 @@ import FP
 import downcut
 import flux
 from avulsion_utils import read_params_from_file
+from bmi import Bmi
 
 class River_Module(Bmi):
     _name = 'Avulsion module'
-    # is this where we map our var names to CSDMS standard names?
     _input_var_names = ('sea_shoreline')
+    # not sure what's the most appropriate CSDMS river mouth location name?
     _output_var_names = ('river_mouth_location',
                          'channel_water_sediment~bedload__volume_flow_rate')
 
@@ -231,6 +232,7 @@ class River_Module(Bmi):
         pass
 
     def get_value_ref(self, river_mouth_location):
+        # not sure what's the most appropriate CSDMS river mouth location name?
         return self._values[river_mouth_location]
 
     def get_value_ref(self, channel_water_sediment~bedload__volume_flow_rate):
