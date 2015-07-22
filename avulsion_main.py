@@ -86,6 +86,7 @@ class River_Module(Bmi):
         self.SL = [params['Initial_SL']]                   # initializes SL array
         self.SLRR = (params['SLRR_m'] / 31536000) * self.dt  # sea level rise rate in m/s per timestep
         self.IRR = (params['IRR_m'] / 31536000) * self.dt    # inlet rise rate in m/s per timestep
+        self.sea_shoreline = None  
 
         # River parameters
         self.nu = params['nu']
