@@ -231,24 +231,15 @@ class River_Module(Bmi):
             np.savetxt('avulsions', self.avulsions, fmt='%i %i %i %.3f %.3f %.3f')
         pass
 
-    def get_value_ref(self, river_mouth_location):
-        # not sure what's the most appropriate CSDMS river mouth location name?
-        return self._values[river_mouth_location]
+    def get_value_ref(self, var_name):
+        return self._values[var_name]
 
-    def get_value_ref(self, channel_water_sediment~bedload__volume_flow_rate):
-        return self._values[channel_water_sediment~bedload__volume_flow_rate]
+    def get_value(self, var_name):
+        return self.get_value_ref(var_name).copy()
 
-    def get_value(self, river_mouth_location):
-        # not sure what's the most appropriate CSDMS river mouth location name?
-        return self.get_value_ref(river_mouth_location).copy()
-
-    def get_value(self, channel_water_sediment~bedload__volume_flow_rate):
-        # tilde doesn't look like it works here?
-        return self.get_value_ref(channel_water_sediment~bedload__volume_flow_rate).copy()
-
-    def set_value(self, sea_shoreline, src):
-        shoreline = self.get_value_ref(sea_shoreline)
-        shoreline[:] = src
+    def set_value(self, var_name, src):
+        val = self.get_value_ref(var_name)
+        val[:] = src
 
     def get_component_name(self):
         return self._name
