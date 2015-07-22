@@ -146,8 +146,8 @@ class River_Module(Bmi):
         #    np.savetxt('profile/prof_0.out', profile, fmt='%f')
 
         self._values = {
-            'river_mouth_location': riv_mouth,
-            'channel_water_sediment~bedload__volume_flow_rate': sed_flux
+            'river_mouth_location': self.riv_mouth,
+            'channel_water_sediment~bedload__volume_flow_rate': self.sed_flux
         }
 
         ### need to add self.var_units (talk to brad) ###
@@ -217,7 +217,7 @@ class River_Module(Bmi):
         self.profile = prof.make_profile(self._dx, self._dy, self.n, self.riv_x,
                                          self.riv_y, self.profile)
 
-        self.riv_mouth = (self.riv_x[-1], self.riv_y[-1])
+        self.riv_mouth = [self.riv_x[-1], self.riv_y[-1]]
 
         self.k += 1
         self.time += self.dt
@@ -232,77 +232,19 @@ class River_Module(Bmi):
         pass
 
     def get_value_ref(self, var_name):
-        """Reference to values.
-
-        Parameters
-        ----------
-        var_name : str
-            Name of variable as CSDMS Standard Name.
-
-        Returns
-        -------
-        array_like
-            Value array.
-        """
         return self._values[var_name]
 
-    def get_value(self, var_name):
-        """Copy of values.
-
-        Parameters
-        ----------
-        var_name : str
-            Name of variable as CSDMS Standard Name.
-
-        Returns
-        -------
-        array_like
-            Copy of values.
-        """
-        return self.get_value_ref(var_name).copy()
+    # def get_value(self, var_name):
+    #     return self.get_value_ref(var_name).copy()
 
     def get_value_at_indices(self, var_name, indices):
-        """Get values at particular indices.
-
-        Parameters
-        ----------
-        var_name : str
-            Name of variable as CSDMS Standard Name.
-        indices : array_like
-            Array of indices.
-
-        Returns
-        -------
-        array_like
-            Values at indices.
-        """
         return self.get_value_ref(var_name).take(indices)
 
     def set_value(self, var_name, src):
-        """Set model values.
-
-        Parameters
-        ----------
-        var_name : str
-            Name of variable as CSDMS Standard Name.
-        src : array_like
-            Array of new values.
-        """
         val = self.get_value_ref(var_name)
         val[:] = src
 
     def set_value_at_indices(self, var_name, src, indices):
-        """Set model values at particular indices.
-
-        Parameters
-        ----------
-        var_name : str
-            Name of variable as CSDMS Standard Name.
-        src : array_like
-            Array of new values.
-        indices : array_like
-            Array of indices.
-        """
         val = self.get_value_ref(var_name)
         val.flat[indices] = src
 
