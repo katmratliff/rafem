@@ -232,22 +232,90 @@ class River_Module(Bmi):
         pass
 
     def get_value_ref(self, var_name):
+        """Reference to values.
+
+        Parameters
+        ----------
+        var_name : str
+            Name of variable as CSDMS Standard Name.
+
+        Returns
+        -------
+        array_like
+            Value array.
+        """
         return self._values[var_name]
 
     def get_value(self, var_name):
+        """Copy of values.
+
+        Parameters
+        ----------
+        var_name : str
+            Name of variable as CSDMS Standard Name.
+
+        Returns
+        -------
+        array_like
+            Copy of values.
+        """
         return self.get_value_ref(var_name).copy()
 
+    def get_value_at_indices(self, var_name, indices):
+        """Get values at particular indices.
+
+        Parameters
+        ----------
+        var_name : str
+            Name of variable as CSDMS Standard Name.
+        indices : array_like
+            Array of indices.
+
+        Returns
+        -------
+        array_like
+            Values at indices.
+        """
+        return self.get_value_ref(var_name).take(indices)
+
     def set_value(self, var_name, src):
+        """Set model values.
+
+        Parameters
+        ----------
+        var_name : str
+            Name of variable as CSDMS Standard Name.
+        src : array_like
+            Array of new values.
+        """
         val = self.get_value_ref(var_name)
         val[:] = src
 
+    def set_value_at_indices(self, var_name, src, indices):
+        """Set model values at particular indices.
+
+        Parameters
+        ----------
+        var_name : str
+            Name of variable as CSDMS Standard Name.
+        src : array_like
+            Array of new values.
+        indices : array_like
+            Array of indices.
+        """
+        val = self.get_value_ref(var_name)
+        val.flat[indices] = src
+
     def get_component_name(self):
+        """Name of the component."""
         return self._name
 
     def get_input_var_names(self):
+        """Get names of input variables."""
         return self._input_var_names
 
     def get_output_var_names(self):
+        """Get names of output variables."""
         return self._output_var_names
 
     def get_current_time(self):
