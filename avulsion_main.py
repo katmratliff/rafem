@@ -15,15 +15,9 @@ import SLR
 import FP
 import downcut
 import flux
-from avulsion_utils import read_params_from_file
-from bmi import Bmi
+import yaml
 
-class River_Module(Bmi):
-    _name = 'Avulsion module'
-    _input_var_names = ('sea_shoreline')
-    # not sure what's the most appropriate CSDMS river mouth location name?
-    _output_var_names = ('river_mouth_location',
-                         'channel_water_sediment~bedload__volume_flow_rate')
+class RiverModule(object):
 
     def __init__(self):
         self._values = {}
@@ -40,15 +34,17 @@ class River_Module(Bmi):
         self._ch_width = 2000.
         self._ch_depth = 5.0
         self._init_cut_frac = 1
-        self.nu = 10000
-        self.super_ratio = 1
-        self.short_path = 1
-        self.time_max = 1
+        self._nu = 10000
+        self._super_ratio = 1
+        self._short_path = 1
+        self._time_max = 1
 
-    def initialize(self, fname):
-        """ initialize the avulsion module """
+    @classmethod
+    def params_from_file(self, fname):
+        """ create a RiverModule object from a file-like object. """
 
-        params = read_params_from_file('input.yaml')
+        with open(fname, 'r') as fp:
+            params = yaml.load(fp)
 
         # Spatial parameters
         length, width = params['shape']
@@ -65,66 +61,66 @@ class River_Module(Bmi):
         self._jmax = self._W/self._dy + 1
         self._x = np.zeros((self._imax, self._jmax))   # longitudinal space
         self._y = np.zeros((self._imax, self._jmax))   # transverse space
-        self.n = np.zeros((self._imax, self._jmax))   # eta, elevation
-        self.dn_rc = np.zeros((self._imax))       # change in elevation along river course
-        self.dn_fp = np.zeros((self._imax, self._jmax))     # change in elevation due to floodplain dep
-        self.riv_x = [0]             # defines first x river locations
-        self.riv_y = [self._W/2]          # defines first y river locations
-        self.profile = np.zeros((self._imax))  # elevation profile of river course
-        self.avulsions = [(0, 0, 0, 0, 0, 0)]    # initializes timestep/avulsions array
+        self._n = np.zeros((self._imax, self._jmax))   # eta, elevation
+        self._dn_rc = np.zeros((self._imax))       # change in elevation along river course
+        self._dn_fp = np.zeros((self._imax, self._jmax))     # change in elevation due to floodplain dep
+        self._riv_x = [0]             # defines first x river locations
+        self._riv_y = [self._W/2]          # defines first y river locations
+        self._profile = np.zeros((self._imax))  # elevation profile of river course
+        self._avulsions = [(0, 0, 0, 0, 0, 0)]    # initializes timestep/avulsions array
 
         # Time parameters
-        self.dt = (params['dt_day'] *60*60*24)     # convert timestep to seconds
-        self.time_max_s = (params['time_max'] * 31536000)  # length of model run in seconds
-        self.spinup_s = (params['spinup'] * 31536000)  # length of spinup in seconds
-        self.kmax = self.spinup_s/self.dt + self.time_max_s/self.dt + 1  # max number of timesteps
-        self.save_after = self.spinup_s/self.dt        # save files after this point
-        self.time = 0.
-        self.k = 0
+        self._dt = (params['dt_day'] *60*60*24)     # convert timestep to seconds
+        self._time_max_s = (params['time_max'] * 31536000)  # length of model run in seconds
+        self._spinup_s = (params['spinup'] * 31536000)  # length of spinup in seconds
+        self._kmax = self._spinup_s/self._dt + self._time_max_s/self._dt + 1  # max number of timesteps
+        self._save_after = self.spinup_s/self._dt        # save files after this point
+        self._time = 0.
+        self._k = 0
 
         # Sea level and subsidence parameters
-        self.SL = [params['Initial_SL']]                   # initializes SL array
-        self.SLRR = (params['SLRR_m'] / 31536000) * self.dt  # sea level rise rate in m/s per timestep
-        self.IRR = (params['IRR_m'] / 31536000) * self.dt    # inlet rise rate in m/s per timestep
-        self.sea_shoreline = None  
+        self._SL = [params['Initial_SL']]                   # initializes SL array
+        self._SLRR = (params['SLRR_m'] / 31536000) * self._dt  # sea level rise rate in m/s per timestep
+        self._IRR = (params['IRR_m'] / 31536000) * self._dt    # inlet rise rate in m/s per timestep
+        self._shoreline = None  
 
         # River parameters
-        self.nu = params['nu']
-        self.init_cut = params['init_cut_frac'] * params['ch_depth']
-        self.super_ratio = params['super_ratio']
-        self.short_path = params['short_path']
-        self.riv_mouth = None
-        self.sed_flux = 0
+        self._nu = params['nu']
+        self._init_cut = params['init_cut_frac'] * params['ch_depth']
+        self._super_ratio = params['super_ratio']
+        self._short_path = params['short_path']
+        self._riv_mouth = None
+        self._sed_flux = 0
 
         # Floodplain and wetland characteristics
-        self.WL_Z = params['WL_Z']
-        self.WL_dist = params['WL_dist']
-        self.blanket_rate = (params['blanket_rate_m'] / 31536000) * self.dt    # blanket deposition in m/s
-        self.splay_dep = (params['splay_dep_m'] / 31536000) * self.dt       # splay deposition in m/s
-        self.splay_type = params['splay_type']
+        self._WL_Z = params['WL_Z']
+        self._WL_dist = params['WL_dist']
+        self._blanket_rate = (params['blanket_rate_m'] / 31536000) * self._dt    # blanket deposition in m/s
+        self._splay_dep = (params['splay_dep_m'] / 31536000) * self._dt       # splay deposition in m/s
+        self._splay_type = params['splay_type']
 
         # Saving information
-        self.savefiles = params['savefiles']
-        self.savespacing = params['savespacing']
+        self._savefiles = params['savefiles']
+        self._savespacing = params['savespacing']
 
         # Initialize elevation grid
         for i in range(self._imax):
             for j in range(self._jmax):
                 self._x[i][j] = i * self._dx
                 self._y[i][j] = j * self._dy
-                self.n[i][j] = self._n0 - (self._nslope * float(self._x[i][j]) \
+                self._n[i][j] = self._n0 - (self._nslope * float(self._x[i][j]) \
                           + self._max_rand * np.random.rand())
                 j += 1
             i += 1
 
         # Determine initial river course
-        self.riv_x, self.riv_y = steep_desc.find_course(self._dx, self._dy,
-                                                        self._imax, self._jmax, self.n,
-                                                        self.riv_x, self.riv_y)
+        self._riv_x, self._riv_y = steep_desc.find_course(self._dx, self._dy,
+                                                          self._imax, self._jmax, self._n,
+                                                          self._riv_x, self._riv_y)
 
         # downcut into new river course by amount determined by init_cut
-        self.n = downcut.cut_init(self._dx, self._dy, self.riv_x, self.riv_y, self.n,
-                                  self.init_cut)
+        self._n = downcut.cut_init(self._dx, self._dy, self._riv_x, self._riv_y, self._n,
+                                  self._init_cut)
 
         # smooth initial river course elevations using linear diffusion equation
         self.n, self.dn_rc = diffuse.smooth_rc(self._dx, self._dy, self.nu, self.dt,
@@ -146,14 +142,10 @@ class River_Module(Bmi):
         #    np.savetxt('riv_course/riv_0.out', zip(riv_x, riv_y), fmt='%i')
         #    np.savetxt('profile/prof_0.out', profile, fmt='%f')
 
-        self._values = {
-            'river_mouth_location': self.riv_mouth,
-            'channel_water_sediment~bedload__volume_flow_rate': self.sed_flux
-        }
+        # ### need to add self.var_units (talk to brad) ###
+        return params
 
-        ### need to add self.var_units (talk to brad) ###
-
-    def update(self):
+    def advance_in_time(self):
         """ Update avulsion model one time step. """
 
         # begin time loop and main program
@@ -171,8 +163,8 @@ class River_Module(Bmi):
         self.riv_x, self.riv_y, self.loc, self.SEL, self.SER, self.n, \
             self.dn_fp, self.avulsion_type, self.length_new_sum, self.length_old \
             = avulse.find_avulsion(self._dx, self._dy, self._imax, self._jmax,
-                                    self.riv_x, self.riv_y, self.n, self.super_ratio,
-                                    self.current_SL, self._ch_depth, self.short_path,
+                                    self.riv_x, self.riv_y, self.n, self._super_ratio,
+                                    self.current_SL, self._ch_depth, self._short_path,
                                     self.dn_fp, self.splay_type, self.splay_dep)
 
         # save timestep and avulsion location if there was one
@@ -193,7 +185,7 @@ class River_Module(Bmi):
                                                self._dy)
 
         # smooth river course elevations using linear diffusion equation
-        self.n, self.dn_rc = diffuse.smooth_rc(self._dx, self._dy, self.nu,
+        self.n, self.dn_rc = diffuse.smooth_rc(self._dx, self._dy, self._nu,
                                                self.dt, self.riv_x, self.riv_y,
                                                self.n, self._nslope)
 
@@ -232,41 +224,41 @@ class River_Module(Bmi):
             np.savetxt('avulsions', self.avulsions, fmt='%i %i %i %.3f %.3f %.3f')
         pass
 
-    def get_value_ref(self, var_name):
-        return self._values[var_name]
+    # def get_value_ref(self, var_name):
+    #     return self._values[var_name]
 
-    # def get_value(self, var_name):
-    #     return self.get_value_ref(var_name).copy()
+    # # def get_value(self, var_name):
+    # #     return self.get_value_ref(var_name).copy()
 
-    def get_value_at_indices(self, var_name, indices):
-        return self.get_value_ref(var_name).take(indices)
+    # def get_value_at_indices(self, var_name, indices):
+    #     return self.get_value_ref(var_name).take(indices)
 
-    def set_value(self, var_name, src):
-        val = self.get_value_ref(var_name)
-        val[:] = src
+    # def set_value(self, var_name, src):
+    #     val = self.get_value_ref(var_name)
+    #     val[:] = src
 
-    def set_value_at_indices(self, var_name, src, indices):
-        val = self.get_value_ref(var_name)
-        val.flat[indices] = src
+    # def set_value_at_indices(self, var_name, src, indices):
+    #     val = self.get_value_ref(var_name)
+    #     val.flat[indices] = src
 
-    def get_component_name(self):
-        """Name of the component."""
-        return self._name
+    # def get_component_name(self):
+    #     """Name of the component."""
+    #     return self._name
 
-    def get_input_var_names(self):
-        """Get names of input variables."""
-        return self._input_var_names
+    # def get_input_var_names(self):
+    #     """Get names of input variables."""
+    #     return self._input_var_names
 
-    def get_output_var_names(self):
-        """Get names of output variables."""
-        return self._output_var_names
+    # def get_output_var_names(self):
+    #     """Get names of output variables."""
+    #     return self._output_var_names
 
-    def get_current_time(self):
-        return self._model.time/86400
+    # def get_current_time(self):
+    #     return self._model.time/86400
 
-    def get_time_step(self):
-        """Time step of model."""
-        return self._model.dt/86400
+    # def get_time_step(self):
+    #     """Time step of model."""
+    #     return self._model.dt/86400
 
 def main ():
     model = River_Module()
