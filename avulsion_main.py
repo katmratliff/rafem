@@ -15,7 +15,7 @@ import SLR
 import FP
 import downcut
 import flux
-import yaml
+from avulsion_utils import read_params_from_file
 
 class RiverModule(object):
 
@@ -40,8 +40,8 @@ class RiverModule(object):
         self._time_max = 1
         self._time = 0.
         self._dt = 0.
-        self._riv_x = None
-        self._riv_y = None
+        self._riv_x = 0
+        self._riv_y = 0
         self._sed_flux = 0.
         self._shoreline = None
 
@@ -88,8 +88,8 @@ class RiverModule(object):
     def params_from_file(self, fname):
         """ create a RiverModule object from a file-like object. """
 
-        with open(fname, 'r') as fp:
-            params = yaml.load(fp)
+        params = read_params_from_file(fname)
+        #params = yaml.load(fname)
 
         # Spatial parameters
         length, width = params['shape']
@@ -119,7 +119,7 @@ class RiverModule(object):
         self._time_max_s = (params['time_max'] * 31536000)  # length of model run in seconds
         self._spinup_s = (params['spinup'] * 31536000)  # length of spinup in seconds
         self._kmax = self._spinup_s/self._dt + self._time_max_s/self._dt + 1  # max number of timesteps
-        self._save_after = self.spinup_s/self._dt        # save files after this point
+        self._save_after = self._spinup_s/self._dt        # save files after this point
         self._time = 0.
         self._k = 0
 
