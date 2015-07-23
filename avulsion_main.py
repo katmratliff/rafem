@@ -320,32 +320,16 @@ class RiverModule(object):
     #     """Time step of model."""
     #     return self._model.dt/86400
 
-def main ():
-    model = RiverModule()
-    model.initialize('input.yaml')
+# def main ():
+#     model = RiverModule()
+#     model.initialize('input.yaml')
 
-    while model._k < model._kmax:
-        model.advance_in_time()
+#     while model._k < model._kmax:
+#         model.advance_in_time()
 
-        # # save files
-        # if model._savefiles == 1:
-        #     if model._k >= model._save_after:
-        #         if model._k % model._savespacing == 0:
-        #             np.savetxt('elev_grid/elev_' + str(model._k*model._dt/86400 
-        #                         - model._save_after) + '.out', model._n, fmt='%.6f')
-        #             np.savetxt('riv_course/riv_' + str(model._k*model._dt/86400
-        #                         - model._save_after) + '.out',
-        #                         zip(model._riv_x, model._riv_y), fmt='%i')
-        #             np.savetxt('profile/prof_' + str(model._k*model._dt/86400
-        #                         - model._save_after) + '.out',
-        #                         model._profile, fmt='%.6f')
-        #             np.savetxt('dn_fp/dn_fp_' + str(model._k*model._dt/86400
-        #                         - model._save_after) + '.out',
-        #                         model._dn_fp, fmt='%.6f')
+#     model.finalize()
 
-    model.finalize()
-
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
 
 
