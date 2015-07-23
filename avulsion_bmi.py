@@ -1,10 +1,9 @@
 #! /usr/local/bin/python
 """ Basic Model Interface implementation for River Module"""
 
-import types
 import numpy as np
 
-from bmi import bmi
+from bmi import Bmi
 from avulsion_main import RiverModule
 
 
@@ -41,9 +40,9 @@ class BmiRiverModule(Bmi):
         }
 
     def update(self):
-    	"""Advance model by one time step."""
-    	self._model.advance_in_time()
-    	self.river_mouth_location = (self._model.river_x_coordinates[-1],
+        """Advance model by one time step."""
+        self._model.advance_in_time()
+        self.river_mouth_location = (self._model.river_x_coordinates[-1],
     							     self._model.river_y_coordinates[-1])
 
     def update_frac(self, time_frac):
@@ -69,7 +68,7 @@ class BmiRiverModule(Bmi):
                        fmt='%i %i %i %.3f %.3f %.3f')
         pass
 
-        def get_var_type(self, var_name):
+    def get_var_type(self, var_name):
         """Data type of variable."""
         return str(self.get_value_ref(var_name).dtype)
 

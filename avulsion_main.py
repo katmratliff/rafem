@@ -76,9 +76,9 @@ class RiverModule(object):
     def avulsions(self):
         return self._avulsions
 
-    @shoreline.setter
-    def shoreline(self, shoreline):
-        self._shoreline = shoreline
+#    @shoreline.setter
+#    def shoreline(self, shoreline):
+#        self._shoreline = shoreline
 
     @property
     def savefiles(self):
