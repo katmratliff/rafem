@@ -38,6 +38,51 @@ class RiverModule(object):
         self._super_ratio = 1
         self._short_path = 1
         self._time_max = 1
+        self._time = 0.
+        self._dt = 0.
+        self._riv_x = None
+        self._riv_y = None
+        self._sed_flux = 0.
+        self._shoreline = None
+
+    @property
+    def time(self):
+        """Current model time."""
+        return self._time
+
+    @property
+    def time_step(self):
+        """Model time step."""
+        return self._dt
+
+    @time_step.setter
+    def time_step(self, time_step):
+        """Set model time step."""
+        self._dt = time_step
+
+    @property
+    def river_x_coordinates(self):
+        return self._riv_x
+
+    @property 
+    def river_y_coordinates(self):
+        return self._riv_y
+
+    @property 
+    def sediment_flux(self):
+        return self._sed_flux
+
+    @property
+    def avulsions(self):
+        return self._avulsions
+
+    @shoreline.setter
+    def shoreline(self, shoreline):
+        self._shoreline = shoreline
+
+    @property
+    def savefiles(self):
+        return self._savefiles
 
     @classmethod
     def params_from_file(self, fname):
@@ -89,8 +134,6 @@ class RiverModule(object):
         self._init_cut = params['init_cut_frac'] * params['ch_depth']
         self._super_ratio = params['super_ratio']
         self._short_path = params['short_path']
-        self._riv_mouth = None
-        self._sed_flux = 0
 
         # Floodplain and wetland characteristics
         self._WL_Z = params['WL_Z']
@@ -123,12 +166,13 @@ class RiverModule(object):
                                   self._init_cut)
 
         # smooth initial river course elevations using linear diffusion equation
-        self.n, self.dn_rc = diffuse.smooth_rc(self._dx, self._dy, self.nu, self.dt,
-                                               self.riv_x, self.riv_y, self.n, self._nslope)
+        self._n, self._dn_rc = diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt,
+                                                 self._riv_x, self._riv_y, self._n,
+                                                 self._nslope)
 
         # Determine initial river profile
-        self.profile = prof.make_profile(self._dx, self._dy, self.n, self.riv_x,
-                                         self.riv_y, self.profile)
+        self._profile = prof.make_profile(self._dx, self._dy, self._n, self._riv_x,
+                                         self._riv_y, self._profile)
 
         # make directories and save initial condition files
         if self.savefiles == 1:
@@ -152,68 +196,84 @@ class RiverModule(object):
         # for k in range(kmax):
 
         # determine current sea level
-        self.SL = self.SL + [self.k * self.SLRR]
-        self.current_SL = self.SL[-1]
+        self._SL = self._SL + [self._k * self._SLRR]
+        self._current_SL = self._SL[-1]
 
         ### future work: SLRR can be a vector to change rates ###
 
         # determine if there is an avulsion & find new path if so
         ### need to change this to look for shoreline after coupling ###
         ### (instead of looking for sea level)
-        self.riv_x, self.riv_y, self.loc, self.SEL, self.SER, self.n, \
-            self.dn_fp, self.avulsion_type, self.length_new_sum, self.length_old \
+        self._riv_x, self._riv_y, self._loc, self._SEL, self._SER, self._n, \
+            self._dn_fp, self._avulsion_type, self._length_new_sum, self._length_old \
             = avulse.find_avulsion(self._dx, self._dy, self._imax, self._jmax,
-                                    self.riv_x, self.riv_y, self.n, self._super_ratio,
-                                    self.current_SL, self._ch_depth, self._short_path,
-                                    self.dn_fp, self.splay_type, self.splay_dep)
+                                    self._riv_x, self._riv_y, self._n, self._super_ratio,
+                                    self._current_SL, self._ch_depth, self._short_path,
+                                    self._dn_fp, self._splay_type, self._splay_dep)
 
         # save timestep and avulsion location if there was one
-        if len(self.loc) != 0:
-            self.avulsions = self.avulsions + [(self.k*(self.dt/86400),
-                        self.loc[-1], self.avulsion_type, self.length_old,
-                        self.length_new_sum, self.current_SL)]
+        if len(self._loc) != 0:
+            self._avulsions = self._avulsions + [(self._k*(self._dt/86400),
+                        self._loc[-1], self._avulsion_type, self._length_old,
+                        self._length_new_sum, self._current_SL)]
         
         # raise first two rows by inlet rise rate (subsidence)
-        self.n[0][:] = self.n[0][:] + (self.IRR)
-        self.n[1][:] = self.n[1][:] + (self.IRR)
+        self._n[0][:] = self._n[0][:] + (self._IRR)
+        self._n[1][:] = self._n[1][:] + (self._IRR)
 
         # change elevations according to sea level rise (SLRR)
         ### needs to be changed to subtracting elevation once coupled ###
-        self.n, self.rc_flag = SLR.elev_change(self._imax, self._jmax,
-                                               self.current_SL, self.n, self.riv_x,
-                                               self.riv_y, self._ch_depth, self._dx,
-                                               self._dy)
+        self._n, self._rc_flag = SLR.elev_change(self._imax, self._jmax,
+                                                 self._current_SL, self._n, self._riv_x,
+                                                 self._riv_y, self._ch_depth, self._dx,
+                                                 self._dy)
 
         # smooth river course elevations using linear diffusion equation
-        self.n, self.dn_rc = diffuse.smooth_rc(self._dx, self._dy, self._nu,
-                                               self.dt, self.riv_x, self.riv_y,
-                                               self.n, self._nslope)
+        self._n, self._dn_rc = diffuse.smooth_rc(self._dx, self._dy, self._nu,
+                                                 self._dt, self._riv_x, self._riv_y,
+                                                 self._n, self._nslope)
 
         # Floodplain sedimentation
-        self.n, self.dn_fp = FP.dep_blanket(self._dy, self._dx, self._imax,
-                                            self._jmax, self.current_SL,
-                                            self.blanket_rate, self.n, self.riv_x,
-                                            self.riv_y, self._ch_depth)
+        self._n, self._dn_fp = FP.dep_blanket(self._dy, self._dx, self._imax,
+                                              self._jmax, self._current_SL,
+                                              self._blanket_rate, self._n, self._riv_x,
+                                              self._riv_y, self._ch_depth)
 
         # Wetland sedimentation
         ### no wetlands in first version of coupling to CEM ###
-        self.n, self.dn_fp = FP.wetlands(self._dx, self._dy, self._imax, self._jmax,
-                                         self.current_SL, self.WL_Z, self.WL_dist,
-                                         self.n, self.riv_x, self.riv_y, self._x,
-                                         self._y, self.dn_fp)
+        self._n, self._dn_fp = FP.wetlands(self._dx, self._dy, self._imax, self._jmax,
+                                           self._current_SL, self._WL_Z, self._WL_dist,
+                                           self._n, self._riv_x, self._riv_y, self._x,
+                                           self._y, self._dn_fp)
 
         # calculate sediment flux
-        self.sed_flux = flux.calc_qs(self.nu, self.riv_x, self.riv_y, self.n,
-                                     self._dx, self._dy, self.dt)
+        self._sed_flux = flux.calc_qs(self._nu, self._riv_x, self._riv_y, self._n,
+                                     self._dx, self._dy, self._dt)
 
         # create a river profile array
-        self.profile = prof.make_profile(self._dx, self._dy, self.n, self.riv_x,
-                                         self.riv_y, self.profile)
+        self._profile = prof.make_profile(self._dx, self._dy, self._n, self._riv_x,
+                                          self._riv_y, self._profile)
 
-        self.riv_mouth = [self.riv_x[-1], self.riv_y[-1]]
+        #self._riv_mouth = [self._riv_x[-1], self._riv_y[-1]]
 
-        self.k += 1
-        self.time += self.dt
+        self._k += 1
+        self._time += self._dt
+
+        # save files
+        if model._savefiles == 1:
+            if model._k >= model._save_after:
+                if model._k % model._savespacing == 0:
+                    np.savetxt('elev_grid/elev_' + str(model._k*model._dt/86400 
+                                - model._save_after) + '.out', model._n, fmt='%.6f')
+                    np.savetxt('riv_course/riv_' + str(model._k*model._dt/86400
+                                - model._save_after) + '.out',
+                                zip(model._riv_x, model._riv_y), fmt='%i')
+                    np.savetxt('profile/prof_' + str(model._k*model._dt/86400
+                                - model._save_after) + '.out',
+                                model._profile, fmt='%.6f')
+                    np.savetxt('dn_fp/dn_fp_' + str(model._k*model._dt/86400
+                                - model._save_after) + '.out',
+                                model._dn_fp, fmt='%.6f')
 
         # print "sediment flux = %f" % self.sed_flux
 
@@ -221,7 +281,7 @@ class RiverModule(object):
         """Clean up & save avulsion file"""
         
         if self.savefiles == 1:
-            np.savetxt('avulsions', self.avulsions, fmt='%i %i %i %.3f %.3f %.3f')
+            np.savetxt('avulsions', self._avulsions, fmt='%i %i %i %.3f %.3f %.3f')
         pass
 
     # def get_value_ref(self, var_name):
@@ -261,27 +321,27 @@ class RiverModule(object):
     #     return self._model.dt/86400
 
 def main ():
-    model = River_Module()
+    model = RiverModule()
     model.initialize('input.yaml')
 
-    while model.k < model.kmax:
-        model.update()
+    while model._k < model._kmax:
+        model.advance_in_time()
 
         # save files
-        if model.savefiles == 1:
-            if model.k >= model.save_after:
-                if model.k % model.savespacing == 0:
-                    np.savetxt('elev_grid/elev_' + str(model.k*model.dt/86400 
-                                - model.save_after) + '.out', model.n, fmt='%.6f')
-                    np.savetxt('riv_course/riv_' + str(model.k*model.dt/86400
-                                - model.save_after) + '.out',
-                                zip(model.riv_x, model.riv_y), fmt='%i')
-                    np.savetxt('profile/prof_' + str(model.k*model.dt/86400
-                                - model.save_after) + '.out',
-                                model.profile, fmt='%.6f')
-                    np.savetxt('dn_fp/dn_fp_' + str(model.k*model.dt/86400
-                                - model.save_after) + '.out',
-                                model.dn_fp, fmt='%.6f')
+        if model._savefiles == 1:
+            if model._k >= model._save_after:
+                if model._k % model._savespacing == 0:
+                    np.savetxt('elev_grid/elev_' + str(model._k*model._dt/86400 
+                                - model._save_after) + '.out', model._n, fmt='%.6f')
+                    np.savetxt('riv_course/riv_' + str(model._k*model._dt/86400
+                                - model._save_after) + '.out',
+                                zip(model._riv_x, model._riv_y), fmt='%i')
+                    np.savetxt('profile/prof_' + str(model._k*model._dt/86400
+                                - model._save_after) + '.out',
+                                model._profile, fmt='%.6f')
+                    np.savetxt('dn_fp/dn_fp_' + str(model._k*model._dt/86400
+                                - model._save_after) + '.out',
+                                model._dn_fp, fmt='%.6f')
 
     model.finalize()
 
