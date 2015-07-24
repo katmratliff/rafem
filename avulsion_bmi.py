@@ -18,16 +18,16 @@ class BmiRiverModule(Bmi):
                          'channel_water_sediment~bedload__mass_flow_rate')
 
     def __init__(self):
-    	"""Create a BmiRiver module that is ready for initialization."""
-    	self._model = None
+        """Create a BmiRiver module that is ready for initialization."""
+        self._model = None
         self._values = {}
         self._var_units = {}
 
     def initialize(self, filename):
-    	"""Initialize the River module"""
-    	self._model = RiverModule.params_from_file(filename)
+        """Initialize the River module"""
+        self._model = RiverModule.params_from_file(filename)
 
-    	self._values = {
+        self._values = {
             'river_x_coordinates': self._model.river_x_coordinates,
             'river_y_coordinates': self._model.river_y_coordinates,
             'river_mouth_location': self.river_mouth_location,

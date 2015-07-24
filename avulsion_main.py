@@ -189,6 +189,8 @@ class RiverModule(object):
 
         # ### need to add self.var_units (talk to brad) ###
         return params
+        #return self(**params)??
+        ## return cls(**params)
 
     def advance_in_time(self):
         """ Update avulsion model one time step. """
