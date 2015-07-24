@@ -20,45 +20,44 @@ from avulsion_utils import read_params_from_file
 class RiverModule(object):
 
     def __init__(self):
-        self._values = {}
-        self._shape = (1000, 500)
-        self._spacing = (10, 10)
-        self._n0 = 100
-        self._max_rand = 0.00001
-        self._nslope = 0.0001
-        self._spinup = 0
-        self._dt_day = 73
-        self._Initial_SL = 0
-        self._SLRR_m = 0.015
-        self._IRR_m = 0.005
-        self._ch_width = 2000.
-        self._ch_depth = 5.0
-        self._init_cut_frac = 1
-        self._nu = 10000
-        self._super_ratio = 1
-        self._short_path = 1
-        self._time_max = 1
-        self._time = 0.
-        self._dt = 0.
-        self._riv_x = 0
-        self._riv_y = 0
-        self._sed_flux = 0.
+#        self._shape = (1000, 500)
+#        self._spacing = (10, 10)
+#        self._n0 = 100
+#        self._max_rand = 0.00001
+#        self._nslope = 0.0001
+#        self._spinup = 0
+#        self._dt_day = 73
+#        self._Initial_SL = 0
+#        self._SLRR_m = 0.015
+#        self._IRR_m = 0.005
+#        self._ch_width = 2000.
+#        self._ch_depth = 5.0
+#        self._init_cut_frac = 1
+#        self._nu = 10000
+#        self._super_ratio = 1
+#        self._short_path = 1
+#        self._time_max = 1
+#        self._time = 0.
+#        self._dt = 0.
+#        self._riv_x = 0
+#        self._riv_y = 0
+#        self._sed_flux = 0.
         self._shoreline = None
 
     @property
     def time(self):
-        """Current model time."""
-        return self._time
+        """Current model time (converted from seconds to days)."""
+        return (self._time/86400)
 
     @property
     def time_step(self):
-        """Model time step."""
-        return self._dt
+        """Model time step (converted from seconds to days)."""
+        return (self._dt/86400)
 
     @time_step.setter
     def time_step(self, time_step):
-        """Set model time step."""
-        self._dt = time_step
+        """Set model time step (time_step is in days)."""
+        self._dt = (time_step*86400)
 
     @property
     def river_x_coordinates(self):
@@ -134,6 +133,8 @@ class RiverModule(object):
         self._init_cut = params['init_cut_frac'] * params['ch_depth']
         self._super_ratio = params['super_ratio']
         self._short_path = params['short_path']
+        self._ch_width = params['ch_width']
+        self._ch_depth = params['ch_depth']
 
         # Floodplain and wetland characteristics
         self._WL_Z = params['WL_Z']
@@ -175,7 +176,7 @@ class RiverModule(object):
                                          self._riv_y, self._profile)
 
         # make directories and save initial condition files
-        if self.savefiles == 1:
+        if self._savefiles == 1:
             # os.mkdir("run" + str(run_num) + "_out")
             os.mkdir("elev_grid")
             os.mkdir("riv_course")
@@ -260,20 +261,20 @@ class RiverModule(object):
         self._time += self._dt
 
         # save files
-        if model._savefiles == 1:
-            if model._k >= model._save_after:
-                if model._k % model._savespacing == 0:
-                    np.savetxt('elev_grid/elev_' + str(model._k*model._dt/86400 
-                                - model._save_after) + '.out', model._n, fmt='%.6f')
-                    np.savetxt('riv_course/riv_' + str(model._k*model._dt/86400
-                                - model._save_after) + '.out',
-                                zip(model._riv_x, model._riv_y), fmt='%i')
-                    np.savetxt('profile/prof_' + str(model._k*model._dt/86400
-                                - model._save_after) + '.out',
-                                model._profile, fmt='%.6f')
-                    np.savetxt('dn_fp/dn_fp_' + str(model._k*model._dt/86400
-                                - model._save_after) + '.out',
-                                model._dn_fp, fmt='%.6f')
+        if self._savefiles == 1:
+            if self._k >= self._save_after:
+                if self._k % self._savespacing == 0:
+                    np.savetxt('elev_grid/elev_' + str(self._k*self._dt/86400 
+                                - self._save_after) + '.out', self._n, fmt='%.6f')
+                    np.savetxt('riv_course/riv_' + str(self._k*self._dt/86400
+                                - self._save_after) + '.out',
+                                zip(self._riv_x, self._riv_y), fmt='%i')
+                    np.savetxt('profile/prof_' + str(self._k*self._dt/86400
+                                - self._save_after) + '.out',
+                                self._profile, fmt='%.6f')
+                    np.savetxt('dn_fp/dn_fp_' + str(self._k*self._dt/86400
+                                - self._save_after) + '.out',
+                                self._dn_fp, fmt='%.6f')
 
         # print "sediment flux = %f" % self.sed_flux
 
