@@ -10,11 +10,10 @@ from avulsion_main import RiverModule
 class BmiRiverModule(Bmi):
 
     _name = 'Avulsion Module'
-    _input_var_names = ('sea_shoreline')
+    _input_var_names = ()
     # not sure what's the most appropriate CSDMS river mouth stuff?
     _output_var_names = ('river_x_coordinates',
                          'river_y_coordinates',
-                         'river_mouth_location',
                          'channel_water_sediment~bedload__mass_flow_rate')
 
     def __init__(self):
@@ -25,14 +24,12 @@ class BmiRiverModule(Bmi):
 
     def initialize(self, filename):
         """Initialize the River module"""
-        self._model = RiverModule.params_from_file(filename)
+        self._model = RiverModule.from_path(filename)
 
         self._values = {
-            'river_x_coordinates': self._model.river_x_coordinates,
-            'river_y_coordinates': self._model.river_y_coordinates,
-            'river_mouth_location': self.river_mouth_location,
-            'channel_water_sediment~bedload__volume_flow_rate': self._model.sed_flux,
-            'sea_shoreline': self._model._shoreline
+            'river_x_coordinates': 'river_x_coordinates',
+            'river_y_coordinates': 'river_y_coordinates',
+            'channel_water_sediment~bedload__volume_flow_rate': 'sediment_flux',
         }
 
         self._var_units = {
@@ -82,25 +79,11 @@ class BmiRiverModule(Bmi):
 
     def get_value_ref(self, var_name):
         """Reference to values."""
-        return self._values[var_name]
+        return np.array(getattr(self._model, self._values[var_name]))
 
     def get_value(self, var_name):
         """Copy of values."""
-        return self.get_value_ref(var_name).copy()
-
-    def get_value_at_indices(self, var_name, indices):
-        """Get values at particular indices."""
-        return self.get_value_ref(var_name).take(indices)
-
-    def set_value(self, var_name, src):
-        """Set model values."""
-        val = self.get_value_ref(var_name)
-        val[:] = src
-
-    def set_value_at_indices(self, var_name, src, indices):
-        """Set model values at particular indices."""
-        val = self.get_value_ref(var_name)
-        val.flat[indices] = src
+        return np.array(getattr(self._model, self._values[var_name]))
 
     def get_component_name(self):
         """Name of the component."""
