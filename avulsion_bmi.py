@@ -12,10 +12,9 @@ class BmiRiverModule(Bmi):
     _name = 'Avulsion Module'
     _input_var_names = ()
     # not sure what's the most appropriate CSDMS river mouth stuff?
-    _output_var_names = ('river_x_coordinates',
-                         'river_y_coordinates',
+    _output_var_names = ('channel_centerline__x_coordinate',
+                         'channel_centerline__y_coordinate',
                          'channel_water_sediment~bedload__mass_flow_rate')
-
     def __init__(self):
         """Create a BmiRiver module that is ready for initialization."""
         self._model = None
@@ -27,8 +26,8 @@ class BmiRiverModule(Bmi):
         self._model = RiverModule.from_path(filename)
 
         self._values = {
-            'river_x_coordinates': 'river_x_coordinates',
-            'river_y_coordinates': 'river_y_coordinates',
+            'channel_centerline__x_coordinate': 'river_x_coordinates',
+            'channel_centerline__y_coordinate': 'river_y_coordinates',
             'channel_water_sediment~bedload__volume_flow_rate': 'sediment_flux',
         }
 
