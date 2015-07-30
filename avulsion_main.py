@@ -183,18 +183,6 @@ class RiverModule(object):
                                           self._riv_x, self._riv_y,
                                           self._profile)
 
-        # make directories and save initial condition files
-        if self._savefiles == 1:
-            # os.mkdir("run" + str(run_num) + "_out")
-            os.mkdir("elev_grid")
-            os.mkdir("riv_course")
-            os.mkdir("profile")
-            os.mkdir("dn_fp")
-        #   saves initial conditions
-        #    np.savetxt('elev_grid/elev_0.out', n, fmt='%f')
-        #    np.savetxt('riv_course/riv_0.out', zip(riv_x, riv_y), fmt='%i')
-        #    np.savetxt('profile/prof_0.out', profile, fmt='%f')
-
     def advance_in_time(self):
         """ Update avulsion model one time step. """
 
@@ -269,19 +257,3 @@ class RiverModule(object):
 
         self._k += 1
         self._time += self._dt
-
-        # save files
-        if self._savefiles == 1:
-            if self._k >= self._save_after:
-                if self._k % self._savespacing == 0:
-                    np.savetxt('elev_grid/elev_' + str(self._k*self._dt/86400 
-                                - self._save_after) + '.out', self._n, fmt='%.6f')
-                    np.savetxt('riv_course/riv_' + str(self._k*self._dt/86400
-                                - self._save_after) + '.out',
-                                zip(self._riv_x, self._riv_y), fmt='%i')
-                    np.savetxt('profile/prof_' + str(self._k*self._dt/86400
-                                - self._save_after) + '.out',
-                                self._profile, fmt='%.6f')
-                    np.savetxt('dn_fp/dn_fp_' + str(self._k*self._dt/86400
-                                - self._save_after) + '.out',
-                                self._dn_fp, fmt='%.6f')
