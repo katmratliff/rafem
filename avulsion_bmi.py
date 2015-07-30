@@ -62,10 +62,6 @@ class BmiRiverModule(Bmi):
 
     def finalize(self):
         """Clean up & save avulsion file"""
-        
-        if self._model.savefiles == 1:
-            np.savetxt('avulsions', self._model.avulsions,
-                       fmt='%i %i %i %.3f %.3f %.3f')
         pass
 
     def get_var_type(self, var_name):
