@@ -105,10 +105,13 @@ class BmiRiverModule(Bmi):
         return np.finfo('d').max
 
     def get_current_time(self):
-        """Current time of model (days)."""
+        """Current time of model."""
         return self._model.time
 
     def get_time_step(self):
-        """Time step of model (days)."""
+        """Time step of model."""
         return self._model.time_step
 
+    def get_time_units(self):
+        """Units of time"""
+        return 'd'
