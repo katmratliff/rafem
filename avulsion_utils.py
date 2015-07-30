@@ -1,6 +1,7 @@
 import yaml
 import numpy as np
 
+
 def read_params_from_file(fname):
     """Read model parameters from a file.
 

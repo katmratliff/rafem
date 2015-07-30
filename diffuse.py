@@ -58,6 +58,4 @@ def smooth_rc(dx, dy, nu, dt, riv_x, riv_y, n, nslope):
 
         n[riv_x[c]/dx][riv_y[c]/dy] = n[riv_x[c]/dx][riv_y[c]/dy] + dn_rc[c]
 
-        c += 1
-
     return (n, dn_rc)

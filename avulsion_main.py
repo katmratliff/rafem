@@ -161,8 +161,6 @@ class RiverModule(object):
                 self._y[i][j] = j * self._dy
                 self._n[i][j] = self._n0 - (self._nslope * float(self._x[i][j]) +
                                             self._max_rand * np.random.rand())
-                j += 1
-            i += 1
 
         # Determine initial river course
         self._riv_x, self._riv_y = steep_desc.find_course(
