@@ -38,7 +38,7 @@ class BmiRiverModule(Bmi):
         self._var_units = {
             'channel_centerline__x_coordinate': 'm',
             'channel_centerline__y_coordinate': 'm',
-            'channel_water_sediment~bedload__volume_flow_rate': "kg s^-1"
+            'channel_water_sediment~bedload__volume_flow_rate': "kg s^-1",
             'channel_exit__x_coordinate': 'm',
             'channel_exit__y_coordinate': 'm',
         }
