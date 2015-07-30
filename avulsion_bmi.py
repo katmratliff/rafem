@@ -11,10 +11,12 @@ class BmiRiverModule(Bmi):
 
     _name = 'Avulsion Module'
     _input_var_names = ()
-    # not sure what's the most appropriate CSDMS river mouth stuff?
     _output_var_names = ('channel_centerline__x_coordinate',
                          'channel_centerline__y_coordinate',
-                         'channel_water_sediment~bedload__mass_flow_rate')
+                         'channel_water_sediment~bedload__mass_flow_rate',
+                         'channel_exit__x_coordinate',
+                         'channel_exit__y_coordinate',
+                        )
     def __init__(self):
         """Create a BmiRiver module that is ready for initialization."""
         self._model = None
@@ -26,9 +28,11 @@ class BmiRiverModule(Bmi):
         self._model = RiverModule.from_path(filename)
 
         self._values = {
-            'channel_centerline__x_coordinate': 'river_x_coordinates',
-            'channel_centerline__y_coordinate': 'river_y_coordinates',
-            'channel_water_sediment~bedload__volume_flow_rate': 'sediment_flux',
+            'channel_centerline__x_coordinate': lambda: np.array(self._model.river_x_coordinates),
+            'channel_centerline__y_coordinate': lambda: np.array(self._model.river_y_coordinates),
+            'channel_water_sediment~bedload__volume_flow_rate': lambda: np.array(self._model.sediment_flux),
+            'channel_exit__x_coordinate': lambda: np.array([self._model.river_x_coordinates[-1]]),
+            'channel_exit__y_coordinate': lambda: np.array([self._model.river_y_coordinates[-1]]),
         }
 
         self._var_units = {
@@ -39,7 +43,7 @@ class BmiRiverModule(Bmi):
         """Advance model by one time step."""
         self._model.advance_in_time()
         self.river_mouth_location = (self._model.river_x_coordinates[-1],
-    							     self._model.river_y_coordinates[-1])
+                                     self._model.river_y_coordinates[-1])
 
     def update_frac(self, time_frac):
         """Update model by a fraction of a time step."""
@@ -66,7 +70,7 @@ class BmiRiverModule(Bmi):
 
     def get_var_type(self, var_name):
         """Data type of variable."""
-        return str(self.get_value_ref(var_name).dtype)
+        return str(self.get_value(var_name).dtype)
 
     def get_var_units(self, var_name):
         """Get units of variable."""
@@ -74,15 +78,11 @@ class BmiRiverModule(Bmi):
 
     def get_var_nbytes(self, var_name):
         """Get units of variable."""
-        return self.get_value_ref(var_name).nbytes
-
-    def get_value_ref(self, var_name):
-        """Reference to values."""
-        return np.array(getattr(self._model, self._values[var_name]))
+        return self.get_value(var_name).nbytes
 
     def get_value(self, var_name):
         """Copy of values."""
-        return np.array(getattr(self._model, self._values[var_name]))
+        return self._values[var_name]()
 
     def get_component_name(self):
         """Name of the component."""
