@@ -128,13 +128,8 @@ def dep_splay(riv_i, riv_j, new_riv_i, new_riv_j,
         # no splay deposition in river channel
         depo_flag2[riv_i, riv_j] = 0
 
-            i += 1
-
         # deposit splay sediment on flagged cells
         n[depo_flag2 == 1] += splay_dep
         dn_fp[depo_flag2 == 1] += splay_dep
-
-                j += 1
-            i += 1
 
     return n, dn_fp
