@@ -9,7 +9,6 @@ def is_diagonal_neighbor(sub0, sub1):
 # this function uses a linear diffusion equation (e.g. Paola 2000, Jerolmack
 # and Paola 2007) to compute elevation change along the river course
 def smooth_rc(dx, dy, nu, dt, riv_i, riv_j, n):
-
     nu /= 86400.
 
     # elevation change along river course due to diffusional smoothing
