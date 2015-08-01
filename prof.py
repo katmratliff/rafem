@@ -1,11 +1,7 @@
-#! /usr/local/bin/python"""
+#! /usr/local/bin/python
+import numpy as np
 
-def make_profile(dx, dy, n, riv_x, riv_y, profile):
 
-    profile = [0 for i in range(len(riv_x))]
-
-    for p in range(len(riv_x)):
-        profile[p] = n[riv_x[p]/dx][riv_y[p]/dy]
-        #profile.append(n[riv_x[p]][riv_y[p]])
-    
-    return profile
+def make_profile(n, riv_i, riv_j):
+    """Get elevations along the river profile."""
+    return n[riv_i, riv_j]
