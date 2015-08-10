@@ -7,6 +7,29 @@ Created on Wed Dec  3 08:56:09 2014
 import numpy as np
 
 
+def add_to_neighboring_cells(z, sub, inc, win=1):
+    """Add a value to all neighboring cells.
+
+    Parameters
+    ----------
+    z : ndarray
+        2D array of values.
+    sub : tuple of int
+        Row/column subscripts into array.
+    inc : float
+        Value to increment *z* by.
+    win : int
+        Size of the window around *sub*.
+
+    Examples
+    --------
+    >>> x = np.zeros((4, 5))
+    >>> add_around_cell(x, (0, 0), 1)
+    """
+    z[max(0, sub[0] - win): min(z.shape[0], sub[0] + win + 1),
+      max(0, sub[1] - win): min(z.shape[1], sub[1] + win + 1)] += inc
+
+
 def dep_blanket(current_SL, blanket_rate, n, riv_i, riv_j, ch_depth):
     depo_flag = np.ones(n.shape, dtype=np.int)
 
@@ -30,9 +53,9 @@ def dep_blanket(current_SL, blanket_rate, n, riv_i, riv_j, ch_depth):
     # deposit "blanket" deposition on qualified cells
     n[depo_flag == 1] += blanket_rate
 
-    dn_fp = depo_flag * blanket_rate
+    #dn_fp = depo_flag * blanket_rate
 
-    return n, dn_fp
+    #return n, dn_fp
 
 
 def distance_to_river(y, y0):
@@ -46,7 +69,7 @@ def within_wetland(y, riv_ind, wetland_width=0.):
     return is_wetland
 
 
-def wetlands(current_SL, WL_Z, wetland_width, n, riv_i, riv_j, x, y, dn_fp):
+def wetlands(current_SL, WL_Z, wetland_width, n, riv_i, riv_j, x, y):
     depo_wetland = np.zeros(n.shape, dtype=np.int)
 
     for row, col in zip(riv_i, riv_j):
@@ -59,15 +82,27 @@ def wetlands(current_SL, WL_Z, wetland_width, n, riv_i, riv_j, x, y, dn_fp):
         n[row, cols] = current_SL + WL_Z
         wetland_dep = n[row, cols] - before
 
-        dn_fp[row, cols] += wetland_dep
         depo_wetland[row, cols] == 1
 
-    return n, dn_fp
 
+def dep_splay(n, ij_fail, old_path, splay_dep, splay_type=1):
+    """Deposit around a failed river cell.
 
-def dep_splay(riv_i, riv_j, new_riv_i, new_riv_j,
-              ch_depth, n, a, dn_fp, splay_type, splay_dep):
-    """
+    Parameters
+    ----------
+    n : ndarray
+        Elevation array.
+    ij_path : tuple of int
+        Row and column of the river failure.
+    old_path : tuple of array_like
+        Row and column indices for the old river path.
+    a : int
+        River path index of the failure.
+    splay_depth : float
+        Deposition depth.
+    splay_type : {1, 2}, optional
+        Failure type
+
     USE DEPTH-DEPENDENCE IN THE FUTURE
         SE1 = (n[riv_x[a]/dx][riv_y[a]/dy] + ch_depth - \
                 n[new_riv_x[a]/dx][new_riv_y[a]/dy]) / ch_depth
@@ -78,58 +113,12 @@ def dep_splay(riv_i, riv_j, new_riv_i, new_riv_j,
     This could possibly be improved by comparing to find nearest beach routine (CEM)
     or using some sort of search radius 
     """
-    i_new, j_new = new_riv_i[a], new_riv_j[a]
+    river_elevations = n[old_path]
 
     if splay_type == 1:  # splay deposition just at first failed river cell
-
-        # deposit at failed avulsion river cell
-        if i_new != riv_i[a] or j_new != riv_j[a]:
-            n[i_new, j_new] += splay_dep
-
-        # record deposition in dn_fp
-        dn_fp[i_new, j_new] += splay_dep
-
+        n[ij_fail] += splay_dep
     if splay_type == 2:     # splay deposition at first failed river cell
                             # and the adjacent cells
+        add_to_neighboring_cells(n, ij_fail, splay_dep)
 
-        depo_flag2 = np.zeros(n.shape, dtype=np.int)
-
-        if i_new == n.shape[0]:
-            depo_flag2[i_new, j_new - 1] = 1    # left side
-            depo_flag2[i_new, j_new + 1] = 1    # right side
-            depo_flag2[i_new - 1, j_new - 1] = 1  # Left u.s.
-            depo_flag2[i_new - 1, j_new] = 1  # center u.s.
-            depo_flag2[i_new - 1, j_new + 1] = 1  # right u.s.
-        elif j_new == 0:
-            depo_flag2[i_new, j_new] = 1  # failed river cell
-            depo_flag2[i_new + 1, j_new] = 1  # center d.s.
-            depo_flag2[i_new + 1, j_new + 1] = 1  # right d.s.
-            depo_flag2[i_new, j_new + 1] = 1    # right side
-            depo_flag2[i_new - 1, j_new] = 1  # center u.s.
-            depo_flag2[i_new - 1, j_new + 1] = 1  # right u.s.
-        elif j_new == n.shape[1]:
-            depo_flag2[i_new, j_new] = 1  # failed river cell
-            depo_flag2[j_new + 1, j_new - 1] = 1  # Left d.s.
-            depo_flag2[i_new + 1, j_new] = 1  # center d.s.
-            depo_flag2[i_new, j_new - 1] = 1    # left side
-            depo_flag2[i_new - 1, j_new - 1] = 1  # Left u.s.
-            depo_flag2[i_new - 1, j_new] = 1  # center u.s.
-        else:         
-            depo_flag2[i_new, j_new] = 1  # failed river cell
-            depo_flag2[i_new + 1, j_new - 1] = 1  # Left d.s.
-            depo_flag2[i_new + 1, j_new] = 1  # center d.s.
-            depo_flag2[i_new + 1, j_new + 1] = 1  # right d.s.
-            depo_flag2[i_new, j_new - 1] = 1    # left side
-            depo_flag2[i_new, j_new + 1] = 1    # right side
-            depo_flag2[i_new - 1, j_new - 1] = 1  # Left u.s.
-            depo_flag2[i_new - 1, j_new] = 1  # center u.s.
-            depo_flag2[i_new - 1, j_new + 1] = 1  # right u.s.
-
-        # no splay deposition in river channel
-        depo_flag2[riv_i, riv_j] = 0
-
-        # deposit splay sediment on flagged cells
-        n[depo_flag2 == 1] += splay_dep
-        dn_fp[depo_flag2 == 1] += splay_dep
-
-    return n, dn_fp
+    n[old_path] = river_elevations
