@@ -71,7 +71,7 @@ def at_river_mouth(z, sub, z0):
         return True
 
 
-def find_course(z, i, j, riv_len, sea_level=None):
+def find_course(z, riv_i, riv_j, sea_level=None):
     """Find the course of a river.
 
     Given a river course as subscripts, (*i*, *j*), into an array of
@@ -82,14 +82,17 @@ def find_course(z, i, j, riv_len, sea_level=None):
     ----------
     z : ndarray
         Grid elevations.
-    i : array_like of int
+    riv_i : array_like of int
         Row subscripts (into *n*) for river.
-    j : array_like of int
+    riv_j : array_like of int
         Column subscripts (into *n*) for river.
-    riv_len : int
-        Current length of the river in cells.
     sea_level : None, optional
         The current sea level.
+
+    Returns
+    -------
+    tuple of array_like
+        Row and column indices of the new river path.
 
     Examples
     --------
@@ -114,16 +117,24 @@ def find_course(z, i, j, riv_len, sea_level=None):
     # function to find the steepest descent route
     # note: this needs to be improved to remove potential bias that may occur
     # if two or more cells have the steepest descent elevation
+    assert(riv_i.size > 0 and riv_j.size > 0)
+
     if sea_level is None:
         sea_level = - np.finfo(float).max
 
-    for n in xrange(riv_len, i.size):
-        if at_river_mouth(z, (i[n - 1], j[n - 1]), sea_level):
+    new_i = np.empty(z.size, dtype=np.int)
+    new_j = np.empty(z.size, dtype=np.int)
+
+    new_i[:len(riv_j)] = riv_i[:]
+    new_j[:len(riv_i)] = riv_j[:]
+
+    for n in xrange(riv_i.size, new_i.size):
+        if at_river_mouth(z, (new_i[n - 1], new_j[n - 1]), sea_level):
             break
 
-        i[n], j[n] = lowest_neighbor(z, (i[n - 1], j[n - 1]))
+        new_i[n], new_j[n] = lowest_neighbor(z, (new_i[n - 1], new_j[n - 1]))
 
-    try:
-        return n
-    except NameError:
-        raise RuntimeError('river length larger than ij-buffer')
+    if n == 0:
+        raise RuntimeError('new river length is zero!')
+
+    return new_i[:n], new_j[:n]
