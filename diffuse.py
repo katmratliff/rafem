@@ -1,9 +1,7 @@
 #! /usr/local/bin/python
 import numpy as np
 
-
-def is_diagonal_neighbor(sub0, sub1):
-    return sub0[0] != sub1[0] and sub0[1] != sub1[1]
+from avulsion_utils import is_diagonal_neighbor
 
 
 # this function uses a linear diffusion equation (e.g. Paola 2000, Jerolmack

@@ -2,9 +2,7 @@
 
 import numpy as np
 
-
-def is_diagonal_neighbor(sub0, sub1):
-    return sub0[0] != sub1[0] and sub0[1] != sub1[1]
+from avulsion_utils import is_diagonal_neighbor
 
 
 def calc_qs(nu, riv_i, riv_j, n, dx, dy, dt):
