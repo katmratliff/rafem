@@ -17,6 +17,11 @@ import downcut
 import flux
 from avulsion_utils import read_params_from_file
 
+
+_SECONDS_PER_YEAR = 31536000.
+_SECONDS_PER_DAY = 86400.
+
+
 class RiverModule(object):
 
     def __init__(self):
@@ -48,25 +53,25 @@ class RiverModule(object):
     @property
     def time(self):
         """Current model time (converted from seconds to days)."""
-        return (self._time/86400)
+        return self._time / _SECONDS_PER_DAY
 
     @property
     def time_step(self):
         """Model time step (converted from seconds to days)."""
-        return (self._dt/86400)
+        return self._dt / _SECONDS_PER_DAY
 
     @time_step.setter
     def time_step(self, time_step):
         """Set model time step (time_step is in days)."""
-        self._dt = (time_step*86400)
+        self._dt = time_step * _SECONDS_PER_DAY
 
     @property
     def river_x_coordinates(self):
-        return self._riv_i * self._dx
+        return self._riv_j * self._dx
 
     @property 
     def river_y_coordinates(self):
-        return self._riv_j * self._dy
+        return self._riv_i * self._dy
 
     @property 
     def sediment_flux(self):
@@ -102,32 +107,32 @@ class RiverModule(object):
         self._max_rand = params['max_rand']
         self._nslope = params['nslope']
 
-        n_rows = int(self._L // self._dx + 1)
-        n_cols = int(self._W // self._dy + 1)
+        n_rows = int(self._L // self._dy + 1)
+        n_cols = int(self._W // self._dx + 1)
 
         # Initialize elevation grid
         # transverse and longitudinal space
-        self._y, self._x = np.meshgrid(np.arange(n_cols) * self._dy,
-                                      np.arange(n_rows) * self._dx)
+        self._x, self._y = np.meshgrid(np.arange(n_cols) * self._dx,
+                                       np.arange(n_rows) * self._dy)
         # eta, elevation
-        self._n = self._n0 - (self._nslope * self._x +
+        self._n = self._n0 - (self._nslope * self._y +
                               np.random.rand(n_rows, n_cols) * self._max_rand)
 
         #self._dn_rc = np.zeros((self._imax))       # change in elevation along river course
-        self._dn_fp = np.zeros_like(self._n)     # change in elevation due to floodplain dep
+        #self._dn_fp = np.zeros_like(self._n)     # change in elevation due to floodplain dep
+
         self._riv_i = np.zeros(1, dtype=np.int) # defines first x river locations
         self._riv_j = np.zeros(1, dtype=np.int) # defines first y river locations
-        self._riv_j[0] = int(self._W / self._dx * .5)
+        self._riv_j[0] = self._n.shape[1] / 2
 
         # Time parameters
-        self._dt = params['dt_day'] * 60 * 60 * 24     # convert timestep to seconds
+        self._dt = params['dt_day'] * 60. * 60. * 24. # convert timestep to seconds
         self._time = 0.
-        self._k = 0
 
         # Sea level and subsidence parameters
-        self._SL = [params['Initial_SL']]                   # initializes SL array
-        self._SLRR = (params['SLRR_m'] / 31536000) * self._dt  # sea level rise rate in m/s per timestep
-        self._IRR = (params['IRR_m'] / 31536000) * self._dt    # inlet rise rate in m/s per timestep
+        self._SL = params['Initial_SL'] # starting sea level
+        self._SLRR = params['SLRR_m'] / _SECONDS_PER_YEAR * self._dt # sea level rise rate in m (per timestep)
+        self._IRR = params['IRR_m'] / _SECONDS_PER_YEAR * self._dt # inlet rise rate in m
 
         # River parameters
         self._nu = params['nu']
@@ -140,8 +145,8 @@ class RiverModule(object):
         # Floodplain and wetland characteristics
         self._WL_Z = params['WL_Z']
         self._WL_dist = params['WL_dist']
-        self._blanket_rate = (params['blanket_rate_m'] / 31536000) * self._dt    # blanket deposition in m/s
-        self._splay_dep = (params['splay_dep_m'] / 31536000) * self._dt       # splay deposition in m/s
+        self._blanket_rate = (params['blanket_rate_m'] / _SECONDS_PER_YEAR) * self._dt    # blanket deposition in m
+        self._splay_dep = (params['splay_dep_m'] / _SECONDS_PER_YEAR) * self._dt       # splay deposition in m
         self._splay_type = params['splay_type']
 
         # Saving information
@@ -161,13 +166,6 @@ class RiverModule(object):
     def advance_in_time(self):
         """ Update avulsion model one time step. """
 
-        # begin time loop and main program
-        # for k in range(kmax):
-
-        # determine current sea level
-        self._SL = self._SL + [self._k * self._SLRR]
-        self._current_SL = self._SL[-1]
-
         ### future work: SLRR can be a vector to change rates ###
 
         # determine if there is an avulsion & find new path if so
@@ -175,7 +173,7 @@ class RiverModule(object):
         ### (instead of looking for sea level)
         self._riv_i, self._riv_j = avulse.find_avulsion(
              self._riv_i, self._riv_j, self._n,
-             self._super_ratio, self._current_SL, self._ch_depth,
+             self._super_ratio, self._SL, self._ch_depth,
              self._short_path, self._splay_type, self._splay_dep, dx=self._dx,
              dy=self._dy)
 
@@ -185,14 +183,14 @@ class RiverModule(object):
         #if len(loc) != 0:
         #    self._avulsions = self._avulsions + [(self._k*(self._dt/86400),
         #                loc[-1], avulsion_type, length_old,
-        #                length_new_sum, self._current_SL)]
+        #                length_new_sum, self._SL)]
         
         # raise first two rows by inlet rise rate (subsidence)
         self._n[:2, :] += self._IRR
 
         # change elevations according to sea level rise (SLRR)
         ### needs to be changed to subtracting elevation once coupled ###
-        SLR.elev_change(self._current_SL, self._n, self._riv_i,
+        SLR.elev_change(self._SL, self._n, self._riv_i,
                         self._riv_j, self._ch_depth)
 
         # smooth river course elevations using linear diffusion equation
@@ -200,12 +198,12 @@ class RiverModule(object):
                           self._riv_i, self._riv_j, self._n)
 
         # Floodplain sedimentation
-        FP.dep_blanket(self._current_SL, self._blanket_rate, self._n,
+        FP.dep_blanket(self._SL, self._blanket_rate, self._n,
                        self._riv_i, self._riv_j, self._ch_depth)
 
         # Wetland sedimentation
         ### no wetlands in first version of coupling to CEM ###
-        FP.wetlands(self._current_SL, self._WL_Z, self._WL_dist * self._dy,
+        FP.wetlands(self._SL, self._WL_Z, self._WL_dist * self._dy,
                     self._n, self._riv_i, self._riv_j, self._x, self._y)
 
         # calculate sediment flux
@@ -221,7 +219,8 @@ class RiverModule(object):
 
         #self._riv_mouth = [self._riv_x[-1], self._riv_y[-1]]
 
-        self._k += 1
+        # Update sea level
+        self._SL += self._SLRR
         self._time += self._dt
 
         # save files
