@@ -10,12 +10,14 @@ from avulsion_main import RiverModule
 class BmiRiverModule(Bmi):
 
     _name = 'Avulsion Module'
-    _input_var_names = ('sea_shoreline')
-    # not sure what's the most appropriate CSDMS river mouth stuff?
-    _output_var_names = ('river_x_coordinates',
-                         'river_y_coordinates',
-                         'river_mouth_location',
-                         'channel_water_sediment~bedload__mass_flow_rate')
+    _input_var_names = ()
+    _output_var_names = ('channel_centerline__x_coordinate',
+                         'channel_centerline__y_coordinate',
+                         'channel_water_sediment~bedload__mass_flow_rate',
+                         'channel_exit__x_coordinate',
+                         'channel_exit__y_coordinate',
+                         'land_surface__elevation',
+                        )
 
     def __init__(self):
         """Create a BmiRiver module that is ready for initialization."""
@@ -28,15 +30,21 @@ class BmiRiverModule(Bmi):
         self._model = RiverModule.params_from_file(filename)
 
         self._values = {
-            'river_x_coordinates': self._model.river_x_coordinates,
-            'river_y_coordinates': self._model.river_y_coordinates,
-            'river_mouth_location': self.river_mouth_location,
-            'channel_water_sediment~bedload__volume_flow_rate': self._model.sed_flux,
-            'sea_shoreline': self._model._shoreline
+            'channel_centerline__x_coordinate': lambda: self._model.river_x_coordinates,
+            'channel_centerline__y_coordinate': lambda: self._model.river_y_coordinates,
+            'channel_water_sediment~bedload__volume_flow_rate': lambda: self._model.sediment_flux,
+            'channel_exit__x_coordinate': lambda: self._model.river_x_coordinates[-1],
+            'channel_exit__y_coordinate': lambda: self._model.river_y_coordinates[-1],
+            'land_surface__elevation': lambda: self._model.elevation,
         }
 
         self._var_units = {
-            'channel_water_sediment~bedload__volume_flow_rate': "kg s^-1"
+            'channel_centerline__x_coordinate': 'm',
+            'channel_centerline__y_coordinate': 'm',
+            'channel_water_sediment~bedload__volume_flow_rate': "kg s^-1",
+            'channel_exit__x_coordinate': 'm',
+            'channel_exit__y_coordinate': 'm',
+            'land_surface__elevation': 'm',
         }
 
     def update(self):
