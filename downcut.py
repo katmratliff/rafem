@@ -15,14 +15,14 @@ def cut_init(riv_i, riv_j, n, init_cut):
     return n
 
 
-def cut_new(riv_i, riv_j, n, current_SL, ch_depth):
+def cut_new(riv_i, riv_j, n, current_SL, ch_depth, dx=1., dy=1.):
     """Set elevations of new portions of a profile."""
 
     # new last river cell = SL - channel depth
     n[riv_i[-1], riv_j[-1]] = current_SL - ch_depth
     
     if riv_i.size > 1:
-        lengths = get_link_lengths((riv_i, riv_j))
+        lengths = get_link_lengths((riv_i, riv_j), dx=dx, dy=dy)
 
         i0, j0 = riv_i[1], riv_j[1]
         z0 = n[riv_i[0], riv_j[0]]

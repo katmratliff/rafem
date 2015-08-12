@@ -26,12 +26,11 @@ def read_params_from_file(fname):
 
 
 def is_diagonal_neighbor(sub0, sub1):
-    try:
-        return (sub0[0] != sub1[0]) and (sub0[1] != sub1[1])
-    except ValueError:
-        print sub0
-        print sub1
-        raise
+    return (sub0[0] != sub1[0]) and (sub0[1] != sub1[1])
+
+
+def is_same_row(sub0, sub1):
+    return sub0[0] == sub1[0]
 
 
 def channel_is_superelevated(z, sub, channel_depth, super_ratio):
@@ -62,28 +61,29 @@ def channel_is_superelevated(z, sub, channel_depth, super_ratio):
     return z_bankfull - z_right > threshold or z_bankfull - z_left > threshold
 
 
-def get_link_lengths(path):
+def get_link_lengths(path, dx=1., dy=1.):
     from itertools import izip
 
-    ROOT_2 = np.sqrt(2.)
+    DIAGONAL_LENGTH = np.sqrt(dx ** 2. + dy ** 2.)
 
     lengths = np.empty(len(path[0]) - 1, dtype=np.float)
     ij_last = path[0][0], path[1][0]
-    #for n, ij in enumerate(izip(path[1:])):
     for n, ij in enumerate(izip(path[0][1:], path[1][1:])):
         if is_diagonal_neighbor(ij, ij_last):
-            lengths[n] = ROOT_2
+            lengths[n] = DIAGONAL_LENGTH
+        elif is_same_row(ij, ij_last):
+            lengths[n] = dx
         else:
-            lengths[n] = 1.
+            lengths[n] = dy
         ij_last = ij
     return lengths
 
 
-def find_path_length(path):
-    return get_link_lengths(path).sum()
+def find_path_length(path, dx=1., dy=1.):
+    return get_link_lengths(path, dx=dx, dy=dy).sum()
 
 
-def compare_path_lengths(path0, path1):
+def compare_path_lengths(path0, path1, dx=1., dy=1.):
     # duplicates arrays so that length can be compared below
     test_new_i = new_riv_i[a:new_riv_len]
     test_new_j = new_riv_j[a:new_riv_len]
@@ -91,8 +91,8 @@ def compare_path_lengths(path0, path1):
     test_old_j = riv_j[a:]
     length_new = []
 
-    path0_length = find_path_length(path0)
-    path1_length = find_path_length(path1)
+    path0_length = find_path_length(path0, dx=dx, dy=dy)
+    path1_length = find_path_length(path1, dx=dx, dy=dy)
 
     if path0_length > path1_length:
         return 1
