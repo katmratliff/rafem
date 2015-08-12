@@ -43,7 +43,7 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
             # if superelevation greater than trigger ratio, determine
             # length of new steepest descent path
 
-            new = steep_desc.find_course(n, riv_i[:a - 1], riv_j[:a - 1],
+            new = steep_desc.find_course(n, riv_i[:a], riv_j[:a],
                                          sea_level=current_SL)
 
             # if using the shortest path as an avulsion criterion, then
