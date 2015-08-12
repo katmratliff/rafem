@@ -25,29 +25,6 @@ _SECONDS_PER_DAY = 86400.
 class RiverModule(object):
 
     def __init__(self):
-#        self._shape = (1000, 500)
-#        self._spacing = (10, 10)
-#        self._n0 = 100
-#        self._max_rand = 0.00001
-#        self._nslope = 0.0001
-#        self._spinup = 0
-#        self._dt_day = 73
-#        self._Initial_SL = 0
-#        self._SLRR_m = 0.015
-#        self._IRR_m = 0.005
-#        self._ch_width = 2000.
-#        self._ch_depth = 5.0
-#        self._init_cut_frac = 1
-#        self._nu = 10000
-#        self._super_ratio = 1
-#        self._short_path = 1
-#        self._time_max = 1
-#        self._time = 0.
-#        self._dt = 0.
-#        self._riv_x = 0
-#        self._riv_y = 0
-#        self._sed_flux = 0.
-        #self._shoreline = None
         pass
 
     @property
@@ -97,26 +74,23 @@ class RiverModule(object):
         #params = yaml.load(fname)
 
         # Spatial parameters
-        length, width = params['shape']
-        dx_km, dy_km = params['spacing']
-        self._L = length * 1000.       # convert to meters
-        self._W = width * 1000.
-        self._dx = dx_km * 1000.
-        self._dy = dy_km * 1000.
-        self._n0 = params['n0']
-        self._max_rand = params['max_rand']
-        self._nslope = params['nslope']
+        self._dy = params['spacing'][0] * 1000.
+        self._dx = params['spacing'][1] * 1000.
 
-        n_rows = int(self._L // self._dy + 1)
-        n_cols = int(self._W // self._dx + 1)
+        length, width = params['shape']
+        n_rows = int(length * 1000 / self._dy + 1)
+        n_cols = int(width * 1000 / self._dx + 1)
 
         # Initialize elevation grid
         # transverse and longitudinal space
         self._x, self._y = np.meshgrid(np.arange(n_cols) * self._dx,
                                        np.arange(n_rows) * self._dy)
         # eta, elevation
-        self._n = self._n0 - (self._nslope * self._y +
-                              np.random.rand(n_rows, n_cols) * self._max_rand)
+        n0 = params['n0']
+        max_rand = params['max_rand']
+        slope = params['nslope']
+        self._n = n0 - (slope * self._y +
+                        np.random.rand(n_rows, n_cols) * max_rand)
 
         #self._dn_rc = np.zeros((self._imax))       # change in elevation along river course
         #self._dn_fp = np.zeros_like(self._n)     # change in elevation due to floodplain dep
@@ -136,10 +110,9 @@ class RiverModule(object):
 
         # River parameters
         self._nu = params['nu']
-        self._init_cut = params['init_cut_frac'] * params['ch_depth']
+        init_cut = params['init_cut_frac'] * params['ch_depth']
         self._super_ratio = params['super_ratio']
         self._short_path = params['short_path']
-        self._ch_width = params['ch_width']
         self._ch_depth = params['ch_depth']
 
         # Floodplain and wetland characteristics
@@ -157,7 +130,7 @@ class RiverModule(object):
                                                           self._riv_j)
 
         # downcut into new river course by amount determined by init_cut
-        downcut.cut_init(self._riv_i, self._riv_j, self._n, self._init_cut)
+        downcut.cut_init(self._riv_i, self._riv_j, self._n, init_cut)
 
         # smooth initial river course elevations using linear diffusion equation
         diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt,
