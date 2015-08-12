@@ -29,12 +29,12 @@ class BmiRiverModule(Bmi):
         self._model = RiverModule.from_path(filename)
 
         self._values = {
-            'channel_centerline__x_coordinate': lambda: np.array(self._model.river_x_coordinates),
-            'channel_centerline__y_coordinate': lambda: np.array(self._model.river_y_coordinates),
-            'channel_water_sediment~bedload__volume_flow_rate': lambda: np.array(self._model.sediment_flux),
-            'channel_exit__x_coordinate': lambda: np.array([self._model.river_x_coordinates[-1]]),
-            'channel_exit__y_coordinate': lambda: np.array([self._model.river_y_coordinates[-1]]),
-            'land_surface__elevation': lambda: np.array(self._model.elevation),
+            'channel_centerline__x_coordinate': lambda: self._model.river_x_coordinates,
+            'channel_centerline__y_coordinate': lambda: self._model.river_y_coordinates,
+            'channel_water_sediment~bedload__volume_flow_rate': lambda: self._model.sediment_flux,
+            'channel_exit__x_coordinate': lambda: self._model.river_x_coordinates[-1],
+            'channel_exit__y_coordinate': lambda: self._model.river_y_coordinates[-1],
+            'land_surface__elevation': lambda: self._model.elevation,
         }
 
         self._var_units = {
