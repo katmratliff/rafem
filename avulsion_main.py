@@ -181,7 +181,8 @@ class RiverModule(object):
         self._riv_i, self._riv_j = avulse.find_avulsion(
              self._riv_i, self._riv_j, self._n,
              self._super_ratio, self._current_SL, self._ch_depth,
-             self._short_path, self._splay_type, self._splay_dep)
+             self._short_path, self._splay_type, self._splay_dep, dx=self._dx,
+             dy=self._dy)
 
         #assert(self._riv_i[-1] != 0)
 
