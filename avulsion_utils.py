@@ -84,25 +84,6 @@ def find_path_length(path, dx=1., dy=1.):
     return get_link_lengths(path, dx=dx, dy=dy).sum()
 
 
-def compare_path_lengths(path0, path1, dx=1., dy=1.):
-    # duplicates arrays so that length can be compared below
-    test_new_i = new_riv_i[a:new_riv_len]
-    test_new_j = new_riv_j[a:new_riv_len]
-    test_old_i = riv_i[a:]
-    test_old_j = riv_j[a:]
-    length_new = []
-
-    path0_length = find_path_length(path0, dx=dx, dy=dy)
-    path1_length = find_path_length(path1, dx=dx, dy=dy)
-
-    if path0_length > path1_length:
-        return 1
-    elif path0_length < path1_length:
-        return -1
-    else:
-        return 0
-
-
 def find_point_in_path(path, sub):
     try:
         return zip(path).index(sub)
