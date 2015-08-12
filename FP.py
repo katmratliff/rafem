@@ -76,7 +76,7 @@ def wetlands(current_SL, WL_Z, wetland_width, n, riv_i, riv_j, x, y):
         dist = within_wetland(y[row], col, wetland_width=wetland_width)
         elev = n[row] < current_SL + WL_Z
 
-        cols = dist & elev & depo_wetland
+        cols = dist & elev & (depo_wetland[row] == 0)
 
         before = n[row, cols].copy()
         n[row, cols] = current_SL + WL_Z
