@@ -69,7 +69,7 @@ def within_wetland(y, riv_ind, wetland_width=0.):
     return is_wetland
 
 
-def wetlands(current_SL, WL_Z, wetland_width, n, riv_i, riv_j, x, y):
+def wetlands(current_SL, WL_Z, wetland_width, n, riv_i, riv_j, y, x):
     depo_wetland = np.zeros(n.shape, dtype=np.int)
 
     for row, col in zip(riv_i, riv_j):
