@@ -51,8 +51,12 @@ class RiverModule(object):
         return self._riv_i * self._dy
 
     @property 
+    def elevation(self):
+        return self._n
+
+    @property 
     def sediment_flux(self):
-        return [self._sed_flux]
+        return self._sed_flux
 
     #@property
     #def avulsions(self):
@@ -188,14 +192,6 @@ class RiverModule(object):
         self._sed_flux = flux.calc_qs(self._nu, self._riv_i,
                                       self._riv_j, self._n,
                                       self._dx, self._dy, self._dt)
-
-        # create a river profile array
-        #self._profile = prof.make_profile(self._dx, self._dy, self._n,
-        #                                  np.array(self._riv_x),
-        #                                  np.array(self._riv_y),
-        #                                  self._profile)
-
-        #self._riv_mouth = [self._riv_x[-1], self._riv_y[-1]]
 
         # Update sea level
         self._SL += self._SLRR
