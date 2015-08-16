@@ -1,15 +1,14 @@
 #! /usr/local/bin/python
-
 import math
 
 # this function uses a linear diffusion equation (e.g. Paola 2000, Jerolmack
 # and Paola 2007) to compute elevation change along the river course
 def smooth_rc(dx, dy, nu, dt, riv_x, riv_y, n, nslope):
 
+    nu /= 86400.
+
     # elevation change along river course due to diffusional smoothing
     dn_rc = [0 for i in range(len(riv_x))]
-
-    #dn_rc[1] = -(dx * nslope)
 
     for c in range(1, len(riv_x)-1):
 
