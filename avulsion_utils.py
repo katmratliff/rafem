@@ -79,6 +79,11 @@ def get_link_lengths(path, dx=1., dy=1.):
     return lengths
 
 
+def get_channel_distance(path, dx=1., dy=1.):
+    total_distance = get_link_lengths(path, dx=dx, dy=dy).cumsum()
+    return np.append(0, total_distance)
+
+
 def find_path_length(path, dx=1., dy=1.):
     return get_link_lengths(path, dx=dx, dy=dy).sum()
 
