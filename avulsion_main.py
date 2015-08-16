@@ -68,6 +68,10 @@ class RiverModule(object):
         return self._riv_y
 
     @property 
+    def elevation(self):
+        return self._n
+
+    @property 
     def sediment_flux(self):
         return [self._sed_flux]
 
