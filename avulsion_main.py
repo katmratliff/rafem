@@ -116,7 +116,7 @@ class RiverModule(object):
         self._IRR = params['IRR_m'] / _SECONDS_PER_YEAR * self._dt # inlet rise rate in m
 
         # River parameters
-        self._nu = params['nu']
+        self._nu = params['nu'] / _SECONDS_PER_DAY
         init_cut = params['init_cut_frac'] * params['ch_depth']
         self._super_ratio = params['super_ratio']
         self._short_path = params['short_path']
