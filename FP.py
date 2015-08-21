@@ -64,7 +64,7 @@ def distance_to_river(y, y0):
 
 def within_wetland(y, riv_ind, wetland_width=0.):
     dy = distance_to_river(y, y[riv_ind])
-    is_wetland = dy < wetland_width
+    is_wetland = dy <= wetland_width
     is_wetland[riv_ind] = False
     return is_wetland
 
