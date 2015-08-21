@@ -58,7 +58,8 @@ def channel_is_superelevated(z, sub, channel_depth, super_ratio):
 
     threshold = super_ratio * channel_depth
 
-    return z_bankfull - z_right > threshold or z_bankfull - z_left > threshold
+    return (z_bankfull - z_right >= threshold or
+            z_bankfull - z_left >= threshold)
 
 
 def get_link_lengths(path, dx=1., dy=1.):
