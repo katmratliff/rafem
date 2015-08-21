@@ -45,7 +45,7 @@ def dep_blanket(current_SL, blanket_rate, n, riv_i, riv_j, ch_depth):
     # if cell elevation is above bankfull elev, don't deposit
     bankfull_elevation = n[riv_i, riv_j] + ch_depth
     for row in riv_i:
-        depo_flag[row, n[row] > bankfull_elevation[row]] = 0
+        depo_flag[row, n[row] >= bankfull_elevation[row]] = 0
 
     # don't deposit on first two rows b/c inlet rise rate does that
     depo_flag[:2, :] = 0
