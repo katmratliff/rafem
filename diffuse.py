@@ -13,10 +13,20 @@ def solve_second_derivative(x, y):
 
     Examples
     --------
+    Values can be evenly spaced.
+
     >>> import numpy as np
     >>> x = np.array([2., 3., 4.])
     >>> y = np.array([4., 9., 16.])
     >>> solve_second_derivative(x, y)
+    array([ 2.])
+
+    Values are unevenly spaced.
+
+    >>> x = np.array([2., 3., 5.])
+    >>> y = np.array([4., 9., 25.])
+    >>> solve_second_derivative(x, y)
+    array([ 2.])
     """
     x2_minus_x1 = x[1:-1] - x[:-2]
     x3_minus_x2 = x[2:] - x[1:-1]
