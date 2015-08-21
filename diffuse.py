@@ -6,7 +6,11 @@ from avulsion_utils import get_channel_distance
 
 
 def solve_second_derivative(x, y):
-    """
+    """Solve the second derivative of y with respect to x.
+
+    Use finite difference to solve the second derivative of *y* with respect
+    to *x* where *x* can be unevenly spaced.
+
     Examples
     --------
     >>> import numpy as np
@@ -43,14 +47,14 @@ def smooth_rc(dx, dy, nu, dt, riv_i, riv_j, n):
     n : ndarray
         2D array of grid elevations.
     """
+    # NOTE: Divide by dx to match the old way, but I don't think this is
+    # correct.
+    nu /= dx
+
     n_river = n[riv_i, riv_j]
     s_river = get_channel_distance((riv_i, riv_j), dx=dx, dy=dy)
 
     dn_rc = (nu * dt) * solve_second_derivative(s_river, n_river)
-
-    # NOTE: Divide by dx to match the old way, but I don't think this is
-    # correct.
-    dn_rc /= dx
 
     n[riv_i[1:-1], riv_j[1:-1]] += dn_rc
 
@@ -66,16 +70,23 @@ def smooth_rc_old(dx, dy, nu, dt, riv_i, riv_j, n):
         n_cur = n[riv_i[c], riv_j[c]]
         n_next = n[riv_i[c + 1], riv_j[c + 1]]
 
-        dwnst_dn = (n_next - n_cur) / dx
-        upst_dn = (n_cur - n_prev) / dx
-
+        dwnst_dx, upst_dx = dx, dx
         if is_diagonal_neighbor((riv_i[c], riv_j[c]), (riv_i[c + 1], riv_j[c + 1])):
-            dwnst_dn /= np.sqrt(2.)
+            dwnst_dx *= np.sqrt(2.)
 
         if is_diagonal_neighbor((riv_i[c], riv_j[c]), (riv_i[c - 1], riv_j[c - 1])):
-            upst_dn /= np.sqrt(2.)
+            upst_dx *= np.sqrt(2.)
 
-        dn_rc = (nu * dt) / (dx ** 2.) * (dwnst_dn - upst_dn)
+        dwnst_dn = (n_next - n_cur) / dwnst_dx
+        upst_dn = (n_cur - n_prev) / upst_dx
+        mean_dx = (dwnst_dx + upst_dx) * .5
+
+        # NOTE: This is the old way but, I think, is incorrect. For
+        # non-uniform spacing of points you need to divide by the mean spacing.
+        #dn_rc = (nu * dt) / (dx ** 2.) * (dwnst_dn - upst_dn)
+
+        # This properly solves the second derivative with unequal spacing in x.
+        dn_rc = (nu / dx * dt) * (dwnst_dn - upst_dn) / mean_dx
 
         n[riv_i[c], riv_j[c]] += dn_rc
 
