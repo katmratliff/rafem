@@ -78,6 +78,8 @@ def find_avulsion(dx, dy, imax, jmax, riv_x, riv_y, n, super_ratio, current_SL,
                         and (test_new_y[c+1]/dy) - (test_new_y[c]/dy) == 1):
                             
                             length_new.append(math.sqrt(2))
+                    
+                    c += 1
                 
                 for b in range(len(test_old_x)-1):
                     
@@ -105,6 +107,8 @@ def find_avulsion(dx, dy, imax, jmax, riv_x, riv_y, n, super_ratio, current_SL,
                         and (test_old_y[b+1]/dy) - (test_old_y[b]/dy) == 1):
                             
                             length_old += math.sqrt(2)
+                    
+                    b += 1
 
                 # if new river course < length of old
                 # river course, then an avulsion will occur
@@ -133,6 +137,8 @@ def find_avulsion(dx, dy, imax, jmax, riv_x, riv_y, n, super_ratio, current_SL,
                             """ 
 
                             break
+                        
+                        else: d += 1
                     
                     if avulsion_type == 1: 
                     
@@ -162,6 +168,7 @@ def find_avulsion(dx, dy, imax, jmax, riv_x, riv_y, n, super_ratio, current_SL,
                 riv_x = new_riv_x
                 riv_y = new_riv_y
                 loc = [a]
+        a += 1
 
     return (riv_x, riv_y, loc, SEL, SER, n, dn_fp, avulsion_type, length_new_sum,
             length_old)

@@ -31,6 +31,9 @@ def dep_blanket(dy, dx, imax, jmax, current_SL, blanket_rate, n,
             if n[i][j] <= current_SL:
 
                 depo_flag[i][j] = 0
+            
+            j += 1
+        i += 1
 
     # if cell elevation is above bankfull elev, don't deposit
     for i in range(len(riv_x)):
@@ -40,6 +43,9 @@ def dep_blanket(dy, dx, imax, jmax, current_SL, blanket_rate, n,
                                       + ch_depth)):
 
                 depo_flag[riv_x[i]/dx][j] = 0
+
+            j += 1
+        i += 1
         
     # don't deposit on first two rows b/c inlet rise rate does that
     depo_flag[0][:] = 0
@@ -52,10 +58,12 @@ def dep_blanket(dy, dx, imax, jmax, current_SL, blanket_rate, n,
 
                 n[i][j] = n[i][j] + blanket_rate
 
+            j += 1
+        i += 1
+
     dn_fp = depo_flag * blanket_rate
 
     return n, dn_fp
-
 
 def wetlands(dx, dy, imax, jmax, current_SL, WL_Z, WL_dist, n, riv_x, riv_y,
              x, y, dn_fp):
@@ -90,9 +98,11 @@ def wetlands(dx, dy, imax, jmax, current_SL, WL_Z, WL_dist, n, riv_x, riv_y,
             
                 # depo flag so deposition at cell isn't recorded more than once
                 depo_wetland[riv_x[i]/dx][j] == 1
+
+            j += 1
+        i += 1
     
     return n, dn_fp
-
 
 def dep_splay(dy, dx, imax, jmax, riv_x, riv_y, new_riv_x, new_riv_y,
               ch_depth, n, a, dn_fp, splay_type, splay_dep):
@@ -166,6 +176,8 @@ def dep_splay(dy, dx, imax, jmax, riv_x, riv_y, new_riv_x, new_riv_y,
 
             depo_flag2[riv_x[i]/dx][riv_y[i]/dy] = 0
 
+            i += 1
+
         # deposit splay sediment on flagged cells
         for i in range(imax):
             for j in range(jmax):
@@ -173,5 +185,8 @@ def dep_splay(dy, dx, imax, jmax, riv_x, riv_y, new_riv_x, new_riv_y,
 
                     n[i][j] = n[i][j] + splay_dep
                     dn_fp[i][j] = dn_fp[i][j] + splay_dep
+
+                j += 1
+            i += 1
 
     return n, dn_fp

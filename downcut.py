@@ -11,13 +11,14 @@ def cut_init(dx, dy, riv_x, riv_y, n, init_cut):
     
     for i in range(len(riv_x)):
         
-        n[riv_x[i] / dx][riv_y[i] / dy] = n[riv_x[i] / dx][riv_y[i] / dy] - init_cut
+        n[riv_x[i]/dx][riv_y[i]/dy] = n[riv_x[i]/dx][riv_y[i]/dy] - init_cut
         
 #        if n[riv_x[i]/dx][riv_y[i]/dy] < Initial_SL:
 #            n[riv_x[i]/dx][riv_y[i]/dy] = Initial_SL
-
+        
+        i += 1
+            
     return n
-
 
 def cut_new(dx, dy, riv_x, riv_y, n, length_new, current_SL, a, ch_depth):
 
@@ -34,5 +35,7 @@ def cut_new(dx, dy, riv_x, riv_y, n, length_new, current_SL, a, ch_depth):
 
             n[riv_x[a+k]/dx][riv_y[a+k]/dy] = (n[riv_x[a]/dx][riv_y[a]/dy] - 
                                                 new_slope * sum(length_new[:k]))
-
+            
+            k += 1
+            
     return n

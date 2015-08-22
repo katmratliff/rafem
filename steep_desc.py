@@ -96,6 +96,8 @@ def find_course(dx, dy, imax, jmax, n, riv_x, riv_y):
         else:
             return riv_x, riv_y
 
+        r += 1
+
     return riv_x, riv_y
 
 
@@ -196,4 +198,7 @@ def find_new_course(dx, dy, imax, jmax, n, new_riv_x, new_riv_y, current_SL):
         else:
             return new_riv_x, new_riv_y
 
+        r += 1
+
     return new_riv_x, new_riv_y
+    

@@ -10,14 +10,13 @@ from avulsion_main import RiverModule
 class BmiRiverModule(Bmi):
 
     _name = 'Avulsion Module'
-    _input_var_names = ()
-    _output_var_names = ('channel_centerline__x_coordinate',
-                         'channel_centerline__y_coordinate',
-                         'channel_water_sediment~bedload__mass_flow_rate',
-                         'channel_exit__x_coordinate',
-                         'channel_exit__y_coordinate',
-                         'land_surface__elevation',
-                        )
+    _input_var_names = ('sea_shoreline')
+    # not sure what's the most appropriate CSDMS river mouth stuff?
+    _output_var_names = ('river_x_coordinates',
+                         'river_y_coordinates',
+                         'river_mouth_location',
+                         'channel_water_sediment~bedload__mass_flow_rate')
+
     def __init__(self):
         """Create a BmiRiver module that is ready for initialization."""
         self._model = None
@@ -26,31 +25,25 @@ class BmiRiverModule(Bmi):
 
     def initialize(self, filename):
         """Initialize the River module"""
-        self._model = RiverModule.from_path(filename)
+        self._model = RiverModule.params_from_file(filename)
 
         self._values = {
-            'channel_centerline__x_coordinate': lambda: np.array(self._model.river_x_coordinates),
-            'channel_centerline__y_coordinate': lambda: np.array(self._model.river_y_coordinates),
-            'channel_water_sediment~bedload__volume_flow_rate': lambda: np.array(self._model.sediment_flux),
-            'channel_exit__x_coordinate': lambda: np.array([self._model.river_x_coordinates[-1]]),
-            'channel_exit__y_coordinate': lambda: np.array([self._model.river_y_coordinates[-1]]),
-            'land_surface__elevation': lambda: np.array(self._model.elevation),
+            'river_x_coordinates': self._model.river_x_coordinates,
+            'river_y_coordinates': self._model.river_y_coordinates,
+            'river_mouth_location': self.river_mouth_location,
+            'channel_water_sediment~bedload__volume_flow_rate': self._model.sed_flux,
+            'sea_shoreline': self._model._shoreline
         }
 
         self._var_units = {
-            'channel_centerline__x_coordinate': 'm',
-            'channel_centerline__y_coordinate': 'm',
-            'channel_water_sediment~bedload__volume_flow_rate': "kg s^-1",
-            'channel_exit__x_coordinate': 'm',
-            'channel_exit__y_coordinate': 'm',
-            'land_surface__elevation': 'm',
+            'channel_water_sediment~bedload__volume_flow_rate': "kg s^-1"
         }
 
     def update(self):
         """Advance model by one time step."""
         self._model.advance_in_time()
         self.river_mouth_location = (self._model.river_x_coordinates[-1],
-                                     self._model.river_y_coordinates[-1])
+    							     self._model.river_y_coordinates[-1])
 
     def update_frac(self, time_frac):
         """Update model by a fraction of a time step."""
@@ -69,11 +62,15 @@ class BmiRiverModule(Bmi):
 
     def finalize(self):
         """Clean up & save avulsion file"""
+        
+        if self._model.savefiles == 1:
+            np.savetxt('avulsions', self._model.avulsions,
+                       fmt='%i %i %i %.3f %.3f %.3f')
         pass
 
     def get_var_type(self, var_name):
         """Data type of variable."""
-        return str(self.get_value(var_name).dtype)
+        return str(self.get_value_ref(var_name).dtype)
 
     def get_var_units(self, var_name):
         """Get units of variable."""
@@ -81,11 +78,29 @@ class BmiRiverModule(Bmi):
 
     def get_var_nbytes(self, var_name):
         """Get units of variable."""
-        return self.get_value(var_name).nbytes
+        return self.get_value_ref(var_name).nbytes
+
+    def get_value_ref(self, var_name):
+        """Reference to values."""
+        return self._values[var_name]
 
     def get_value(self, var_name):
         """Copy of values."""
-        return self._values[var_name]()
+        return self.get_value_ref(var_name).copy()
+
+    def get_value_at_indices(self, var_name, indices):
+        """Get values at particular indices."""
+        return self.get_value_ref(var_name).take(indices)
+
+    def set_value(self, var_name, src):
+        """Set model values."""
+        val = self.get_value_ref(var_name)
+        val[:] = src
+
+    def set_value_at_indices(self, var_name, src, indices):
+        """Set model values at particular indices."""
+        val = self.get_value_ref(var_name)
+        val.flat[indices] = src
 
     def get_component_name(self):
         """Name of the component."""
@@ -108,13 +123,10 @@ class BmiRiverModule(Bmi):
         return np.finfo('d').max
 
     def get_current_time(self):
-        """Current time of model."""
+        """Current time of model (days)."""
         return self._model.time
 
     def get_time_step(self):
-        """Time step of model."""
+        """Time step of model (days)."""
         return self._model.time_step
 
-    def get_time_units(self):
-        """Units of time"""
-        return 'd'
