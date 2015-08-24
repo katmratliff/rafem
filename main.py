@@ -30,9 +30,9 @@ def main():
                         help='Plot final elevations')
     parser.add_argument('--save', action='store_true',
                         help='Save output files')
-    parser.add_argument('--spacing', type=int, default=0,
+    parser.add_argument('--spacing', type=int, default=1,
                         help='Spacing for saved files (timesteps)')
-    parser.add_argument('--runID', type=int, default=0,
+    parser.add_argument('--runID', type=int, default=1,
                         help='Experiment ID number')
 
     args = parser.parse_args()
