@@ -59,7 +59,9 @@ def smooth_rc(dx, dy, nu, dt, riv_i, riv_j, n):
     """
     # NOTE: Divide by dx to match the old way, but I don't think this is
     # correct.
-    nu /= dx
+    # nu /= dx
+    # KMR 8/24/15: don't need to divide by dx anymore, diffusion coeff
+    # should be fixed with new calculation
 
     n_river = n[riv_i, riv_j]
     s_river = get_channel_distance((riv_i, riv_j), dx=dx, dy=dy)

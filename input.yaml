@@ -17,11 +17,16 @@ Initial_SL: 0        # initial sea level
 SLRR_m: 0.025        # sea level rise rate (m/yr)
 IRR_m: 0.005         # rate that inlet cell rises (subsidence)
 
-# river characteristics
+# River characteristics
 ch_width: 2000.      # characteristic channel width (m)
 ch_depth: 5.0        # characteristic channel depth (m)
+ch_discharge: 16791. # long-term averaged discharge (m^3/s)
+A: 1.                # river-dependent const. (1 for meandering; 1.4 for braided)
+c_f: 0.01            # drag coefficient
+C_0: 1.              # sediment concentration on bed
+sed_sg: 2.65         # sediment specific gravity
 init_cut_frac: 1     # fraction of channel depth initially cut into landscape
-nu: 50000            # diffusion coefficent, m^3/day (7533 for MS Riv.)
+#nu: 50000            # diffusion coefficent, m^3/day (7533 for MS Riv.)
 
 # Avulsion parameters
 super_ratio: 1       # normalized superelevation ratio to trigger avulsion
