@@ -19,7 +19,7 @@ def avulse_to_new_path(z, old, new, sea_level, channel_depth, dx=1., dy=1.):
     ind = find_point_in_path((old_i[1:], old_j[1:]), (new_i[-1], new_j[-1]))
 
     if ind is not None:
-        avulsion_type = 2
+        #avulsion_type = 2
 
         new_i = np.append(new_i, old_i[ind + 1:])
         new_j = np.append(new_j, old_j[ind + 1:])
