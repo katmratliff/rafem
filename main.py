@@ -1,4 +1,6 @@
 #! /usr/bin/env python
+import sys
+
 import numpy as np
 
 
@@ -38,6 +40,9 @@ def main():
 
     if args.plot:
         plot_elevation(avulsion)
+
+    z = avulsion.get_value('land_surface__elevation')
+    np.savetxt(sys.stdout, z)
 
     avulsion.finalize()
 
