@@ -71,12 +71,15 @@ class RiverModule(object):
         return self._savefiles
 
     @classmethod
-    def params_from_file(self, fname):
-        """ create a RiverModule object from a file-like object. """
+    def from_path(cls, fname):
+        """Create a RiverModule object from a file-like object."""
 
-        params = read_params_from_file(fname)
-        #params = yaml.load(fname)
+        avulsion = cls()
+        avulsion._init_from_dict(read_params_from_file(fname))
 
+        return avulsion
+
+    def _init_from_dict(self, params):
         # Spatial parameters
         self._dy = params['spacing'][0] * 1000.
         self._dx = params['spacing'][1] * 1000.
@@ -125,6 +128,8 @@ class RiverModule(object):
         self._blanket_rate = (params['blanket_rate_m'] / _SECONDS_PER_YEAR) * self._dt    # blanket deposition in m
         self._splay_dep = (params['splay_dep_m'] / _SECONDS_PER_YEAR) * self._dt       # splay deposition in m
         self._splay_type = params['splay_type']
+
+        self._sed_flux = 0.
 
         # Saving information
         #self._savefiles = params['savefiles']
@@ -187,6 +192,7 @@ class RiverModule(object):
         self._sed_flux = flux.calc_qs(self._nu, self._riv_i,
                                       self._riv_j, self._n,
                                       self._dx, self._dy, self._dt)
+
         # Update sea level
         self._SL += self._SLRR
         self._time += self._dt

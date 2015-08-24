@@ -18,7 +18,6 @@ class BmiRiverModule(Bmi):
                          'channel_exit__y_coordinate',
                          'land_surface__elevation',
                         )
-
     def __init__(self):
         """Create a BmiRiver module that is ready for initialization."""
         self._model = None
@@ -27,7 +26,7 @@ class BmiRiverModule(Bmi):
 
     def initialize(self, filename):
         """Initialize the River module"""
-        self._model = RiverModule.params_from_file(filename)
+        self._model = RiverModule.from_path(filename)
 
         self._values = {
             'channel_centerline__x_coordinate': lambda: self._model.river_x_coordinates,
@@ -51,7 +50,7 @@ class BmiRiverModule(Bmi):
         """Advance model by one time step."""
         self._model.advance_in_time()
         self.river_mouth_location = (self._model.river_x_coordinates[-1],
-    							     self._model.river_y_coordinates[-1])
+                                     self._model.river_y_coordinates[-1])
 
     def update_frac(self, time_frac):
         """Update model by a fraction of a time step."""
@@ -70,15 +69,11 @@ class BmiRiverModule(Bmi):
 
     def finalize(self):
         """Clean up & save avulsion file"""
-        
-        if self._model.savefiles == 1:
-            np.savetxt('avulsions', self._model.avulsions,
-                       fmt='%i %i %i %.3f %.3f %.3f')
         pass
 
     def get_var_type(self, var_name):
         """Data type of variable."""
-        return str(self.get_value_ref(var_name).dtype)
+        return str(self.get_value(var_name).dtype)
 
     def get_var_units(self, var_name):
         """Get units of variable."""
@@ -86,29 +81,11 @@ class BmiRiverModule(Bmi):
 
     def get_var_nbytes(self, var_name):
         """Get units of variable."""
-        return self.get_value_ref(var_name).nbytes
-
-    def get_value_ref(self, var_name):
-        """Reference to values."""
-        return self._values[var_name]
+        return self.get_value(var_name).nbytes
 
     def get_value(self, var_name):
         """Copy of values."""
-        return self.get_value_ref(var_name).copy()
-
-    def get_value_at_indices(self, var_name, indices):
-        """Get values at particular indices."""
-        return self.get_value_ref(var_name).take(indices)
-
-    def set_value(self, var_name, src):
-        """Set model values."""
-        val = self.get_value_ref(var_name)
-        val[:] = src
-
-    def set_value_at_indices(self, var_name, src, indices):
-        """Set model values at particular indices."""
-        val = self.get_value_ref(var_name)
-        val.flat[indices] = src
+        return self._values[var_name]()
 
     def get_component_name(self):
         """Name of the component."""
@@ -131,10 +108,13 @@ class BmiRiverModule(Bmi):
         return np.finfo('d').max
 
     def get_current_time(self):
-        """Current time of model (days)."""
+        """Current time of model."""
         return self._model.time
 
     def get_time_step(self):
-        """Time step of model (days)."""
+        """Time step of model."""
         return self._model.time_step
 
+    def get_time_units(self):
+        """Units of time"""
+        return 'd'
