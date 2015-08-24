@@ -107,7 +107,7 @@ class RiverModule(object):
         self._riv_j[0] = self._n.shape[1] / 2
 
         # Time parameters
-        self._dt = params['dt_day'] * 60. * 60. * 24. # convert timestep to seconds
+        self._dt = params['dt_day'] * _SECONDS_PER_DAY # convert timestep to seconds
         self._time = 0.
 
         # Sea level and subsidence parameters
@@ -166,7 +166,7 @@ class RiverModule(object):
 
         # save timestep and avulsion location if there was one
         #if len(loc) != 0:
-        #    self._avulsions = self._avulsions + [(self._k*(self._dt/86400),
+        #    self._avulsions = self._avulsions + [(self._time/_SECONDS_PER_DAY),
         #                loc[-1], avulsion_type, length_old,
         #                length_new_sum, self._SL)]
         
