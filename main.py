@@ -70,11 +70,11 @@ def main():
             prof = avulsion.get_value('channel_profile')
 
             np.savetxt('run' + str(args.runID) + '/elev_grid' + str(args.runID) + '/elev_'
-                       + str(k*avulsion.get_time_step()) + '.out', z, fmt='%.5f')
+                       + str(k*avulsion.get_time_step()/365) + '.out', z, fmt='%.5f')
             np.savetxt('run' + str(args.runID) + '/riv_course' + str(args.runID) + '/riv_'
-                       + str(k*avulsion.get_time_step()) + '.out', zip(x, y), fmt='%i')
+                       + str(k*avulsion.get_time_step()/365) + '.out', zip(x, y), fmt='%i')
             np.savetxt('run' + str(args.runID) + '/riv_profile' + str(args.runID) + '/prof_'
-                       + str(k*avulsion.get_time_step()) + '.out', prof, fmt='%.5f')
+                       + str(k*avulsion.get_time_step()/365) + '.out', prof, fmt='%.5f')
 
     if args.save:
         avul_info = avulsion.get_value('avulsion_record')
