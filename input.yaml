@@ -10,7 +10,7 @@ nslope: 0.0001       # initial landscape slope
 # Time
 time_max: 100       # length of model run (years)
 spinup: 0            # spin up time of model run (years)
-dt_day: 73           # timestep (days)
+dt_day: 5           # timestep (days)
 
 # Sea level & subsidence parameters
 Initial_SL: 0        # initial sea level
@@ -34,7 +34,7 @@ short_path: 1        # flag for using shortest path to complete avulsion
 
 # Floodplain and Wetland parameters
 WL_Z: 0.5              # elevation that wetlands maintain above SL
-WL_dist: 6             # cell distance beyond channel that wetlands exist
+WL_dist: 2             # cell distance beyond channel that wetlands exist
 blanket_rate_m: 0.005  # "blanket" deposition (frac. of IRR)
 splay_dep_m: 0.005     # splay deposition
 splay_type: 2          # size/type of splay
@@ -44,5 +44,6 @@ splay_type: 2          # size/type of splay
     # splay_type = 2: first failed cell and adjacent cells
 
 # Saving information
+saveavulsions: 1     # flag for saving avulsion info
 savefiles: 0         # flag for saving files
 savespacing: 1       # save files at every "x" timesteps

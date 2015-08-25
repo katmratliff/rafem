@@ -10,7 +10,7 @@ from avulsion_utils import (find_point_in_path, channel_is_superelevated,
                             find_path_length)
 
 
-def avulse_to_new_path(z, old, new, sea_level, channel_depth, dx=1., dy=1.):
+def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type, dx=1., dy=1.,):
     old_i, old_j = old
     new_i, new_j = new
     # sets avulsion to be regional, may be updated again below (if local)
@@ -19,7 +19,7 @@ def avulse_to_new_path(z, old, new, sea_level, channel_depth, dx=1., dy=1.):
     ind = find_point_in_path((old_i[1:], old_j[1:]), (new_i[-1], new_j[-1]))
 
     if ind is not None:
-        #avulsion_type = 2
+        avulsion_type = 2
 
         new_i = np.append(new_i, old_i[ind + 1:])
         new_j = np.append(new_j, old_j[ind + 1:])
@@ -27,7 +27,7 @@ def avulse_to_new_path(z, old, new, sea_level, channel_depth, dx=1., dy=1.):
         downcut.cut_new(new_i, new_j, z, sea_level, channel_depth, dx=dx,
                         dy=dy)
 
-    return (new_i, new_j)
+    return (new_i, new_j), avulsion_type
 
 
 # determines if there is an avulsion along river course
@@ -35,6 +35,7 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
                   short_path, splay_type, splay_dep, dx=1., dy=1.):
     new = riv_i, riv_j
     old = riv_i, riv_j
+    avulsion_type = 0
 
     for a in xrange(1, len(riv_i)):
         if channel_is_superelevated(n, (riv_i[a], riv_j[a]), ch_depth,
@@ -56,19 +57,23 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
                 if new_length < old_length:
                     # if new river course < length of old
                     # river course, then an avulsion will occur
-                    new = avulse_to_new_path(n, (riv_i[a - 1:], riv_j[a - 1:]),
+                    avulsion_type = 1
+
+                    new, avulsion_type = avulse_to_new_path(n,
+                                             (riv_i[a - 1:], riv_j[a - 1:]),
                                              (new[0][a - 1:], new[1][a - 1:]),
-                                             current_SL, ch_depth, dx=dx,
-                                             dy=dy)
+                                             current_SL, ch_depth, avulsion_type,
+                                             dx=dx, dy=dy)
 
                     new = (np.append(riv_i[:a - 1], new[0]),
                            np.append(riv_j[:a - 1], new[1]))
 
                 elif splay_type > 0:
+                    avulsion_type = 3
                     FP.dep_splay(n, (new[0][a], new[1][a]), (riv_i, riv_j),
                                  splay_dep, splay_type=splay_type)
             # if shortest path is not an avulsion criterion, then the new
             # steepest descent path will become the new course regardless
             # of new course length relative to the old course
 
-    return new
+    return new, avulsion_type, a

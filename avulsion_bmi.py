@@ -17,6 +17,8 @@ class BmiRiverModule(Bmi):
                          'channel_exit__x_coordinate',
                          'channel_exit__y_coordinate',
                          'land_surface__elevation',
+                         'channel_profile'
+                         'avulsion_record'
                         )
     def __init__(self):
         """Create a BmiRiver module that is ready for initialization."""
@@ -35,6 +37,8 @@ class BmiRiverModule(Bmi):
             'channel_exit__x_coordinate': lambda: self._model.river_x_coordinates[-1],
             'channel_exit__y_coordinate': lambda: self._model.river_y_coordinates[-1],
             'land_surface__elevation': lambda: self._model.elevation,
+            'channel_profile': lambda: self._model.profile,
+            'avulsion_record': lambda: self._model.avulsions,
         }
 
         self._var_units = {
@@ -44,6 +48,8 @@ class BmiRiverModule(Bmi):
             'channel_exit__x_coordinate': 'm',
             'channel_exit__y_coordinate': 'm',
             'land_surface__elevation': 'm',
+            'channel_profile': 'm',
+            'avulsion_record': 'none',
         }
 
     def update(self):

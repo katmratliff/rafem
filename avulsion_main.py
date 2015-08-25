@@ -58,17 +58,17 @@ class RiverModule(object):
     def sediment_flux(self):
         return self._sed_flux
 
-    #@property
-    #def avulsions(self):
-    #    return self._avulsions
+    @property
+    def avulsions(self):
+        return self._avulsion_info
+
+    @property
+    def profile(self):
+        return self._profile
 
 #    @shoreline.setter
 #    def shoreline(self, shoreline):
 #        self._shoreline = shoreline
-
-    @property
-    def savefiles(self):
-        return self._savefiles
 
     @classmethod
     def from_path(cls, fname):
@@ -133,8 +133,10 @@ class RiverModule(object):
         self._splay_type = params['splay_type']
 
         self._sed_flux = 0.
+        self._avulsion_info = np.zeros(3, dtype=np.float)
 
         # Saving information
+        self._saveavulsions = params['saveavulsions']
         #self._savefiles = params['savefiles']
         #self._savespacing = params['savespacing']
 
@@ -156,11 +158,15 @@ class RiverModule(object):
         # determine if there is an avulsion & find new path if so
         ### need to change this to look for shoreline after coupling ###
         ### (instead of looking for sea level)
-        self._riv_i, self._riv_j = avulse.find_avulsion(
+        (self._riv_i, self._riv_j), self._avulsion_type, self._loc = avulse.find_avulsion(
              self._riv_i, self._riv_j, self._n,
              self._super_ratio, self._SL, self._ch_depth,
              self._short_path, self._splay_type, self._splay_dep, dx=self._dx,
              dy=self._dy)
+
+        if self._saveavulsions & self._avulsion_type > 0:
+            new_info = (self._time / _SECONDS_PER_YEAR, self._avulsion_type, self._loc)
+            self._avulsion_info = np.vstack([self._avulsion_info, new_info])
 
         #assert(self._riv_i[-1] != 0)
 
@@ -195,6 +201,8 @@ class RiverModule(object):
         self._sed_flux = flux.calc_qs(self._nu, self._riv_i,
                                       self._riv_j, self._n,
                                       self._dx, self._dy, self._dt)
+
+        self._profile = self._n[self._riv_i, self._riv_j]
 
         # Update sea level
         self._SL += self._SLRR

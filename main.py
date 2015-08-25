@@ -15,6 +15,13 @@ def plot_elevation(avulsion):
     plt.colorbar().ax.set_label('Elevation (m)')
     plt.show()
 
+def plot_profile(avulsion):
+    import matplotlib.pyplot as plt
+
+    prof = avulsion.get_value('channel_profile')
+
+    plt.plot(prof)
+    plt.show()
 
 def main():
     import argparse
@@ -26,8 +33,10 @@ def main():
                         help='Run model for DAYS')
     parser.add_argument('--years', type=int, default=0,
                         help='Run model for YEARS')
-    parser.add_argument('--plot', action='store_true',
+    parser.add_argument('--plot_elev', action='store_true',
                         help='Plot final elevations')
+    parser.add_argument('--plot_prof', action='store_true',
+                        help='Plot final profile')
     parser.add_argument('--save', action='store_true',
                         help='Save output files')
     parser.add_argument('--spacing', type=int, default=1,
@@ -46,6 +55,7 @@ def main():
         os.mkdir("run" + str(args.runID))
         os.mkdir("run" + str(args.runID) + "/elev_grid" + str(args.runID))
         os.mkdir("run" + str(args.runID) + "/riv_course" + str(args.runID))
+        os.mkdir("run" + str(args.runID) + "/riv_profile" + str(args.runID))
         shutil.copy(args.file, "run" + str(args.runID))
         #os.mkdir("run" + str(args.runID) + "/profile")
 
@@ -57,16 +67,26 @@ def main():
             z = avulsion.get_value('land_surface__elevation')
             x = avulsion.get_value('channel_centerline__x_coordinate')
             y = avulsion.get_value('channel_centerline__y_coordinate')
-            #prof = z[x, y]
+            prof = avulsion.get_value('channel_profile')
 
             np.savetxt('run' + str(args.runID) + '/elev_grid' + str(args.runID) + '/elev_'
                        + str(k*avulsion.get_time_step()) + '.out', z, fmt='%.5f')
             np.savetxt('run' + str(args.runID) + '/riv_course' + str(args.runID) + '/riv_'
                        + str(k*avulsion.get_time_step()) + '.out', zip(x, y), fmt='%i')
-            #np.savetxt('profile/prof_' + str(k) + '.out', prof, fmt='%.5f')
+            np.savetxt('run' + str(args.runID) + '/riv_profile' + str(args.runID) + '/prof_'
+                       + str(k*avulsion.get_time_step()) + '.out', prof, fmt='%.5f')
 
-    if args.plot:
+    if args.save:
+        avul_info = avulsion.get_value('avulsion_record')
+        if np.sum(avul_info) > 0:
+            np.savetxt('run' + str(args.runID) + '/avulsions' + str(args.runID), avul_info,
+                       fmt='%.2f %i %i')
+
+    if args.plot_elev:
         plot_elevation(avulsion)
+
+    if args.plot_prof:
+        plot_profile(avulsion)
 
     #z = avulsion.get_value('land_surface__elevation')
     #np.savetxt(sys.stdout, z)
