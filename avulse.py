@@ -44,13 +44,61 @@ def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
     tuple
         Tuple of the new river path (as i, j indices) and the, possibly
         changed, avulsion type.
+
+    Examples
+    --------
+    The following example uses a grid that looks like::
+
+        o  +  *  *
+        *  o  +  *
+        *  *  +  *
+        *  *  o  *
+        *  o  *  *
+    
+    The old path is marked by `o`, the new path but `+`. The paths overlap
+    (2, 2).
+
+    >>> import numpy as np
+    >>> z = np.ones((5, 4), dtype=float)
+
+    >>> old = np.array((0, 1, 2, 3, 4)), np.array((0, 1, 2, 2, 1))
+    >>> new = np.array((0, 1, 2)), np.array((1, 2, 2))
+    >>> (new, atype) = avulse_to_new_path(z, old, new, 0., 0., 0)
+
+    The new path follows the new path until the common point and then
+    follows the old path. The new avulsion type is now 2.
+
+    >>> new
+    (array([0, 1, 2, 3, 4]), array([1, 2, 2, 2, 1]))
+    >>> atype
+    2
+
+    In this example the old and new paths do not overlap::
+
+        o  +  *  *
+        *  o  +  *
+        *  *  o  +
+        *  *  o  +
+        *  o  *  +
+
+    >>> old = np.array((0, 1, 2, 3, 4)), np.array((0, 1, 2, 2, 1))
+    >>> new = np.array((0, 1, 2, 3, 4)), np.array((1, 2, 3, 3, 3))
+    >>> (new, atype) = avulse_to_new_path(z, old, new, 0., 0., 0)
+
+    The new path is now, in fact, the actual new path and the avulsion
+    type is unchanged.
+
+    >>> new
+    (array([0, 1, 2, 3, 4]), array([1, 2, 3, 3, 3]))
+    >>> atype
+    0
     """
     old_i, old_j = old
     new_i, new_j = new
     # sets avulsion to be regional, may be updated again below (if local)
             
     # maybe this should be len(test_old_x)-1?
-    ind = find_point_in_path((old_i[1:], old_j[1:]), (new_i[-1], new_j[-1]))
+    ind = find_point_in_path((old_i, old_j), (new_i[-1], new_j[-1]))
 
     if ind is not None:
         avulsion_type = 2
