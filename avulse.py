@@ -44,6 +44,33 @@ def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
     tuple
         Tuple of the new river path (as i, j indices) and the, possibly
         changed, avulsion type.
+
+    Examples
+    --------
+    The following example uses a grid that looks like::
+
+        o  +  *  *
+        *  o  +  *
+        *  *  +  *
+        *  *  o  *
+        *  o  *  *
+    
+    The old path is marked by `o`, the new path but `+`. The paths overlap
+    (2, 2).
+
+    >>> import numpy as np
+    >>> z = np.ones((5, 4), dtype=float)
+    >>> old = np.array((0, 1, 2, 3, 4)), np.array((0, 1, 2, 2, 1))
+    >>> new = np.array((0, 1, 2)), np.array((1, 2, 2))
+    >>> (new, atype) = avulse_to_new_path(z, old, new, 0., 0., 0)
+
+    The new path follows the new path until the common point and then
+    follows the old path. The new avulsion type is now 2.
+
+    >>> new
+    (array([0, 1, 2, 3, 4]), array([1, 2, 2, 2, 1]))
+    >>> atype
+    2
     """
     old_i, old_j = old
     new_i, new_j = new
@@ -54,6 +81,8 @@ def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
 
     if ind is not None:
         avulsion_type = 2
+
+        ind += 1
 
         new_i = np.append(new_i, old_i[ind + 1:])
         new_j = np.append(new_j, old_j[ind + 1:])
