@@ -15,6 +15,7 @@ def plot_elevation(avulsion):
     plt.colorbar().ax.set_label('Elevation (m)')
     plt.show()
 
+
 def plot_profile(avulsion):
     import matplotlib.pyplot as plt
 
@@ -22,6 +23,7 @@ def plot_profile(avulsion):
 
     plt.plot(prof)
     plt.show()
+
 
 def main():
     import argparse

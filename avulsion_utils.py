@@ -90,7 +90,29 @@ def find_path_length(path, dx=1., dy=1.):
 
 
 def find_point_in_path(path, sub):
+    """Find a point in a path.
+
+    Parameters
+    ----------
+    path : tuple of array_like
+        Tuple of arrays of int that represent indices into a matrix.
+    sub : tuple in int
+        Indices to search *path* for.
+
+    Returns
+    -------
+    int or None
+        Index into *path* if the indices are found. Otherwise, ``None``.
+
+    Examples
+    --------
+    >>> path = ((0, 1, 4, 6, 5), (3, 1, 7, 8, 10))
+    >>> find_point_in_path(path, (4, 7))
+    2
+    >>> find_point_in_path(path, (99, 2)) is None
+    True
+    """
     try:
-        return zip(path).index(sub)
+        return zip(*path).index(sub)
     except ValueError:
         return None

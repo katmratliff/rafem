@@ -10,7 +10,41 @@ from avulsion_utils import (find_point_in_path, channel_is_superelevated,
                             find_path_length)
 
 
-def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type, dx=1., dy=1.,):
+def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
+                       dx=1., dy=1.,):
+    """Avulse the river to a new path.
+
+    Given two river paths, *old* and *new*, avulse the river to a new river
+    path. If the end point of the new path is contained in the old river
+    path, the resulting path is the new path up until this point and then
+    the old path. Otherwise, the resulting path is the new river path and
+    will be downcut.
+
+    Parameters
+    ----------
+    z : ndarray
+        2D array of elevations.
+    old : tuple of array_like
+        Tuple of i and j indices (into *z*) for the old path.
+    new : tuple of array_like
+        Tuple of i and j indices (into *z*) for the new path.
+    sea_level : float
+        Elevation of sea level.
+    channel_depth : float
+        Depth of the channel.
+    avulsion_type : {0, 1, 2, 3}
+        The type of the avulsion.
+    dx : float, optional
+        Spacing of columns of *z*.
+    dy : float, optional
+        Spacing of rows of *z*.
+
+    Returns
+    -------
+    tuple
+        Tuple of the new river path (as i, j indices) and the, possibly
+        changed, avulsion type.
+    """
     old_i, old_j = old
     new_i, new_j = new
     # sets avulsion to be regional, may be updated again below (if local)
