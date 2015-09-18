@@ -77,12 +77,10 @@ def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
     # sets avulsion to be regional, may be updated again below (if local)
             
     # maybe this should be len(test_old_x)-1?
-    ind = find_point_in_path((old_i[1:], old_j[1:]), (new_i[-1], new_j[-1]))
+    ind = find_point_in_path((old_i, old_j), (new_i[-1], new_j[-1]))
 
     if ind is not None:
         avulsion_type = 2
-
-        ind += 1
 
         new_i = np.append(new_i, old_i[ind + 1:])
         new_j = np.append(new_j, old_j[ind + 1:])
