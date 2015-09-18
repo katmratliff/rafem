@@ -8,20 +8,25 @@ max_rand: 0.00001    # max height of a random perturbation
 nslope: 0.0001       # initial landscape slope
 
 # Time
-time_max: 1000       # length of model run (years)
+time_max: 100       # length of model run (years)
 spinup: 0            # spin up time of model run (years)
-dt_day: 73           # timestep (days)
+dt_day: 5           # timestep (days)
 
 # Sea level & subsidence parameters
 Initial_SL: 0        # initial sea level
 SLRR_m: 0.025        # sea level rise rate (m/yr)
 IRR_m: 0.005         # rate that inlet cell rises (subsidence)
 
-# river characteristics
+# River characteristics
 ch_width: 2000.      # characteristic channel width (m)
 ch_depth: 5.0        # characteristic channel depth (m)
+ch_discharge: 16791. # long-term averaged discharge (m^3/s)
+A: 1.                # river-dependent const. (1 for meandering; 1.4 for braided)
+c_f: 0.01            # drag coefficient
+C_0: 1.              # sediment concentration on bed
+sed_sg: 2.65         # sediment specific gravity
 init_cut_frac: 1     # fraction of channel depth initially cut into landscape
-nu: 50000            # diffusion coefficent, m^3/day (7533 for MS Riv.)
+#nu: 50000            # diffusion coefficent, m^3/day (7533 for MS Riv.)
 
 # Avulsion parameters
 super_ratio: 1       # normalized superelevation ratio to trigger avulsion
@@ -29,7 +34,7 @@ short_path: 1        # flag for using shortest path to complete avulsion
 
 # Floodplain and Wetland parameters
 WL_Z: 0.5              # elevation that wetlands maintain above SL
-WL_dist: 6             # cell distance beyond channel that wetlands exist
+WL_dist: 2             # cell distance beyond channel that wetlands exist
 blanket_rate_m: 0.005  # "blanket" deposition (frac. of IRR)
 splay_dep_m: 0.005     # splay deposition
 splay_type: 2          # size/type of splay
@@ -39,5 +44,6 @@ splay_type: 2          # size/type of splay
     # splay_type = 2: first failed cell and adjacent cells
 
 # Saving information
+saveavulsions: 1     # flag for saving avulsion info
 savefiles: 0         # flag for saving files
 savespacing: 1       # save files at every "x" timesteps

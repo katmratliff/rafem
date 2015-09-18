@@ -7,36 +7,39 @@ Created on Tue Dec  2 20:19:37 2014
 import numpy as np
 
 
-def elev_change(imax, jmax, current_SL, n, riv_x, riv_y, ch_depth, dx, dy):
+def elev_change(current_SL, n, riv_i, riv_j, ch_depth):
+    """Raise elevations to sea level if below sea level.
 
-    rc_flag = np.zeros((imax, jmax))
-    
-    # creates river course flag array
-    for i in range(len(riv_x)):
-        
-        rc_flag[riv_x[i]/dx][riv_y[i]/dy] = 1
-        
-        i += 1
-    
+    Set elevations of cells below sea level to sea level unless they are
+    within the river channel.
+
+    Parameters
+    ----------
+    current_SL : float
+        Sea level.
+    n : ndarray
+        Array of elevations.
+    riv_i : ndarray of int
+        Row indices into *n* for river cells.
+    riv_j : ndarray of int
+        Column indices into *n* for river cells.
+    ch_depth : float
+        Channel depth.
+    """
     # changes elevation of last river course cell according to sea level change
-    n[riv_x[-1]/dx][riv_y[-1]/dy] = current_SL - ch_depth
+    n[riv_i[-1], riv_j[-1]] = current_SL - ch_depth
+
+    channel_elevations = n[riv_i, riv_j].copy()
 
     # raises cell elevation to sea level if it is below
-    for i in range(imax):
-        for j in range(jmax):
+    n[n < current_SL] = current_SL
 
-            if (n[i][j] < current_SL and rc_flag[i][j] == 0):
-                n[i][j] = current_SL
+    n[riv_i, riv_j] = channel_elevations
 
-            j += 1
-        i += 1
-        
-        # Need to somehow change above treatment of cells... they don't need to be
-        # raised to sea level anymore. 
+    # Need to somehow change above treatment of cells... they don't need to be
+    # raised to sea level anymore. 
         
 #    # raises elevation of whole inlet row
 #    for I in range(jmax):
 #        n[0][I] = n[0][I] + (IRR)
 #        I = I + 1
-
-    return n, rc_flag

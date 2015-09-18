@@ -1,63 +1,105 @@
 #! /usr/local/bin/python
+import numpy as np
 
-import math
+from avulsion_utils import is_diagonal_neighbor
+from avulsion_utils import get_channel_distance
+
+
+def solve_second_derivative(x, y):
+    """Solve the second derivative of y with respect to x.
+
+    Use finite difference to solve the second derivative of *y* with respect
+    to *x* where *x* can be unevenly spaced.
+
+    Examples
+    --------
+    Values can be evenly spaced.
+
+    >>> import numpy as np
+    >>> x = np.array([2., 3., 4.])
+    >>> y = np.array([4., 9., 16.])
+    >>> solve_second_derivative(x, y)
+    array([ 2.])
+
+    Values are unevenly spaced.
+
+    >>> x = np.array([2., 3., 5.])
+    >>> y = np.array([4., 9., 25.])
+    >>> solve_second_derivative(x, y)
+    array([ 2.])
+    """
+    x2_minus_x1 = x[1:-1] - x[:-2]
+    x3_minus_x2 = x[2:] - x[1:-1]
+    x3_minus_x1 = x[2:] - x[:-2]
+
+    return 2 * (y[:-2] / (x2_minus_x1 * x3_minus_x1) -
+                y[1:-1] / (x3_minus_x2 * x2_minus_x1) +
+                y[2:] / (x3_minus_x2 * x3_minus_x1))
+
+
+def smooth_rc(dx, dy, nu, dt, riv_i, riv_j, n):
+    """Smooth river channel elevations using the diffusion equation.
+
+    Parameters
+    ----------
+    dx : float
+        Spacing of grid columns.
+    dy : float
+        Spacing of grid rows.
+    nu : float
+        Diffusion coefficient.
+    dt : float
+        Time step (in seconds).
+    riv_i : ndarray
+        Row indices for the river path.
+    riv_j : ndarray
+        Column indices for the river path.
+    n : ndarray
+        2D array of grid elevations.
+    """
+    # NOTE: Divide by dx to match the old way, but I don't think this is
+    # correct.
+    # nu /= dx
+    # KMR 8/24/15: don't need to divide by dx anymore, diffusion coeff
+    # should be fixed with new calculation
+
+    n_river = n[riv_i, riv_j]
+    s_river = get_channel_distance((riv_i, riv_j), dx=dx, dy=dy)
+
+    dn_rc = (nu * dt) * solve_second_derivative(s_river, n_river)
+
+    n[riv_i[1:-1], riv_j[1:-1]] += dn_rc
+
+    return
+
 
 # this function uses a linear diffusion equation (e.g. Paola 2000, Jerolmack
 # and Paola 2007) to compute elevation change along the river course
-def smooth_rc(dx, dy, nu, dt, riv_x, riv_y, n, nslope):
-
+def smooth_rc_old(dx, dy, nu, dt, riv_i, riv_j, n):
     # elevation change along river course due to diffusional smoothing
-    dn_rc = [0 for i in range(len(riv_x))]
+    for c in xrange(1, len(riv_i) - 1):
+        n_prev = n[riv_i[c - 1], riv_j[c - 1]]
+        n_cur = n[riv_i[c], riv_j[c]]
+        n_next = n[riv_i[c + 1], riv_j[c + 1]]
 
-    #dn_rc[1] = -(dx * nslope)
+        dwnst_dx, upst_dx = dx, dx
+        if is_diagonal_neighbor((riv_i[c], riv_j[c]), (riv_i[c + 1], riv_j[c + 1])):
+            dwnst_dx *= np.sqrt(2.)
 
-    for c in range(1, len(riv_x)-1):
+        if is_diagonal_neighbor((riv_i[c], riv_j[c]), (riv_i[c - 1], riv_j[c - 1])):
+            upst_dx *= np.sqrt(2.)
 
-        # determine downstream change
-        if (((riv_x[c+1]/dx) - (riv_x[c]/dx) == 0) and
-                ((riv_y[c+1]/dy) - (riv_y[c]/dy) == -1)):
-                k1 = 1
-        elif (((riv_x[c+1]/dx) - (riv_x[c]/dx) == 0) and
-                ((riv_y[c+1]/dy) - (riv_y[c]/dy) == 1)):
-                k1 = 1
-        elif (((riv_x[c+1]/dx) - (riv_x[c]/dx) == 1) and
-                ((riv_y[c+1]/dy) - (riv_y[c]/dy) == 0)):
-                k1 = 1
-        elif (((riv_x[c+1]/dx) - (riv_x[c]/dx) == 1) and
-                ((riv_y[c+1]/dy) - (riv_y[c]/dy) == -1)):
-                k1 = math.sqrt(2)
-        elif (((riv_x[c+1]/dx) - (riv_x[c]/dx) == 1) and
-                ((riv_y[c+1]/dy) - (riv_y[c]/dy) == 1)):
-                k1 = math.sqrt(2)
+        dwnst_dn = (n_next - n_cur) / dwnst_dx
+        upst_dn = (n_cur - n_prev) / upst_dx
+        mean_dx = (dwnst_dx + upst_dx) * .5
 
-        dwnst_dn = ((n[riv_x[c+1]/dx][riv_y[c+1]/dy]
-                    - n[riv_x[c]/dx][riv_y[c]/dy]) / (dx*k1))
+        # NOTE: This is the old way but, I think, is incorrect. For
+        # non-uniform spacing of points you need to divide by the mean spacing.
+        #dn_rc = (nu * dt) / (dx ** 2.) * (dwnst_dn - upst_dn)
 
-        # determine upstream change
-        if (((riv_x[c]/dx) - (riv_x[c-1]/dx) == 0) and
-                ((riv_y[c]/dy) - (riv_y[c-1]/dy) == -1)):
-                k2 = 1
-        elif (((riv_x[c]/dx) - (riv_x[c-1]/dx) == 0) and
-                ((riv_y[c]/dy) - (riv_y[c-1]/dy) == 1)):
-                k2 = 1
-        elif (((riv_x[c]/dx) - (riv_x[c-1]/dx) == 1) and
-                ((riv_y[c]/dx) - (riv_y[c-1]/dy) == 0)):
-                k2 = 1      # CUS
-        elif (((riv_x[c]/dx) - (riv_x[c-1]/dx) == 1) and
-                ((riv_y[c]/dy) - (riv_y[c-1]/dy) == -1)):
-                k2 = math.sqrt(2)    # LUS
-        elif (((riv_x[c]/dx) - (riv_x[c-1]/dx) == 1) and
-                ((riv_y[c]/dy) - (riv_y[c-1]/dy) == 1)):
-                k2 = math.sqrt(2)    # RUS
+        # This properly solves the second derivative with unequal spacing in x.
+        dn_rc = (nu / dx * dt) * (dwnst_dn - upst_dn) / mean_dx
 
-        upst_dn = ((n[riv_x[c]/dx][riv_y[c]/dy]
-                   - n[riv_x[c-1]/dx][riv_y[c-1]/dy]) / (dx*k2))
+        n[riv_i[c], riv_j[c]] += dn_rc
 
-        # determine elevation change at cell
-        dn_rc[c] = (nu*dt)/(dx**2) * (dwnst_dn - upst_dn)   # eqn 1 J&P 2007
-
-        n[riv_x[c]/dx][riv_y[c]/dy] = n[riv_x[c]/dx][riv_y[c]/dy] + dn_rc[c]
-
-        c += 1
-
-    return (n, dn_rc)
+    return n
