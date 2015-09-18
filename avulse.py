@@ -60,6 +60,7 @@ def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
 
     >>> import numpy as np
     >>> z = np.ones((5, 4), dtype=float)
+
     >>> old = np.array((0, 1, 2, 3, 4)), np.array((0, 1, 2, 2, 1))
     >>> new = np.array((0, 1, 2)), np.array((1, 2, 2))
     >>> (new, atype) = avulse_to_new_path(z, old, new, 0., 0., 0)
@@ -71,6 +72,26 @@ def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
     (array([0, 1, 2, 3, 4]), array([1, 2, 2, 2, 1]))
     >>> atype
     2
+
+    In this example the old and new paths do not overlap::
+
+        o  +  *  *
+        *  o  +  *
+        *  *  o  +
+        *  *  o  +
+        *  o  *  +
+
+    >>> old = np.array((0, 1, 2, 3, 4)), np.array((0, 1, 2, 2, 1))
+    >>> new = np.array((0, 1, 2, 3, 4)), np.array((1, 2, 3, 3, 3))
+    >>> (new, atype) = avulse_to_new_path(z, old, new, 0., 0., 0)
+
+    The new path is now, in fact, the actual new path and the avulsion
+    type is unchanged.
+
+    >>> new
+    (array([0, 1, 2, 3, 4]), array([1, 2, 3, 3, 3]))
+    >>> atype
+    0
     """
     old_i, old_j = old
     new_i, new_j = new
