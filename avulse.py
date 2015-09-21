@@ -150,8 +150,7 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
                     new = (np.append(riv_i[:a - 1], new[0]),
                            np.append(riv_j[:a - 1], new[1]))
 
-                    if avulsion_type == 1:
-                        return new, avulsion_type, a
+                    break
 
                 elif splay_type > 0:
                     avulsion_type = 3
