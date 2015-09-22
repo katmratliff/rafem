@@ -165,7 +165,7 @@ class RiverModule(object):
              dy=self._dy)
 
         if self._saveavulsions & self._avulsion_type > 0:
-            new_info = (self._time / _SECONDS_PER_YEAR, self._avulsion_type, self._loc)
+            new_info = (self._avulsion_type, self._time / _SECONDS_PER_YEAR, self._loc)
             self._avulsion_info = np.vstack([self._avulsion_info, new_info])
 
         #assert(self._riv_i[-1] != 0)
