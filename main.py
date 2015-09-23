@@ -82,7 +82,7 @@ def main():
         avul_info = avulsion.get_value('avulsion_record')
         if np.sum(avul_info) > 0:
             np.savetxt('run' + str(args.runID) + '/avulsions' + str(args.runID), avul_info,
-                       fmt='%.2f %i %i')
+                       fmt='%i %.2f %i')
 
     if args.plot_elev:
         plot_elevation(avulsion)
