@@ -10,5 +10,7 @@ setup(name='bmi-avulsion',
       author_email='k.ratliff@duke.edu',
       description='BMI Avulsion Module',
       long_description=open('README.rst').read(),
+      url='https://github.com/katmratliff/avulsion-bmi'
+      license='MIT'
       packages=find_packages(),
 )
