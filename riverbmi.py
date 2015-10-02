@@ -4,7 +4,7 @@
 import numpy as np
 
 from bmi import Bmi
-from avulsion_main import RiverModule
+from rivermodule import RiverModule
 
 
 class BmiRiverModule(Bmi):
