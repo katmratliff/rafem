@@ -9,6 +9,6 @@ setup(name='bmi-avulsion',
       author='Katherine Ratliff',
       author_email='k.ratliff@duke.edu',
       description='BMI Avulsion Module',
-      long_description=open('README.md').read(),
+      long_description=open('README.rst').read(),
       packages=find_packages(),
 )
