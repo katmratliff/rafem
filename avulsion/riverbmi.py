@@ -1,25 +1,27 @@
 #! /usr/local/bin/python
-""" Basic Model Interface implementation for River Module"""
+"""Basic Model Interface implementation for River Module"""
 
 import numpy as np
 
-from bmi import Bmi
 from rivermodule import RiverModule
 
 
-class BmiRiverModule(Bmi):
+class BmiRiverModule(object):
+
+    """The Basic Modeling Interface for the Avulsion model."""
 
     _name = 'Avulsion Module'
     _input_var_names = ()
-    _output_var_names = ('channel_centerline__x_coordinate',
-                         'channel_centerline__y_coordinate',
-                         'channel_water_sediment~bedload__mass_flow_rate',
-                         'channel_exit__x_coordinate',
-                         'channel_exit__y_coordinate',
-                         'land_surface__elevation',
-                         'channel_profile'
-                         'avulsion_record'
-                        )
+    _output_var_names = (
+        'channel_centerline__x_coordinate',
+        'channel_centerline__y_coordinate',
+        'channel_centerline__elevation',
+        'channel_water_sediment~bedload__mass_flow_rate',
+        'channel_exit__x_coordinate',
+        'channel_exit__y_coordinate',
+        'land_surface__elevation',
+        'avulsion_record')
+
     def __init__(self):
         """Create a BmiRiver module that is ready for initialization."""
         self._model = None
@@ -27,7 +29,7 @@ class BmiRiverModule(Bmi):
         self._var_units = {}
 
     def initialize(self, filename):
-        """Initialize the River module"""
+        """Initialize the River module."""
         self._model = RiverModule.from_path(filename)
 
         self._values = {
@@ -42,7 +44,7 @@ class BmiRiverModule(Bmi):
             'channel_exit__y_coordinate':
                 lambda: self._model.river_y_coordinates[-1],
             'land_surface__elevation': lambda: self._model.elevation,
-            'channel_profile': lambda: self._model.profile,
+            'channel_centerline__elevation': lambda: self._model.profile,
             'avulsion_record': lambda: self._model.avulsions,
         }
 
@@ -53,7 +55,7 @@ class BmiRiverModule(Bmi):
             'channel_exit__x_coordinate': 'm',
             'channel_exit__y_coordinate': 'm',
             'land_surface__elevation': 'm',
-            'channel_profile': 'm',
+            'channel_centerline__elevation': 'm',
             'avulsion_record': 'none',
         }
 
