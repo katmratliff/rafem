@@ -1,7 +1,7 @@
 """River Avulsion Module."""
 
 from .riverbmi import BmiRiverModule
-from .rivermodule import RiverModule
+from .rivermodule import rivermodule
 
 
-__all__ = ['BmiRiverModule', 'RiverModule']
+__all__ = ['BmiRiverModule', 'rivermodule']
