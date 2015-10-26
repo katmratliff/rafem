@@ -1,4 +1,4 @@
 name: Rafem
 language: python
-package: avulsion.riverbmi
+package: rafem.riverbmi
 class: BmiRiverModule
