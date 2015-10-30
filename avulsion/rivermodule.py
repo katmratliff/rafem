@@ -43,6 +43,14 @@ class RiverModule(object):
         self._dt = time_step * _SECONDS_PER_DAY
 
     @property
+    def grid_shape(self):
+        return self._n.shape
+
+    @property
+    def grid_spacing(self):
+        return (self._dy, self._dx)
+
+    @property
     def river_x_coordinates(self):
         return self._riv_j * self._dx
 

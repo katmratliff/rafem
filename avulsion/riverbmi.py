@@ -31,11 +31,16 @@ class BmiRiverModule(Bmi):
         self._model = RiverModule.from_path(filename)
 
         self._values = {
-            'channel_centerline__x_coordinate': lambda: self._model.river_x_coordinates,
-            'channel_centerline__y_coordinate': lambda: self._model.river_y_coordinates,
-            'channel_water_sediment~bedload__volume_flow_rate': lambda: self._model.sediment_flux,
-            'channel_exit__x_coordinate': lambda: self._model.river_x_coordinates[-1],
-            'channel_exit__y_coordinate': lambda: self._model.river_y_coordinates[-1],
+            'channel_centerline__x_coordinate':
+                lambda: self._model.river_x_coordinates,
+            'channel_centerline__y_coordinate':
+                lambda: self._model.river_y_coordinates,
+            'channel_water_sediment~bedload__volume_flow_rate':
+                lambda: self._model.sediment_flux,
+            'channel_exit__x_coordinate':
+                lambda: self._model.river_x_coordinates[-1],
+            'channel_exit__y_coordinate':
+                lambda: self._model.river_y_coordinates[-1],
             'land_surface__elevation': lambda: self._model.elevation,
             'channel_profile': lambda: self._model.profile,
             'avulsion_record': lambda: self._model.avulsions,
@@ -88,6 +93,34 @@ class BmiRiverModule(Bmi):
     def get_var_nbytes(self, var_name):
         """Get units of variable."""
         return self.get_value(var_name).nbytes
+
+    def get_var_grid(self, var_name):
+        if var_name == 'land_surface__elevation':
+            return 0
+
+    def get_grid_rank(self, grid_id):
+        if grid_id == 0:
+            return len(self._model.grid_shape)
+
+    def get_grid_size(self, grid_id):
+        if grid_id == 0:
+            return np.prod(self._model.grid_shape)
+
+    def get_grid_shape(self, grid_id):
+        if grid_id == 0:
+            return self._model.grid_shape
+
+    def get_grid_spacing(self, grid_id):
+        if grid_id == 0:
+            return self._model.grid_spacing
+
+    def get_grid_origin(self, grid_id):
+        if grid_id == 0:
+            return (0., 0.)
+
+    def get_grid_type(self, grid_id):
+        if grid_id == 0:
+            return 'uniform_rectilinear_grid'
 
     def get_value(self, var_name):
         """Copy of values."""
