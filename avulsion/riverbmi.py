@@ -97,6 +97,17 @@ class BmiRiverModule(Bmi):
         """Set model values."""
         if var_name == 'land_surface__elevation':
             self._model.elevation[:] = new_vals[:]
+        if var_name == 'channel_exit__x_coordinate':
+            self._model.river_x_coordinates = self._model.river_x_coordinates + new_vals
+        if var_name == 'channel_exit__y_coordinate':
+            self._model.river_y_coordinates = self._model.river_y_coordinates + new_vals
+        """Remove duplicate river mouth coordinates (if they exist).
+        This seems clunky... must be better way to get values without duplicating
+        each time?"""
+        if (self._model.river_x_coordinates[-1] == self._model.river_x_coordinates[-2]
+        and self._model.river_y_coordinates[-1] == self._model.river_y_coordinates[-2]):
+            self._model.river_x_coordinates.pop()
+            self._model.river_y_coordinates.pop()
 
     def get_component_name(self):
         """Name of the component."""
