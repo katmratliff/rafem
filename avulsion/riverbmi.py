@@ -104,8 +104,8 @@ class BmiRiverModule(Bmi):
         """Remove duplicate river mouth coordinates (if they exist).
         This seems clunky... must be better way to get values without duplicating
         each time?"""
-        if (self._model.river_x_coordinates[-1] == self._model.river_x_coordinates[-2]
-        and self._model.river_y_coordinates[-1] == self._model.river_y_coordinates[-2]):
+        if (self._model.river_x_coordinates[-1] == self._model.river_x_coordinates[-2] and 
+            self._model.river_y_coordinates[-1] == self._model.river_y_coordinates[-2]):
             self._model.river_x_coordinates.pop()
             self._model.river_y_coordinates.pop()
 
