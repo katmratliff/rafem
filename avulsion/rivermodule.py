@@ -54,6 +54,11 @@ class RiverModule(object):
     def elevation(self):
         return self._n
 
+    @elevation.setter
+    def elevation(self, new_elev):
+        """Set the land surface elevation."""
+        self._elevation[:] = new_elev
+
     @property 
     def sediment_flux(self):
         return self._sed_flux

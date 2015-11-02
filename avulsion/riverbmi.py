@@ -93,6 +93,11 @@ class BmiRiverModule(Bmi):
         """Copy of values."""
         return self._values[var_name]()
 
+    def set_value(self, var_name, new_vals):
+        """Set model values."""
+        if var_name == 'land_surface__elevation':
+            self._model.elevation[:] = new_vals[:]
+
     def get_component_name(self):
         """Name of the component."""
         return self._name
