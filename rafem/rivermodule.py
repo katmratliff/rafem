@@ -54,9 +54,21 @@ class RiverModule(object):
     def river_x_coordinates(self):
         return self._riv_j * self._dx
 
+    @river_x_coordinates.setter
+    def river_x_coordinates(self, new_coords):
+        self._riv_j = np.asarray(new_coords) / self._dx
+
     @property 
     def river_y_coordinates(self):
         return self._riv_i * self._dy
+
+    @river_y_coordinates.setter
+    def river_y_coordinates(self, new_coords):
+        self._riv_i = np.asarray(new_coords) / self._dy
+
+    @property
+    def sea_level(self):
+        return self._SL
 
     @property 
     def elevation(self):
