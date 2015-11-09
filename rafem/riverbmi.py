@@ -11,7 +11,11 @@ class BmiRiverModule(object):
     """The Basic Modeling Interface for the Avulsion model."""
 
     _name = 'Avulsion Module'
-    _input_var_names = ()
+    _input_var_names = (
+        'land_surface__elevation',
+        'channel_exit__x_coordinate',
+        'channel_exit__y_coordinate',
+    )
     _output_var_names = (
         'channel_centerline__x_coordinate',
         'channel_centerline__y_coordinate',
@@ -20,6 +24,7 @@ class BmiRiverModule(object):
         'channel_exit__x_coordinate',
         'channel_exit__y_coordinate',
         'land_surface__elevation',
+        'sea_water_surface__elevation',
         'avulsion_record')
 
     def __init__(self):
@@ -45,6 +50,7 @@ class BmiRiverModule(object):
                 lambda: self._model.river_y_coordinates[-1],
             'land_surface__elevation': lambda: self._model.elevation,
             'channel_centerline__elevation': lambda: self._model.profile,
+            'sea_water_surface__elevation': lambda: self._model.sea_level,
             'avulsion_record': lambda: self._model.avulsions,
         }
 
@@ -56,6 +62,7 @@ class BmiRiverModule(object):
             'channel_exit__y_coordinate': 'm',
             'land_surface__elevation': 'm',
             'channel_centerline__elevation': 'm',
+            'sea_water_surface__elevation': 'm',
             'avulsion_record': 'none',
         }
 
@@ -130,19 +137,25 @@ class BmiRiverModule(object):
 
     def set_value(self, var_name, new_vals):
         """Set model values."""
+        if var_name not in self._input_var_names:
+            raise KeyError(var_name)
+
         if var_name == 'land_surface__elevation':
             self._model.elevation[:] = new_vals[:]
-        if var_name == 'channel_exit__x_coordinate':
-            self._model.river_x_coordinates = self._model.river_x_coordinates + new_vals
-        if var_name == 'channel_exit__y_coordinate':
-            self._model.river_y_coordinates = self._model.river_y_coordinates + new_vals
-        """Remove duplicate river mouth coordinates (if they exist).
-        This seems clunky... must be better way to get values without duplicating
-        each time?"""
-        if (self._model.river_x_coordinates[-1] == self._model.river_x_coordinates[-2] and 
-            self._model.river_y_coordinates[-1] == self._model.river_y_coordinates[-2]):
-            self._model.river_x_coordinates.pop()
-            self._model.river_y_coordinates.pop()
+        elif var_name == 'channel_exit__x_coordinate':
+            self._model.river_x_coordinates = np.append(
+                self._model.river_x_coordinates, new_vals)
+        elif var_name == 'channel_exit__y_coordinate':
+            self._model.river_y_coordinates = np.append(
+                self._model.river_y_coordinates, new_vals)
+
+        # Remove duplicate river mouth coordinates (if they exist).
+        # This seems clunky... must be better way to get values without
+        # duplicating each time?
+        #if (self._model.river_x_coordinates[-1] == self._model.river_x_coordinates[-2] and 
+        #    self._model.river_y_coordinates[-1] == self._model.river_y_coordinates[-2]):
+        #    self._model.river_x_coordinates.pop()
+        #    self._model.river_y_coordinates.pop()
 
     def get_component_name(self):
         """Name of the component."""
