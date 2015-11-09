@@ -78,7 +78,7 @@ class BmiRiverModule(object):
             'channel_exit__y_coordinate': 2,
             'land_surface__elevation': 0,
             'channel_centerline__elevation': 1,
-            'sea_water_surface__elevation': 1,
+            'sea_water_surface__elevation': 2,
             'avulsion_record': None,
         }
 
