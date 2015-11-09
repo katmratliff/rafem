@@ -66,6 +66,7 @@ class BmiRiverModule(object):
             'avulsion_record': 'none',
         }
 
+        self._var_type = {}
         for name in self._input_var_names + self._output_var_names:
             self._var_type[name] = str(np.dtype(float))
 
