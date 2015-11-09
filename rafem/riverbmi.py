@@ -8,9 +8,9 @@ from rivermodule import RiverModule
 
 class BmiRiverModule(object):
 
-    """The Basic Modeling Interface for the Avulsion model."""
+    """The BMI for the River Avulsion Floodplain Evolution Model."""
 
-    _name = 'Avulsion Module'
+    _name = 'Rafem'
     _input_var_names = (
         'land_surface__elevation',
         'channel_exit__x_coordinate',
@@ -66,6 +66,27 @@ class BmiRiverModule(object):
             'avulsion_record': 'none',
         }
 
+        for name in self._input_var_names + self._output_var_names:
+            self._var_type[name] = str(np.dtype(float))
+
+        self._var_grid = {
+            'channel_centerline__x_coordinate': 1,
+            'channel_centerline__y_coordinate': 1,
+            'channel_water_sediment~bedload__volume_flow_rate': 1,
+            'channel_exit__x_coordinate': 2,
+            'channel_exit__y_coordinate': 2,
+            'land_surface__elevation': 0,
+            'channel_centerline__elevation': 1,
+            'sea_water_surface__elevation': 1,
+            'avulsion_record': None,
+        }
+
+        self._grid_rank = {
+            0: 2,
+            1: 1,
+            2: 0,
+        }
+
     def update(self):
         """Advance model by one time step."""
         self._model.advance_in_time()
@@ -93,7 +114,8 @@ class BmiRiverModule(object):
 
     def get_var_type(self, var_name):
         """Data type of variable."""
-        return str(self.get_value(var_name).dtype)
+        return self._var_type[var_name]
+        #return str(self.get_value(var_name).dtype)
 
     def get_var_units(self, var_name):
         """Get units of variable."""
@@ -104,20 +126,30 @@ class BmiRiverModule(object):
         return self.get_value(var_name).nbytes
 
     def get_var_grid(self, var_name):
-        if var_name == 'land_surface__elevation':
-            return 0
+        return self._var_grid[var_name]
 
     def get_grid_rank(self, grid_id):
-        if grid_id == 0:
-            return len(self._model.grid_shape)
+        return self._grid_rank[grid_id]
 
     def get_grid_size(self, grid_id):
         if grid_id == 0:
             return np.prod(self._model.grid_shape)
+        elif grid_id == 1:
+            return len(self._model.river_x_coordinates)
+        elif grid_id == 0:
+            return 1
+        else:
+            raise KeyError(grid_id)
 
     def get_grid_shape(self, grid_id):
         if grid_id == 0:
             return self._model.grid_shape
+        elif grid_id == 1:
+            return self._model.river_x_coordinates.shape
+        elif grid_id == 0:
+            return (1, )
+        else:
+            raise KeyError(grid_id)
 
     def get_grid_spacing(self, grid_id):
         if grid_id == 0:
@@ -130,6 +162,12 @@ class BmiRiverModule(object):
     def get_grid_type(self, grid_id):
         if grid_id == 0:
             return 'uniform_rectilinear_grid'
+        elif grid_id == 1:
+            return 'vector'
+        elif grid_id == 0:
+            return 'scalar'
+        else:
+            raise KeyError(grid_id)
 
     def get_value(self, var_name):
         """Copy of values."""
