@@ -137,7 +137,7 @@ class BmiRiverModule(object):
             return np.prod(self._model.grid_shape)
         elif grid_id == 1:
             return len(self._model.river_x_coordinates)
-        elif grid_id == 0:
+        elif grid_id == 2:
             return 1
         else:
             raise KeyError(grid_id)
@@ -147,7 +147,7 @@ class BmiRiverModule(object):
             return self._model.grid_shape
         elif grid_id == 1:
             return self._model.river_x_coordinates.shape
-        elif grid_id == 0:
+        elif grid_id == 2:
             return (1, )
         else:
             raise KeyError(grid_id)
@@ -165,7 +165,7 @@ class BmiRiverModule(object):
             return 'uniform_rectilinear_grid'
         elif grid_id == 1:
             return 'vector'
-        elif grid_id == 0:
+        elif grid_id == 2:
             return 'scalar'
         else:
             raise KeyError(grid_id)
