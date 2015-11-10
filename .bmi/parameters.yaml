@@ -81,3 +81,24 @@ rate_of_inlet_rise:
       min: -10.
       max: 10.
     units: m/yr
+---
+_name: Delta
+
+upstream_elevation:
+  description: Elevation at the most upstream part of the delta
+  value:
+    type: float
+    default: 100.
+    range:
+      min: 0.
+      max: 10000.
+    units: m
+delta_slope:
+  description: Initial slope of the delta
+  value:
+    type: float
+    default: 0.0001
+    range:
+      min: 0.
+      max: .01
+    units: "-"

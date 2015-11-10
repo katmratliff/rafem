@@ -3,9 +3,9 @@
 # Space
 shape: [{number_of_rows}, {number_of_columns}] # Length x Width (km)
 spacing: [{row_spacing}, {column_spacing}]    # dy, dx (km)
-n0: 100              # upstream elevation (not needed after coupling)
+n0: {upstream_elevation} # upstream elevation (not needed after coupling)
 max_rand: 0.00001    # max height of a random perturbation
-nslope: 0.0001       # initial landscape slope
+nslope: {delta_slope} # initial landscape slope
 
 # Time
 time_max: {run_duration}       # length of model run (years)
