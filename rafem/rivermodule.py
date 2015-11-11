@@ -109,9 +109,10 @@ class RiverModule(object):
         self._dy = params['spacing'][0] * 1000.
         self._dx = params['spacing'][1] * 1000.
 
-        length, width = params['shape']
-        n_rows = int(length * 1000 / self._dy + 1)
-        n_cols = int(width * 1000 / self._dx + 1)
+        n_rows = int(params['shape'][0])
+        n_cols = int(params['shape'][1])
+        #n_rows = int(length * 1000 / self._dy + 1)
+        #n_cols = int(width * 1000 / self._dx + 1)
 
         # Initialize elevation grid
         # transverse and longitudinal space
