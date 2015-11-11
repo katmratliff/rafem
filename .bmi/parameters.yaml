@@ -40,7 +40,7 @@ row_spacing:
     range:
       min: 0
       max: 1000
-    units: m
+    units: km
 
 column_spacing:
   description: Spacing between grid columns.
@@ -50,7 +50,7 @@ column_spacing:
     range:
       min: 0
       max: 1000
-    units: m
+    units: km
 ---
 _name: Sea Level
 
