@@ -20,7 +20,7 @@ class BmiRiverModule(object):
         'channel_centerline__x_coordinate',
         'channel_centerline__y_coordinate',
         'channel_centerline__elevation',
-        'channel_water_sediment~bedload__mass_flow_rate',
+        'channel_water_sediment~bedload__volume_flow_rate',
         'channel_exit__x_coordinate',
         'channel_exit__y_coordinate',
         'land_surface__elevation',
@@ -57,7 +57,7 @@ class BmiRiverModule(object):
         self._var_units = {
             'channel_centerline__x_coordinate': 'm',
             'channel_centerline__y_coordinate': 'm',
-            'channel_water_sediment~bedload__volume_flow_rate': "kg s^-1",
+            'channel_water_sediment~bedload__volume_flow_rate': "m^3 s^-1",
             'channel_exit__x_coordinate': 'm',
             'channel_exit__y_coordinate': 'm',
             'land_surface__elevation': 'm',
@@ -180,7 +180,8 @@ class BmiRiverModule(object):
             raise KeyError(var_name)
 
         if var_name == 'land_surface__elevation':
-            self._model.elevation[:] = new_vals[:]
+            np.copyto(self._model.elevation.reshape((-1, )),
+                      new_vals.reshape((-1, )))
         elif var_name == 'channel_exit__x_coordinate':
             self._model.river_x_coordinates = np.append(
                 self._model.river_x_coordinates, new_vals)
