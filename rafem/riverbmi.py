@@ -20,7 +20,7 @@ class BmiRiverModule(object):
         'channel_centerline__x_coordinate',
         'channel_centerline__y_coordinate',
         'channel_centerline__elevation',
-        'channel_water_sediment~bedload__volume_flow_rate',
+        'channel_exit_water_sediment~bedload__volume_flow_rate',
         'channel_exit__x_coordinate',
         'channel_exit__y_coordinate',
         'land_surface__elevation',
@@ -42,7 +42,7 @@ class BmiRiverModule(object):
                 lambda: self._model.river_x_coordinates,
             'channel_centerline__y_coordinate':
                 lambda: self._model.river_y_coordinates,
-            'channel_water_sediment~bedload__volume_flow_rate':
+            'channel_exit_water_sediment~bedload__volume_flow_rate':
                 lambda: self._model.sediment_flux,
             'channel_exit__x_coordinate':
                 lambda: self._model.river_x_coordinates[-1],
@@ -57,7 +57,7 @@ class BmiRiverModule(object):
         self._var_units = {
             'channel_centerline__x_coordinate': 'm',
             'channel_centerline__y_coordinate': 'm',
-            'channel_water_sediment~bedload__volume_flow_rate': "m^3 s^-1",
+            'channel_exit_water_sediment~bedload__volume_flow_rate': "m^3 s^-1",
             'channel_exit__x_coordinate': 'm',
             'channel_exit__y_coordinate': 'm',
             'land_surface__elevation': 'm',
@@ -73,7 +73,7 @@ class BmiRiverModule(object):
         self._var_grid = {
             'channel_centerline__x_coordinate': 1,
             'channel_centerline__y_coordinate': 1,
-            'channel_water_sediment~bedload__volume_flow_rate': 1,
+            'channel_exit_water_sediment~bedload__volume_flow_rate': 2,
             'channel_exit__x_coordinate': 2,
             'channel_exit__y_coordinate': 2,
             'land_surface__elevation': 0,
