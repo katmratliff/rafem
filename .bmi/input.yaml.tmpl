@@ -18,9 +18,9 @@ SLRR_m: {rate_of_sea_level_rise} # sea level rise rate (m/yr)
 IRR_m: {rate_of_inlet_rise}      # rate that inlet cell rises (subsidence)
 
 # River characteristics
-ch_width: 2000.      # characteristic channel width (m)
-ch_depth: 5.0        # characteristic channel depth (m)
-ch_discharge: 16791. # long-term averaged discharge (m^3/s)
+ch_width: {channel_width}  # characteristic channel width (m)
+ch_depth: {channel_depth}  # characteristic channel depth (m)
+ch_discharge: {channel_discharge} # long-term averaged discharge (m^3/s)
 A: 1.                # river-dependent const. (1 for meandering; 1.4 for braided)
 c_f: 0.01            # drag coefficient
 C_0: 1.              # sediment concentration on bed
