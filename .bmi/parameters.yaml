@@ -102,3 +102,33 @@ delta_slope:
       min: 0.
       max: .01
     units: "-"
+---
+_name: Channel
+
+channel_width:
+  description: Characteristic channel width
+  value:
+    type: float
+    default: 2000.
+    range:
+      min: 0.
+      max: 10000.
+    units: m
+channel_depth:
+  description: Characteristic channel depth
+  value:
+    type: float
+    default: 5.
+    range:
+      min: 0.
+      max: 100.
+    units: "m"
+channel_discharge:
+  description: Long-term averaged discharge
+  value:
+    type: float
+    default: 16791.
+    range:
+      min: 0.
+      max: 1e6
+    units: "m^3 / s"
