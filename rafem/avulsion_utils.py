@@ -116,3 +116,98 @@ def find_point_in_path(path, sub):
         return zip(*path).index(sub)
     except ValueError:
         return None
+
+
+def set_linear_profile(z, riv_ij, dx=1., dy=1.):
+    """Set elevations along a path to be linear.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> z = np.array([[0, 0, 0, 0, 0],
+    ...               [1, 2, 1, 1, 1],
+    ...               [2, 2, 2, 2, 2],
+    ...               [3, 3, 3, 3, 3]], dtype=float)
+    >>> ij = [(0, 2), (1, 2), (2, 2), (3, 2)]
+    >>> set_linear_profile(z, ij)
+    array([[ 0.,  0.,  0.,  0.,  0.],
+           [ 1.,  2.,  1.,  1.,  1.],
+           [ 2.,  2.,  2.,  2.,  2.],
+           [ 3.,  3.,  3.,  3.,  3.]])
+
+    >>> ij = [(0, 0), (1, 1), (2, 2), (3, 1)]
+    >>> set_linear_profile(z, ij, dx=3., dy=4.)
+    array([[ 0.,  0.,  0.,  0.,  0.],
+           [ 1.,  1.,  1.,  1.,  1.],
+           [ 2.,  2.,  2.,  2.,  2.],
+           [ 3.,  3.,  3.,  3.,  3.]])
+
+    """
+    z0 = z[riv_ij[0]]
+    dz = z[riv_ij[-1]] - z[riv_ij[0]]
+
+    lengths = get_link_lengths(zip(*riv_ij), dx=dx, dy=dy)
+    ds = lengths.sum()
+
+    # z[zip(*riv_ij[1:])] = z0 + dz / ds * lengths.cumsum()
+
+    z[zip(*riv_ij[:-1])] = z[riv_ij[-1]] + np.arange(len(riv_ij) - 1, 0, -1) * 1e-6
+
+    return z
+
+
+def fill_upstream(z, riv_ij, dx=1., dy=1.):
+    """Fill depressions upstream of a pit.
+
+    Exammples
+    ---------
+    >>> import numpy as np
+    >>> z = np.array([[3, 3, 3, 3, 3],
+    ...               [2, 2, 2, 2, 2],
+    ...               [1, 1, 0, 1, 1],
+    ...               [0, 0, 1, 0, 0]], dtype=float)
+    >>> ij = [(0, 2), (1, 2), (2, 2), (3, 2)]
+    >>> fill_upstream(z, ij)
+    array([[ 3. ,  3. ,  3. ,  3. ,  3. ],
+           [ 2. ,  2. ,  2. ,  2. ,  2. ],
+           [ 1. ,  1. ,  1.5,  1. ,  1. ],
+           [ 0. ,  0. ,  1. ,  0. ,  0. ]])
+
+    >>> z = np.array([[3, 3, 1, 3, 3],
+    ...               [2, 2, 0, 2, 2],
+    ...               [1, 1, 1, 1, 1],
+    ...               [0, 0, 2, 0, 0]], dtype=float)
+    >>> ij = [(0, 2), (1, 2), (2, 2), (3, 2)]
+    >>> fill_upstream(z, ij)
+    """
+    fill_to = z[riv_ij[-1]]
+
+    for n in xrange(len(riv_ij) - 2, -1, -1):
+        if z[riv_ij[n]] > fill_to:
+            break
+        # z[riv_ij[n]] = z[riv_ij[n + 1]] + 1e-6
+
+    if z[riv_ij[n]] <= fill_to:
+        z[riv_ij[n]] = fill_to + 1e-6
+
+    set_linear_profile(z, riv_ij[n:], dx=dx, dy=dy)
+
+    return z
+
+
+def sort_lowest_neighbors(n, sub):
+    """Sort neighbor cells by elevation."""
+    i, j = sub
+
+    if j == n.shape[1] - 1:
+        di, dj  = np.array([0, 1, 1]), np.array([-1, -1, 0])
+    elif j == 0:
+        di, dj  = np.array([1, 1, 0]), np.array([0, 1, 1])
+    else:
+        di, dj = np.array([0, 1, 1, 1, 0]),  np.array([-1, -1, 0, 1, 1])
+
+    sorted = np.argsort(n[i + di, j + dj])
+
+    return i + di[sorted], j + dj[sorted]
+
+
