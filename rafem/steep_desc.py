@@ -1,5 +1,9 @@
 #! /usr/local/bin/python
+import warnings
+
 import numpy as np
+
+from avulsion_utils import fill_upstream
 
 
 def lowest_neighbor(n, sub):
@@ -27,6 +31,7 @@ def lowest_neighbor(n, sub):
         di, dj = np.array([0, 1, 1, 1, 0]),  np.array([-1, -1, 0, 1, 1])
 
     lowest = np.argmin(n[i + di, j + dj])
+
     return i + di[lowest], j + dj[lowest]
 
 
@@ -98,21 +103,25 @@ def find_course(z, riv_i, riv_j, sea_level=None):
     --------
     >>> import numpy as np
 
-    >>> z = np.array([[4., 3., 4.], [2., 3., 3.], [2., 1., 2.]])
+    >>> z = np.array([[4., 3., 4.],
+    ...               [2., 3., 3.],
+    ...               [2., 1., 2.]])
     >>> riv_i, riv_j = np.zeros(9, dtype=int), np.zeros(9, dtype=int)
     >>> riv_i[0], riv_j[0] = 0, 1
 
-    >>> new_len = find_course(z, riv_i, riv_j, 1)
-    >>> new_len
-    3
-    >>> riv_i[:new_len], riv_j[:new_len]
+    >>> find_course(z, riv_i[:1], riv_j[:1], 1)
     (array([0, 1, 2]), array([1, 0, 1]))
 
-    >>> new_len = find_course(z, riv_i, riv_j, 1, sea_level=2.)
-    >>> new_len
-    2
-    >>> riv_i[:new_len], riv_j[:new_len]
+    >>> find_course(z, riv_i[:1], riv_j[:1], sea_level=2.)
     (array([0, 1]), array([1, 0]))
+
+    >>> z = np.array([[4., 3., 4.],
+    ...               [2., 3., 3.],
+    ...               [2., 1., 2.],
+    ...               [2., 1.5, 2]])
+    >>> find_course(z, riv_i[:1], riv_j[:1], sea_level=0.)
+    (array([0, 1, 2, 3]), array([1, 0, 1, 1]))
+    >>> z
     """
     # function to find the steepest descent route
     # note: this needs to be improved to remove potential bias that may occur
@@ -122,17 +131,33 @@ def find_course(z, riv_i, riv_j, sea_level=None):
     if sea_level is None:
         sea_level = - np.finfo(float).max
 
+    for n in xrange(1, riv_i.size):
+        if at_river_mouth(z, (riv_i[n - 1], riv_j[n - 1]), sea_level):
+            return riv_i[:n], riv_j[:n]
+
     new_i = np.empty(z.size, dtype=np.int)
     new_j = np.empty(z.size, dtype=np.int)
 
     new_i[:len(riv_j)] = riv_i[:]
     new_j[:len(riv_i)] = riv_j[:]
 
-    for n in xrange(riv_i.size, new_i.size):
-        if at_river_mouth(z, (new_i[n - 1], new_j[n - 1]), sea_level):
-            break
+    pits = True
+    while pits:
+        for n in xrange(riv_i.size, new_i.size):
+            if at_river_mouth(z, (new_i[n - 1], new_j[n - 1]), sea_level):
+                pits = False
+                break
 
-        new_i[n], new_j[n] = lowest_neighbor(z, (new_i[n - 1], new_j[n - 1]))
+            downstream_ij = lowest_neighbor(z, (new_i[n - 1], new_j[n - 1]))
+
+            if z[downstream_ij] > z[new_i[n - 1], new_j[n - 1]]:
+                new_i[n], new_j[n] = downstream_ij
+                fill_upstream(z, zip(new_i[:n + 1], new_j[:n + 1]))
+                break
+            else:
+                new_i[n], new_j[n] = downstream_ij
+
+            # new_i[n], new_j[n] = lowest_neighbor(z, (new_i[n - 1], new_j[n - 1]))
 
     if n == 0:
         raise RuntimeError('new river length is zero!')
