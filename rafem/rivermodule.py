@@ -182,6 +182,10 @@ class RiverModule(object):
 
         ### future work: SLRR can be a vector to change rates ###
 
+        old_len = len(self._riv_i)
+        self._riv_i, self._riv_j = steep_desc.find_course(
+            self._n, self._riv_i, self._riv_j, sea_level=self._SL)
+
         # determine if there is an avulsion & find new path if so
         ### need to change this to look for shoreline after coupling ###
         ### (instead of looking for sea level)
