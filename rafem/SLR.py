@@ -32,7 +32,8 @@ def elev_change(current_SL, n, riv_i, riv_j, ch_depth):
     channel_elevations = n[riv_i, riv_j].copy()
 
     # raises cell elevation to sea level if it is below
-    n[n < current_SL] = current_SL
+    # n[n < current_SL] = current_SL
+    #channel_elevations[channel_elevations < current_SL] = current_SL
 
     n[riv_i, riv_j] = channel_elevations
 

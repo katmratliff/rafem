@@ -1,0 +1,134 @@
+%YAML 1.2
+---
+run_duration:
+  description: Simulation run time
+  value:
+    type: float
+    default: 100.
+    units: y
+    range:
+      min: 0
+      max: 1000000
+---
+_name: Grid
+
+number_of_rows:
+  description: Number of grid rows.
+  value:
+    type: int
+    default: 1000
+    range:
+      min: 0
+      max: 10000
+    units: "-"
+
+number_of_columns:
+  description: Number of grid columns.
+  value:
+    type: int
+    default: 500
+    range:
+      min: 0
+      max: 10000
+    units: "-"
+
+row_spacing:
+  description: Spacing between grid rows
+  value:
+    type: float
+    default: 10
+    range:
+      min: 0
+      max: 1000
+    units: km
+
+column_spacing:
+  description: Spacing between grid columns.
+  value:
+    type: float
+    default: 10
+    range:
+      min: 0
+      max: 1000
+    units: km
+---
+_name: Sea Level
+
+initial_sea_level:
+  description: Initial sea-level elevation
+  value:
+    type: float
+    default: 0.
+    range:
+      min: -1000.
+      max: 1000.
+    units: m
+rate_of_sea_level_rise:
+  description: Rate of sea-level rise
+  value:
+    type: float
+    default: 0.025
+    range:
+      min: -10.
+      max: 10.
+    units: m/yr
+rate_of_inlet_rise:
+  description: Rate that the inlet cell rises (subsidence)
+  value:
+    type: float
+    default: 0.005
+    range:
+      min: -10.
+      max: 10.
+    units: m/yr
+---
+_name: Delta
+
+upstream_elevation:
+  description: Elevation at the most upstream part of the delta
+  value:
+    type: float
+    default: 100.
+    range:
+      min: 0.
+      max: 10000.
+    units: m
+delta_slope:
+  description: Initial slope of the delta
+  value:
+    type: float
+    default: 0.0001
+    range:
+      min: 0.
+      max: .01
+    units: "-"
+---
+_name: Channel
+
+channel_width:
+  description: Characteristic channel width
+  value:
+    type: float
+    default: 2000.
+    range:
+      min: 0.
+      max: 10000.
+    units: m
+channel_depth:
+  description: Characteristic channel depth
+  value:
+    type: float
+    default: 5.
+    range:
+      min: 0.
+      max: 100.
+    units: "m"
+channel_discharge:
+  description: Long-term averaged discharge
+  value:
+    type: float
+    default: 16791.
+    range:
+      min: 0.
+      max: 1e6
+    units: "m^3 / s"

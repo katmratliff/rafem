@@ -43,12 +43,32 @@ class RiverModule(object):
         self._dt = time_step * _SECONDS_PER_DAY
 
     @property
+    def grid_shape(self):
+        return self._n.shape
+
+    @property
+    def grid_spacing(self):
+        return (self._dy, self._dx)
+
+    @property
     def river_x_coordinates(self):
         return self._riv_j * self._dx
+
+    @river_x_coordinates.setter
+    def river_x_coordinates(self, new_coords):
+        self._riv_j = np.asarray(new_coords) / self._dx
 
     @property 
     def river_y_coordinates(self):
         return self._riv_i * self._dy
+
+    @river_y_coordinates.setter
+    def river_y_coordinates(self, new_coords):
+        self._riv_i = np.asarray(new_coords) / self._dy
+
+    @property
+    def sea_level(self):
+        return self._SL
 
     @property 
     def elevation(self):
@@ -89,9 +109,10 @@ class RiverModule(object):
         self._dy = params['spacing'][0] * 1000.
         self._dx = params['spacing'][1] * 1000.
 
-        length, width = params['shape']
-        n_rows = int(length * 1000 / self._dy + 1)
-        n_cols = int(width * 1000 / self._dx + 1)
+        n_rows = int(params['shape'][0])
+        n_cols = int(params['shape'][1])
+        #n_rows = int(length * 1000 / self._dy + 1)
+        #n_cols = int(width * 1000 / self._dx + 1)
 
         # Initialize elevation grid
         # transverse and longitudinal space
@@ -146,7 +167,8 @@ class RiverModule(object):
         #self._savespacing = params['savespacing']
 
         self._riv_i, self._riv_j = steep_desc.find_course(self._n, self._riv_i,
-                                                          self._riv_j)
+                                                          self._riv_j,
+                                                          sea_level=self._SL)
 
         # downcut into new river course by amount determined by init_cut
         downcut.cut_init(self._riv_i, self._riv_j, self._n, init_cut)
@@ -159,6 +181,10 @@ class RiverModule(object):
         """ Update avulsion model one time step. """
 
         ### future work: SLRR can be a vector to change rates ###
+
+        old_len = len(self._riv_i)
+        self._riv_i, self._riv_j = steep_desc.find_course(
+            self._n, self._riv_i, self._riv_j, sea_level=self._SL)
 
         # determine if there is an avulsion & find new path if so
         ### need to change this to look for shoreline after coupling ###
