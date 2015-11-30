@@ -176,7 +176,7 @@ def find_course(z, riv_i, riv_j, sea_level=None):
     for n in xrange(1, riv_i.size):
         # if at_river_mouth(z, (riv_i[n - 1], riv_j[n - 1]), sea_level):
         #     return riv_i[:n], riv_j[:n]
-        if at_end_of_domain(z, (riv_i[n - 1], riv_j[n - 1]):
+        if at_end_of_domain(z, (riv_i[n - 1], riv_j[n - 1])):
             return riv_i[:n], riv_j[:n]
         if cell_under_water(z, (riv_i[n - 1], riv_j[n - 1]), sea_level):
             return riv_i[:n-1], riv_j[:n-1]
@@ -197,7 +197,7 @@ def find_course(z, riv_i, riv_j, sea_level=None):
             Trying to get out of loop if at end of domain,
             but want to get rid of a river cell below sea level."""
 
-            if at_end_of_domain(z, (riv_i[n - 1], riv_j[n - 1]):
+            if at_end_of_domain(z, (riv_i[n - 1], riv_j[n - 1])):
                 pits = False
                 break
             if cell_under_water(z, (riv_i[n - 1], riv_j[n - 1]), sea_level):
