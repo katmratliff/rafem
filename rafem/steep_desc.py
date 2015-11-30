@@ -91,7 +91,7 @@ def at_end_of_domain(z, sub):
         True if the cell at the given subscript is at the end of domain.
     """   
     try:
-        return sub[0] == z.shape[0]
+        return sub[0] == z.shape[0] - 1
     except IndexError:
         return True
 
