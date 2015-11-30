@@ -202,8 +202,8 @@ def find_course(z, riv_i, riv_j, sea_level=None):
                 break
             if cell_under_water(z, (new_i[n - 1], new_j[n - 1]), sea_level):
                 pits = False
-                new_i.pop()
-                new_j.pop()
+                new_i = new_i[:-1]
+                new_j = new_j[:-1]
                 break
 
 
