@@ -197,10 +197,10 @@ def find_course(z, riv_i, riv_j, sea_level=None):
             Trying to get out of loop if at end of domain,
             but want to get rid of a river cell below sea level."""
 
-            if at_end_of_domain(z, (riv_i[n - 1], riv_j[n - 1])):
+            if at_end_of_domain(z, (new_i[n - 1], new_j[n - 1])):
                 pits = False
                 break
-            if cell_under_water(z, (riv_i[n - 1], riv_j[n - 1]), sea_level):
+            if cell_under_water(z, (new_i[n - 1], new_j[n - 1]), sea_level):
                 pits = False
                 new_i.pop()
                 new_j.pop()
