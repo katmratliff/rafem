@@ -119,7 +119,7 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
     old = riv_i, riv_j
     avulsion_type = 0
 
-    for a in xrange(1, len(riv_i)):
+    for a in xrange(1, len(riv_i)-1):
         if channel_is_superelevated(n, (riv_i[a], riv_j[a]), ch_depth,
                                     super_ratio):
 
@@ -133,8 +133,10 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
             # the lengths of the previous and newly calculated paths will
             # be compared
             if short_path == 1:
-                new_length = find_path_length(new, dx=dx, dy=dy)
-                old_length = find_path_length(old, dx=dx, dy=dy)
+                new_length = find_path_length(n, new, current_SL,
+                                              dx=dx, dy=dy)
+                old_length = find_path_length(n, old, current_SL,
+                                              dx=dx, dy=dy)
 
                 if new_length < old_length:
                     # if new river course < length of old

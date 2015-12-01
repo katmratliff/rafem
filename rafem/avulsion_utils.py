@@ -69,7 +69,7 @@ def get_link_lengths(path, dx=1., dy=1.):
 
     lengths = np.empty(len(path[0]) - 1, dtype=np.float)
     ij_last = path[0][0], path[1][0]
-    for n, ij in enumerate(izip(path[0][1:], path[1][1:])):
+    for n, ij in enumerate(izip(path[0][1:-2], path[1][1:-2])):
         if is_diagonal_neighbor(ij, ij_last):
             lengths[n] = DIAGONAL_LENGTH
         elif is_same_row(ij, ij_last):
@@ -85,8 +85,9 @@ def get_channel_distance(path, dx=1., dy=1.):
     return np.append(0, total_distance)
 
 
-def find_path_length(path, dx=1., dy=1.):
-    return get_link_lengths(path, dx=dx, dy=dy).sum()
+def find_path_length(n, path, sea_level, dx=1., dy=1.):
+    last_subaerial_len = n[path[0][-2]][path[1][-2]] - sea_level
+    return get_link_lengths(path, dx=dx, dy=dy).sum() + last_subaerial_len
 
 
 def find_point_in_path(path, sub):
