@@ -69,6 +69,43 @@ def at_river_mouth(z, sub, z0):
     except IndexError:
         return True
 
+def at_end_of_domain(z, sub):
+    """Check if a cell a river mouth at the end of domain.
+    Parameters
+    ----------
+    z : ndarray
+        2D-array of elevations.
+    sub : tuple of int
+        Row and column subscript into *z*.
+    Returns
+    -------
+    boolean
+        True if the cell at the given subscript is at the river mouth.
+    """
+    try:
+        return sub[0] == z.shape[0] - 1
+    except IndexError:
+        return True
+
+def riv_cell_at_sea_level(z, sub, z0):
+    """Check if a river cell is at sea level.
+    Parameters
+    ----------
+    z : ndarray
+        2D-array of elevations.
+    sub : tuple of int
+        Row and column subscript into *z*.
+    z0 : float
+        Elevation of sea level (or `None`).
+    Returns
+    -------
+    boolean
+        True if the cell at the given subscript is at the river mouth.
+    """
+    try:
+        below_sea_level(z[sub], z0)
+    except IndexError:
+        return True
 
 def find_course(z, riv_i, riv_j, sea_level=None):
     """Find the course of a river.
@@ -118,8 +155,12 @@ def find_course(z, riv_i, riv_j, sea_level=None):
         sea_level = - np.finfo(float).max
 
     for n in xrange(1, riv_i.size):
-        if at_river_mouth(z, (riv_i[n - 1], riv_j[n - 1]), sea_level):
+        if at_end_of_domain(z, (riv_i[n - 1], riv_j[n - 1])):
             return riv_i[:n], riv_j[:n]
+
+    for n in xrange(1, riv_i.size):
+        if riv_cell_at_sea_level(z, (riv_i[n - 1], riv_j[n - 1]), sea_level):
+            return riv_i[:n-1], riv_j[:n-1]
 
     new_i = np.empty(z.size, dtype=np.int)
     new_j = np.empty(z.size, dtype=np.int)
@@ -130,7 +171,17 @@ def find_course(z, riv_i, riv_j, sea_level=None):
     pits = True
     while pits:
         for n in xrange(riv_i.size, new_i.size):
-            if at_river_mouth(z, (new_i[n - 1], new_j[n - 1]), sea_level):
+            #if at_river_mouth(z, (new_i[n - 1], new_j[n - 1]), sea_level):
+            #    pits = False
+            #    break
+
+            if at_end_of_domain(z, (riv_i[n - 1], riv_j[n - 1])):
+                pits = False
+                break
+
+            if riv_cell_at_sea_level(z, (riv_i[n - 1], riv_j[n - 1]), sea_level):
+                new_i = new_i[:-1]
+                new_j = new_j[:-1]
                 pits = False
                 break
 
