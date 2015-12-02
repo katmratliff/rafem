@@ -63,7 +63,7 @@ def smooth_rc(dx, dy, nu, dt, riv_i, riv_j, n, sea_level):
     # KMR 8/24/15: don't need to divide by dx anymore, diffusion coeff
     # should be fixed with new calculation
 
-    beach_len = n[riv_i[-1]][riv_j[-1]] - sea_level
+    beach_len = n[riv_i[-1], riv_j[-1]] - sea_level
 
     if beach_len > 1:
         n_river = n[riv_i, riv_j]

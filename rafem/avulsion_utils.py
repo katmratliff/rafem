@@ -86,7 +86,7 @@ def get_channel_distance(path, dx=1., dy=1.):
 
 
 def find_path_length(n, path, sea_level, dx=1., dy=1.):
-    beach_len = n[path[0][-1]][path[1][-1]] - sea_level
+    beach_len = n[path[0][-1], path[1][-1]] - sea_level
     if beach_len > 1:
         riv_length = get_link_lengths(path, dx=dx, dy=dy).sum()
     else:

@@ -233,7 +233,7 @@ class RiverModule(object):
 
         # calculate sediment flux
         self._sed_flux = flux.calc_qs(self._nu, self._riv_i,
-                                      self._riv_j, self._n,
+                                      self._riv_j, self._n, self._SL
                                       self._dx, self._dy, self._dt)
 
         self._profile = self._n[self._riv_i, self._riv_j]
