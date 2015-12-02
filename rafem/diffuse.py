@@ -37,7 +37,7 @@ def solve_second_derivative(x, y):
                 y[2:] / (x3_minus_x2 * x3_minus_x1))
 
 
-def smooth_rc(dx, dy, nu, dt, riv_i, riv_j, n, sea_level):
+def smooth_rc(dx, dy, nu, dt, riv_i, riv_j, n):
     """Smooth river channel elevations using the diffusion equation.
 
     Parameters
@@ -64,7 +64,7 @@ def smooth_rc(dx, dy, nu, dt, riv_i, riv_j, n, sea_level):
     # should be fixed with new calculation
 
     n_river = n[riv_i, riv_j]
-    s_river = find_path_length(n, (riv_i, riv_j), sea_level, dx=dx, dy=dy)
+    s_river = get_channel_distance((riv_i, riv_j), dx=dx, dy=dy)
 
     dn_rc = (nu * dt) * solve_second_derivative(s_river, n_river)
 
