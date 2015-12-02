@@ -18,11 +18,17 @@ def cut_init(riv_i, riv_j, n, init_cut):
 def cut_new(riv_i, riv_j, n, current_SL, ch_depth, dx=1., dy=1.):
     """Set elevations of new portions of a profile."""
 
-    # new last river cell = SL - channel depth
-    n[riv_i[-1], riv_j[-1]] = current_SL - ch_depth
+    # downcut last river cell by a channel depth
+    n[riv_i[-1], riv_j[-1]] -= ch_depth
+
+    beach_len = n[riv_i[-1]][riv_j[-1]] - current_SL
     
     if riv_i.size > 1:
-        lengths = get_link_lengths((riv_i, riv_j), dx=dx, dy=dy)
+        if beach_len > 1:
+            lengths = get_link_lengths((riv_i, riv_j), dx=dx, dy=dy)
+        else:
+            lengths = get_link_lengths((riv_i[:-1], riv_j[:-1]), dx=dx, dy=dy)
+            np.append(lengths, beach_len)
 
         i0, j0 = riv_i[1], riv_j[1]
         z0 = n[riv_i[0], riv_j[0]]
