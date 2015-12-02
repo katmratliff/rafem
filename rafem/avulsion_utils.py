@@ -91,8 +91,11 @@ def find_path_length(n, path, sea_level, dx=1., dy=1.):
         riv_length = get_link_lengths(path, dx=dx, dy=dy).sum()
     else:
         path_upland = (path[0][:-1], path[1][:-1])
+        path_to_last = (path[0][-2:], path[1][-2:])
         riv_length = (get_link_lengths(path_upland, dx=dx, dy=dy).sum()
+                      + (get_link_lengths(path_to_last, dx=dx, dy=dy).sum())/2
                       + beach_len)
+
     return (riv_length)
 
 
