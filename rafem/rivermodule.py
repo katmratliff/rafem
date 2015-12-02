@@ -216,7 +216,7 @@ class RiverModule(object):
         # change elevations according to sea level rise (SLRR)
         ### needs to be changed to subtracting elevation once coupled ###
         SLR.elev_change(self._SL, self._n, self._riv_i,
-                        self._riv_j, self._ch_depth)
+                        self._riv_j, self._ch_depth, self._SLRR)
 
         # smooth river course elevations using linear diffusion equation
         diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt,
