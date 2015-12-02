@@ -171,21 +171,25 @@ def find_course(z, riv_i, riv_j, sea_level=None):
     pits = True
     while pits:
         for n in xrange(riv_i.size, new_i.size):
-            #if at_river_mouth(z, (new_i[n - 1], new_j[n - 1]), sea_level):
-            #    pits = False
-            #    break
+            # if at_river_mouth(z, (new_i[n - 1], new_j[n - 1]), sea_level):
+            #     pits = False
+            #     break
 
-            if at_end_of_domain(z, (riv_i[n - 1], riv_j[n - 1])):
+            if at_end_of_domain(z, (new_i[n - 1], new_j[n - 1])):
                 pits = False
                 break
 
-            if riv_cell_at_sea_level(z, (riv_i[n - 1], riv_j[n - 1]), sea_level):
-                new_i = new_i[:-1]
-                new_j = new_j[:-1]
-                pits = False
-                break
+            # if riv_cell_at_sea_level(z, (new_i[n - 1], new_j[n - 1]), sea_level):
+            #     new_i = new_i[:-1]
+            #     new_j = new_j[:-1]
+            #     pits = False
+            #     break
 
             downstream_ij = lowest_neighbor(z, (new_i[n - 1], new_j[n - 1]))
+
+            if below_sea_level(z[downstream_ij], sea_level):
+                pits = False
+                break
 
             if z[downstream_ij] > z[new_i[n - 1], new_j[n - 1]]:
                 new_i[n], new_j[n] = downstream_ij
