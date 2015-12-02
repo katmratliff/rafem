@@ -37,7 +37,7 @@ def solve_second_derivative(x, y):
                 y[2:] / (x3_minus_x2 * x3_minus_x1))
 
 
-def smooth_rc(dx, dy, nu, dt, riv_i, riv_j, n):
+def smooth_rc(dx, dy, nu, dt, riv_i, riv_j, n, sea_level):
     """Smooth river channel elevations using the diffusion equation.
 
     Parameters
@@ -63,12 +63,33 @@ def smooth_rc(dx, dy, nu, dt, riv_i, riv_j, n):
     # KMR 8/24/15: don't need to divide by dx anymore, diffusion coeff
     # should be fixed with new calculation
 
-    n_river = n[riv_i, riv_j]
-    s_river = get_channel_distance((riv_i, riv_j), dx=dx, dy=dy)
+    beach_len = n[riv_i[-1]][riv_j[-1]] - sea_level
 
-    dn_rc = (nu * dt) * solve_second_derivative(s_river, n_river)
+    if beach_len > 1:
+        n_river = n[riv_i, riv_j]
+        s_river = get_channel_distance((riv_i, riv_j), dx=dx, dy=dy)
 
-    n[riv_i[1:-1], riv_j[1:-1]] += dn_rc
+        dn_rc = (nu * dt) * solve_second_derivative(s_river, n_river)
+
+        n[riv_i[1:-1], riv_j[1:-1]] += dn_rc
+
+    else:
+        n_river = n[riv_i[:-1], riv_j[:-1]]
+        s_river = get_channel_distance((riv_i[:-1], riv_j[:-1]), dx=dx, dy=dy)
+
+        dn_rc = (nu * dt) * solve_second_derivative(s_river, n_river)
+
+        n[riv_i[1:-2], riv_j[1:-2]] += dn_rc
+
+        n_river_last = n[riv_i[-3:], riv_j[-3:]]
+        s_river_last = np.append(get_channel_distance(
+                                    (riv_i[-3:-2], riv_j[-3:-2]),
+                                    dx=dx, dy=dy), beach_len)
+
+        dn_rc_last = (nu * dt) * solve_second_derivative(s_river_last,
+                                                         n_river_last)
+
+        n[riv_i[-2], riv_j[-2]] += dn_rc_last
 
     return
 

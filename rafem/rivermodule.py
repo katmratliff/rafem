@@ -175,7 +175,7 @@ class RiverModule(object):
 
         # smooth initial river course elevations using linear diffusion equation
         diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt,
-                          self._riv_i, self._riv_j, self._n)
+                          self._riv_i, self._riv_j, self._n, self._SL)
 
         # initial profile
         self._profile = self._n[self._riv_i, self._riv_j]
@@ -220,7 +220,7 @@ class RiverModule(object):
 
         # smooth river course elevations using linear diffusion equation
         diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt,
-                          self._riv_i, self._riv_j, self._n)
+                          self._riv_i, self._riv_j, self._n, self._SL)
 
         # Floodplain sedimentation
         FP.dep_blanket(self._SL, self._blanket_rate, self._n,
