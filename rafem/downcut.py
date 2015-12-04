@@ -22,19 +22,13 @@ def cut_new(riv_i, riv_j, n, sea_level, ch_depth, slope, dx=1., dy=1.):
 
     # downcut last river cell by a channel depth
     n[riv_i[-1], riv_j[-1]] -= ch_depth
-
-    last_elev = n[riv_i[-1], riv_j[-1]] + ch_depth - sea_level
-    max_cell_h = math.tan(slope) * dx
-
-    beach_len = (last_elev / max_cell_h)
-
-    ### NEED TO UPDATE INPUTS SO WE CAN USE BEACH LENGTH
-    ### (JUST PASS PRIOR RIVER CELL, TOO) ###
-    # beach_len = find_beach_length(n, (riv_i[-2], riv_j[-2]),
-    #                               (riv_i[-1], riv_j[-1]), sea_level,
-    #                               ch_depth, slope, dx=dx, dy=dy)
     
     if riv_i.size > 1:
+
+        beach_len = find_beach_length(n, (riv_i[-2], riv_j[-2]),
+                                      (riv_i[-1], riv_j[-1]), sea_level,
+                                      ch_depth, slope, dx=dx, dy=dy)
+
         lengths = get_link_lengths((riv_i, riv_j), dx=dx, dy=dy)
         lengths[-1] = np.divide(lengths[-1], 2) + beach_len
 
