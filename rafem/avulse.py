@@ -7,7 +7,7 @@ import numpy as np
 import math
 
 from avulsion_utils import (find_point_in_path, channel_is_superelevated,
-                            find_subaerial_path_length)
+                            find_path_length)
 
 
 def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
@@ -119,7 +119,7 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
     old = riv_i, riv_j
     avulsion_type = 0
 
-    for a in xrange(1, len(riv_i)-1):
+    for a in xrange(1, len(riv_i)):
         if channel_is_superelevated(n, (riv_i[a], riv_j[a]), ch_depth,
                                     super_ratio):
 
@@ -133,9 +133,9 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
             # the lengths of the previous and newly calculated subaerial
             # paths will be compared
             if short_path == 1:
-                new_length = find_subaerial_path_length(n, new, current_SL,
+                new_length = find_path_length(n, new, current_SL, ch_depth,
                                               dx=dx, dy=dy)
-                old_length = find_subaerial_path_length(n, old, current_SL,
+                old_length = find_path_length(n, old, current_SL, ch_depth,
                                               dx=dx, dy=dy)
 
                 if new_length < old_length:

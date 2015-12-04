@@ -174,8 +174,8 @@ class RiverModule(object):
         downcut.cut_init(self._riv_i, self._riv_j, self._n, init_cut)
 
         # smooth initial river course elevations using linear diffusion equation
-        diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt,
-                          self._riv_i, self._riv_j, self._n)
+        diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt, self._ch_depth,
+                          self._riv_i, self._riv_j, self._n, self._SL)
 
         # initial profile
         self._profile = self._n[self._riv_i, self._riv_j]
@@ -185,9 +185,9 @@ class RiverModule(object):
 
         ### future work: SLRR can be a vector to change rates ###
 
-        # old_len = len(self._riv_i)
-        # self._riv_i, self._riv_j = steep_desc.find_course(
-        #     self._n, self._riv_i, self._riv_j, sea_level=self._SL)
+        self._riv_i, self._riv_j = steep_desc.update_course(
+            self._n, self._riv_i, self._riv_j, self._ch_depth,
+            sea_level=self._SL, dx=self._dx, dy=self._dy)
 
         # determine if there is an avulsion & find new path if so
         ### need to change this to look for shoreline after coupling ###
@@ -216,11 +216,11 @@ class RiverModule(object):
         # change elevations according to sea level rise (SLRR)
         ### needs to be changed to subtracting elevation once coupled ###
         SLR.elev_change(self._SL, self._n, self._riv_i,
-                        self._riv_j, self._ch_depth)
+                        self._riv_j, self._ch_depth, self._SLRR)
 
         # smooth river course elevations using linear diffusion equation
-        diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt,
-                          self._riv_i, self._riv_j, self._n)
+        diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt, self._ch_depth,
+                          self._riv_i, self._riv_j, self._n, self._SL)
 
         # Floodplain sedimentation
         FP.dep_blanket(self._SL, self._blanket_rate, self._n,
@@ -232,8 +232,8 @@ class RiverModule(object):
                     self._n, self._riv_i, self._riv_j, self._x, self._y)
 
         # calculate sediment flux
-        self._sed_flux = flux.calc_qs(self._nu, self._riv_i,
-                                      self._riv_j, self._n,
+        self._sed_flux = flux.calc_qs(self._nu, self._riv_i, self._riv_j,
+                                      self._n, self._SL, self._ch_depth,
                                       self._dx, self._dy, self._dt)
 
         self._profile = self._n[self._riv_i, self._riv_j]

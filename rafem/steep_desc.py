@@ -2,9 +2,9 @@
 import warnings
 
 import numpy as np
+import downcut
 
 from avulsion_utils import fill_upstream
-
 
 def lowest_neighbor(n, sub):
     """Find lowest neighbor value around a point.
@@ -69,6 +69,43 @@ def at_river_mouth(z, sub, z0):
     except IndexError:
         return True
 
+def at_end_of_domain(z, sub):
+    """Check if a cell a river mouth at the end of domain.
+    Parameters
+    ----------
+    z : ndarray
+        2D-array of elevations.
+    sub : tuple of int
+        Row and column subscript into *z*.
+    Returns
+    -------
+    boolean
+        True if the cell at the given subscript is at the river mouth.
+    """
+    try:
+        return sub[0] == z.shape[0] - 1
+    except IndexError:
+        return True
+
+def riv_cell_at_sea_level(z, sub, z0):
+    """Check if a river cell is at sea level.
+    Parameters
+    ----------
+    z : ndarray
+        2D-array of elevations.
+    sub : tuple of int
+        Row and column subscript into *z*.
+    z0 : float
+        Elevation of sea level (or `None`).
+    Returns
+    -------
+    boolean
+        True if the cell at the given subscript is at the river mouth.
+    """
+    try:
+        below_sea_level(z[sub], z0)
+    except IndexError:
+        return True
 
 def find_course(z, riv_i, riv_j, sea_level=None):
     """Find the course of a river.
@@ -118,8 +155,12 @@ def find_course(z, riv_i, riv_j, sea_level=None):
         sea_level = - np.finfo(float).max
 
     for n in xrange(1, riv_i.size):
-        if at_river_mouth(z, (riv_i[n - 1], riv_j[n - 1]), sea_level):
+        if at_end_of_domain(z, (riv_i[n - 1], riv_j[n - 1])):
             return riv_i[:n], riv_j[:n]
+
+    for n in xrange(1, riv_i.size):
+        if riv_cell_at_sea_level(z, (riv_i[n - 1], riv_j[n - 1]), sea_level):
+            return riv_i[:n-1], riv_j[:n-1]
 
     new_i = np.empty(z.size, dtype=np.int)
     new_j = np.empty(z.size, dtype=np.int)
@@ -130,11 +171,19 @@ def find_course(z, riv_i, riv_j, sea_level=None):
     pits = True
     while pits:
         for n in xrange(riv_i.size, new_i.size):
-            if at_river_mouth(z, (new_i[n - 1], new_j[n - 1]), sea_level):
+            # if at_river_mouth(z, (new_i[n - 1], new_j[n - 1]), sea_level):
+            #     pits = False
+            #     break
+
+            if at_end_of_domain(z, (new_i[n - 1], new_j[n - 1])):
                 pits = False
                 break
 
             downstream_ij = lowest_neighbor(z, (new_i[n - 1], new_j[n - 1]))
+
+            if below_sea_level(z[downstream_ij], sea_level):
+                pits = False
+                break
 
             if z[downstream_ij] > z[new_i[n - 1], new_j[n - 1]]:
                 new_i[n], new_j[n] = downstream_ij
@@ -149,4 +198,71 @@ def find_course(z, riv_i, riv_j, sea_level=None):
         raise RuntimeError('new river length is zero!')
 
     return new_i[:n], new_j[:n]
+
+
+def update_course(z, riv_i, riv_j, ch_depth, sea_level=None, dx=1., dy=1.):
+
+    if sea_level is None:
+        sea_level = - np.finfo(float).max
+
+    finding_course = True
+    while finding_course:
+        for n in (xrange(1, riv_i.size)):
+            last_elev = z[riv_i[-n], riv_j[-n]] + ch_depth - sea_level
+
+            if last_elev <= 0:
+                riv_i = riv_i[:n]
+                riv_j = riv_j[:n]
+                break
+
+            elif last_elev >= 1:
+
+                new_riv_i, new_riv_j = find_course(z, riv_i, riv_j, sea_level=sea_level)
+                new_riv_length = new_riv_i.size - riv_i.size
+                if new_riv_length == 0:
+                    finding_course = False
+                    break
+                # z[riv_i[-1], riv_j[-1]] -= ch_depth
+                # NEED TO DO WITH DOWNCUT BELOW
+                else:
+                    downcut.cut_new(riv_i[-new_riv_length:], riv_j[-new_riv_length:],
+                                z, sea_level, ch_depth, dx=dx, dy=dy)
+                    riv_i = new_riv_i
+                    riv_j = new_riv_j
+                    finding_course = False
+                    break
+
+                # prograde_river = True
+                # downstream_ij = lowest_neighbor(z, (riv_i[-1], riv_j[-1]))
+                # np.append(riv_i, downstream_ij[0])
+                # np.append(riv_j, downstream_ij[1])
+                # finding_course = False
+
+                # while prograde_river:
+                #     downstream_ij = lowest_neighbor(z, (riv_i[-1], riv_j[-1]))
+                #     np.append(riv_i, downstream_ij[0])
+                #     np.append(riv_j, downstream_ij[1])
+
+                #     if z[riv_i[-1], riv_j[-1]] + ch_depth - sea_level < 1:
+                #         prograde_river = False
+                #         finding_course = False
+                #         break
+
+                #     elif at_end_of_domain(z, (riv_i[-1], riv_j[-1])):
+                #         prograde_river = False
+                #         finding_course = False
+                #         break
+
+                #     else: 
+                #         break
+
+            else:
+                finding_course = False
+                break
+
+    return riv_i, riv_j
+
+
+
+
     
