@@ -85,16 +85,14 @@ def get_channel_distance(path, dx=1., dy=1.):
     return np.append(0, total_distance)
 
 
-def find_path_length(n, path, sea_level, dx=1., dy=1.):
-    beach_len = n[path[0][-1], path[1][-1]] - sea_level
-    if beach_len > 1:
+def find_path_length(n, path, sea_level, ch_depth, dx=1., dy=1.):
+    beach_len = n[path[0][-1], path[1][-1]] + ch_depth - sea_level
+    if beach_len >= 1:
         riv_length = get_link_lengths(path, dx=dx, dy=dy).sum()
     else:
-        path_upland = (path[0][:-1], path[1][:-1])
-        path_to_last = (path[0][-2:], path[1][-2:])
-        riv_length = (get_link_lengths(path_upland, dx=dx, dy=dy).sum()
-                      + (get_link_lengths(path_to_last, dx=dx, dy=dy).sum())/2
-                      + beach_len)
+        lengths = (get_link_lengths(path, dx=dx, dy=dy))
+        np.divide(lengths[-1], 2.)
+        riv_length = lengths.sum() + beach_len
 
     return (riv_length)
 
