@@ -2,6 +2,7 @@
 import warnings
 
 import numpy as np
+import math
 import downcut
 
 from avulsion_utils import fill_upstream
@@ -200,7 +201,7 @@ def find_course(z, riv_i, riv_j, sea_level=None):
     return new_i[:n], new_j[:n]
 
 
-def update_course(z, riv_i, riv_j, ch_depth, sea_level=None, dx=1., dy=1.):
+def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.):
 
     if sea_level is None:
         sea_level = - np.finfo(float).max
@@ -209,13 +210,14 @@ def update_course(z, riv_i, riv_j, ch_depth, sea_level=None, dx=1., dy=1.):
     while finding_course:
         for n in (xrange(1, riv_i.size)):
             last_elev = z[riv_i[-n], riv_j[-n]] + ch_depth - sea_level
+            max_cell_h = math.tan(slope) * dx
 
-            if last_elev <= 0:
+            if (last_elev / max_cell_h) <= 0:
                 riv_i = riv_i[:n]
                 riv_j = riv_j[:n]
                 break
 
-            elif last_elev >= 1:
+            elif (last_elev / max_cell_h) >= 1:
 
                 new_riv_i, new_riv_j = find_course(z, riv_i, riv_j, sea_level=sea_level)
                 new_riv_length = new_riv_i.size - riv_i.size
@@ -226,7 +228,7 @@ def update_course(z, riv_i, riv_j, ch_depth, sea_level=None, dx=1., dy=1.):
                 # NEED TO DO WITH DOWNCUT BELOW
                 else:
                     downcut.cut_new(riv_i[-new_riv_length:], riv_j[-new_riv_length:],
-                                z, sea_level, ch_depth, dx=dx, dy=dy)
+                                z, sea_level, ch_depth, slope, dx=dx, dy=dy)
                     riv_i = new_riv_i
                     riv_j = new_riv_j
                     finding_course = False

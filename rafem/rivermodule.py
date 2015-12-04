@@ -121,8 +121,8 @@ class RiverModule(object):
         # eta, elevation
         n0 = params['n0']
         max_rand = params['max_rand']
-        slope = params['nslope']
-        self._n = n0 - (slope * self._y +
+        self._slope = params['nslope']
+        self._n = n0 - (self._slope * self._y +
                         np.random.rand(n_rows, n_cols) * max_rand)
 
         #self._dn_rc = np.zeros((self._imax))       # change in elevation along river course
@@ -175,7 +175,7 @@ class RiverModule(object):
 
         # smooth initial river course elevations using linear diffusion equation
         diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt, self._ch_depth,
-                          self._riv_i, self._riv_j, self._n, self._SL)
+                          self._riv_i, self._riv_j, self._n, self._SL, self._slope)
 
         # initial profile
         self._profile = self._n[self._riv_i, self._riv_j]
@@ -186,7 +186,7 @@ class RiverModule(object):
         ### future work: SLRR can be a vector to change rates ###
 
         self._riv_i, self._riv_j = steep_desc.update_course(
-            self._n, self._riv_i, self._riv_j, self._ch_depth,
+            self._n, self._riv_i, self._riv_j, self._ch_depth, self._slope,
             sea_level=self._SL, dx=self._dx, dy=self._dy)
 
         # determine if there is an avulsion & find new path if so
@@ -195,8 +195,8 @@ class RiverModule(object):
         (self._riv_i, self._riv_j), self._avulsion_type, self._loc = avulse.find_avulsion(
              self._riv_i, self._riv_j, self._n,
              self._super_ratio, self._SL, self._ch_depth,
-             self._short_path, self._splay_type, self._splay_dep, dx=self._dx,
-             dy=self._dy)
+             self._short_path, self._splay_type, self._splay_dep, self._slope,
+             dx=self._dx, dy=self._dy)
 
         if self._saveavulsions & self._avulsion_type > 0:
             new_info = (self._avulsion_type, self._time / _SECONDS_PER_YEAR, self._loc)
@@ -220,7 +220,7 @@ class RiverModule(object):
 
         # smooth river course elevations using linear diffusion equation
         diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt, self._ch_depth,
-                          self._riv_i, self._riv_j, self._n, self._SL)
+                          self._riv_i, self._riv_j, self._n, self._SL, self._slope)
 
         # Floodplain sedimentation
         FP.dep_blanket(self._SL, self._blanket_rate, self._n,
@@ -234,7 +234,7 @@ class RiverModule(object):
         # calculate sediment flux
         self._sed_flux = flux.calc_qs(self._nu, self._riv_i, self._riv_j,
                                       self._n, self._SL, self._ch_depth,
-                                      self._dx, self._dy, self._dt)
+                                      self._dx, self._dy, self._dt, self._slope)
 
         self._profile = self._n[self._riv_i, self._riv_j]
 

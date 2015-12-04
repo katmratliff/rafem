@@ -1,4 +1,5 @@
 import yaml
+import math
 import numpy as np
 
 def read_params_from_file(fname):
@@ -85,14 +86,14 @@ def get_channel_distance(path, dx=1., dy=1.):
     return np.append(0, total_distance)
 
 
-def find_path_length(n, path, sea_level, ch_depth, dx=1., dy=1.):
-    beach_len = n[path[0][-1], path[1][-1]] + ch_depth - sea_level
-    if beach_len >= 1:
-        riv_length = get_link_lengths(path, dx=dx, dy=dy).sum()
-    else:
-        lengths = (get_link_lengths(path, dx=dx, dy=dy))
-        np.divide(lengths[-1], 2.)
-        riv_length = lengths.sum() + beach_len
+def find_path_length(n, path, sea_level, ch_depth, slope, dx=1., dy=1.):
+    beach_len = find_beach_length(n, (path[0][-2], path[1][-2]),
+                                  (path[0][-1], path[1][-1]), sea_level,
+                                  ch_depth, slope, dx=dx, dy=dy)
+
+    lengths = (get_link_lengths(path, dx=dx, dy=dy))
+    np.divide(lengths[-1], 2.)
+    riv_length = lengths.sum() + beach_len
 
     return (riv_length)
 
@@ -217,5 +218,42 @@ def sort_lowest_neighbors(n, sub):
     sorted = np.argsort(n[i + di, j + dj])
 
     return i + di[sorted], j + dj[sorted]
+
+def find_beach_length(n, sub0, sub1, sea_level, channel_depth, slope, dx=1., dy=1.):
+    """Find length of beach in shoreline cell.
+
+    Parameters
+    ----------
+    z : ndarray
+        2D-array of elevations.
+    sub0 : tuple of int
+        Row-column subscripts into *z*. (cell prior to beach)
+    sub1 : tuple of int
+        Row-column subscripts into *z*. (beach cell)
+    sea_level : float
+        Elevation of current sea level.
+    channel_depth : float
+        The depth of the channel.
+
+    Returns
+    -------
+    Length of beach in a cell. """
+
+    cell_elev = n[sub1] + channel_depth - sea_level
+
+    max_cell_h = math.tan(slope) * dx
+
+    DIAGONAL_LENGTH = np.sqrt(dx ** 2. + dy ** 2.)
+    
+    if is_diagonal_neighbor(sub0, sub1):
+        d_dist = DIAGONAL_LENGTH
+
+    elif is_same_row(sub0, sub1):
+        d_dist = dx
+
+    else:
+        d_dist = dy
+
+    return (cell_elev / max_cell_h) * d_dist
 
 

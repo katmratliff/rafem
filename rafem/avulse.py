@@ -11,7 +11,7 @@ from avulsion_utils import (find_point_in_path, channel_is_superelevated,
 
 
 def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
-                       dx=1., dy=1.,):
+                       slope, dx=1., dy=1.,):
     """Avulse the river to a new path.
 
     Given two river paths, *old* and *new*, avulse the river to a new river
@@ -106,15 +106,15 @@ def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
         new_i = np.append(new_i, old_i[ind + 1:])
         new_j = np.append(new_j, old_j[ind + 1:])
     else:
-        downcut.cut_new(new_i, new_j, z, sea_level, channel_depth, dx=dx,
-                        dy=dy)
+        downcut.cut_new(new_i, new_j, z, sea_level, channel_depth, slope,
+                        dx=dx, dy=dy)
 
     return (new_i, new_j), avulsion_type
 
 
 # determines if there is an avulsion along river course
 def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
-                  short_path, splay_type, splay_dep, dx=1., dy=1.):
+                  short_path, splay_type, splay_dep, slope, dx=1., dy=1.):
     new = riv_i, riv_j
     old = riv_i, riv_j
     avulsion_type = 0
@@ -134,9 +134,9 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
             # paths will be compared
             if short_path == 1:
                 new_length = find_path_length(n, new, current_SL, ch_depth,
-                                              dx=dx, dy=dy)
+                                              slope, dx=dx, dy=dy)
                 old_length = find_path_length(n, old, current_SL, ch_depth,
-                                              dx=dx, dy=dy)
+                                              slope, dx=dx, dy=dy)
 
                 if new_length < old_length:
                     # if new subaerial river course < length of old
@@ -147,7 +147,7 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
                                              (riv_i[a - 1:], riv_j[a - 1:]),
                                              (new[0][a - 1:], new[1][a - 1:]),
                                              current_SL, ch_depth, avulsion_type,
-                                             dx=dx, dy=dy)
+                                             slope, dx=dx, dy=dy)
 
                     new = (np.append(riv_i[:a - 1], new[0]),
                            np.append(riv_j[:a - 1], new[1]))

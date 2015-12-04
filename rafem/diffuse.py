@@ -3,6 +3,7 @@ import numpy as np
 
 from avulsion_utils import is_diagonal_neighbor
 from avulsion_utils import get_channel_distance
+from avulsion_utils import find_beach_length
 
 
 def solve_second_derivative(x, y):
@@ -37,7 +38,7 @@ def solve_second_derivative(x, y):
                 y[2:] / (x3_minus_x2 * x3_minus_x1))
 
 
-def smooth_rc(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n, sea_level):
+def smooth_rc(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n, sea_level, slope):
     """Smooth river channel elevations using the diffusion equation.
 
     Parameters
@@ -63,33 +64,32 @@ def smooth_rc(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n, sea_level):
     # KMR 8/24/15: don't need to divide by dx anymore, diffusion coeff
     # should be fixed with new calculation
 
-    beach_len = n[riv_i[-1], riv_j[-1]] + ch_depth - sea_level
+    beach_len = find_beach_length(n, (riv_i[-2], riv_j[-2]),
+                                  (riv_i[-1], riv_j[-1]), sea_level,
+                                  ch_depth, slope, dx=dx, dy=dy)
 
-    if beach_len >= 1:
-        n_river = n[riv_i, riv_j]
-        s_river = get_channel_distance((riv_i, riv_j), dx=dx, dy=dy)
+    n_river = n[riv_i, riv_j]
+    s_river = get_channel_distance((riv_i, riv_j), dx=dx, dy=dy)
+    s_river[-1] = beach_len
 
-        dn_rc = (nu * dt) * solve_second_derivative(s_river, n_river)
+    dn_rc = (nu * dt) * solve_second_derivative(s_river, n_river)
 
-        n[riv_i[1:-1], riv_j[1:-1]] += dn_rc
+    n[riv_i[1:-1], riv_j[1:-1]] += dn_rc
 
-    else:
-        n_river = n[riv_i[:-1], riv_j[:-1]]
-        s_river = get_channel_distance((riv_i[:-1], riv_j[:-1]), dx=dx, dy=dy)
+    # n_river = n[riv_i[:-1], riv_j[:-1]]
+    # s_river = get_channel_distance((riv_i[:-1], riv_j[:-1]), dx=dx, dy=dy)
 
-        dn_rc = (nu * dt) * solve_second_derivative(s_river, n_river)
+    # dn_rc = (nu * dt) * solve_second_derivative(s_river, n_river)
 
-        n[riv_i[1:-2], riv_j[1:-2]] += dn_rc
+    # n[riv_i[1:-2], riv_j[1:-2]] += dn_rc
 
-        n_river_last = n[riv_i[-3:], riv_j[-3:]]
-        s_river_last = get_channel_distance((riv_i[-3:], riv_j[-3:]), dx=dx, dy=dy)
-        np.divide(s_river_last[-1], 2)
-        s_river_last[-1] += beach_len
+    # n_river_last = n[riv_i[-3:], riv_j[-3:]]
+    # s_river_last = get_channel_distance((riv_i[-3:-1], riv_j[-3:-1]), dx=dx, dy=dy)
+    # np.append(s_river_last, beach_len)
 
-        dn_rc_last = (nu * dt) * solve_second_derivative(s_river_last,
-                                                         n_river_last)
+    # dn_rc_last = (nu * dt) * solve_second_derivative(s_river_last, n_river_last)
 
-        n[riv_i[-2], riv_j[-2]] += dn_rc_last
+    # n[riv_i[-2], riv_j[-2]] += dn_rc_last
 
     return
 
