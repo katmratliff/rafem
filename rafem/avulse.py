@@ -156,7 +156,13 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
 
                 elif splay_type > 0:
                     avulsion_type = 3
-                    FP.dep_splay(n, (new[0][a], new[1][a]), (riv_i, riv_j),
+
+                    # print(a)
+                    # print(new)
+                    # print(new[0][a], new[1][a])
+
+                    # below should just be a??? not a-1???
+                    FP.dep_splay(n, (new[0][a-1], new[1][a-1]), (riv_i, riv_j),
                                  splay_dep, splay_type=splay_type)
             # if shortest path is not an avulsion criterion, then the new
             # steepest descent path will become the new course regardless
