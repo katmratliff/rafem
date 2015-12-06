@@ -212,12 +212,12 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
             last_elev = z[riv_i[-n], riv_j[-n]] + ch_depth - sea_level
             max_cell_h = math.tan(slope) * dx
 
-            if last_elev <= 0:
+            if (last_elev / max_cell_h) <= 0:
                 riv_i = riv_i[:n]
                 riv_j = riv_j[:n]
                 break
 
-            elif last_elev >= max_cell_h:
+            elif (last_elev / max_cell_h) >= 1:
 
                 new_riv_i, new_riv_j = find_course(z, riv_i, riv_j, sea_level=sea_level)
                 new_riv_length = new_riv_i.size - riv_i.size
