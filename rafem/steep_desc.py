@@ -2,7 +2,6 @@
 import warnings
 
 import numpy as np
-import math
 import downcut
 
 from avulsion_utils import fill_upstream
@@ -210,7 +209,7 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
     while finding_course:
         for n in (xrange(1, riv_i.size)):
             last_elev = z[riv_i[-n], riv_j[-n]] + ch_depth - sea_level
-            max_cell_h = math.tan(slope) * dx
+            max_cell_h = slope * dx
 
             if (last_elev / max_cell_h) <= 0:
                 riv_i = riv_i[:n]

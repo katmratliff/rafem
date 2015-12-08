@@ -1,5 +1,4 @@
 import yaml
-import math
 import numpy as np
 
 def read_params_from_file(fname):
@@ -92,8 +91,8 @@ def find_path_length(n, path, sea_level, ch_depth, slope, dx=1., dy=1.):
                                   ch_depth, slope, dx=dx, dy=dy)
 
     lengths = (get_link_lengths(path, dx=dx, dy=dy))
-    np.divide(lengths[-1], 2.)
-    riv_length = lengths.sum() + beach_len
+    lengths[-1] = np.divide(lengths[-1], 2.) + beach_len
+    riv_length = lengths.sum()
 
     return (riv_length)
 
@@ -241,7 +240,7 @@ def find_beach_length(n, sub0, sub1, sea_level, channel_depth, slope, dx=1., dy=
 
     cell_elev = n[sub1] + channel_depth - sea_level
 
-    max_cell_h = math.tan(slope) * dx
+    max_cell_h = slope * dx
 
     DIAGONAL_LENGTH = np.sqrt(dx ** 2. + dy ** 2.)
     

@@ -70,26 +70,11 @@ def smooth_rc(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n, sea_level, slope):
 
     n_river = n[riv_i, riv_j]
     s_river = get_channel_distance((riv_i, riv_j), dx=dx, dy=dy)
-    s_river[-1] = beach_len
+    s_river[-1] = s_river[-2] + beach_len
 
     dn_rc = (nu * dt) * solve_second_derivative(s_river, n_river)
 
     n[riv_i[1:-1], riv_j[1:-1]] += dn_rc
-
-    # n_river = n[riv_i[:-1], riv_j[:-1]]
-    # s_river = get_channel_distance((riv_i[:-1], riv_j[:-1]), dx=dx, dy=dy)
-
-    # dn_rc = (nu * dt) * solve_second_derivative(s_river, n_river)
-
-    # n[riv_i[1:-2], riv_j[1:-2]] += dn_rc
-
-    # n_river_last = n[riv_i[-3:], riv_j[-3:]]
-    # s_river_last = get_channel_distance((riv_i[-3:-1], riv_j[-3:-1]), dx=dx, dy=dy)
-    # np.append(s_river_last, beach_len)
-
-    # dn_rc_last = (nu * dt) * solve_second_derivative(s_river_last, n_river_last)
-
-    # n[riv_i[-2], riv_j[-2]] += dn_rc_last
 
     return
 
