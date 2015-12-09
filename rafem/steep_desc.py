@@ -210,18 +210,21 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
 
     finding_course = True
     while finding_course:
-        for n in (xrange(1, riv_i.size)):
-            last_elev = z[riv_i[-n], riv_j[-n]] + ch_depth - sea_level
+        for n in reversed(xrange(1, riv_i.size)):
+            last_elev = z[riv_i[n], riv_j[n]] + ch_depth - sea_level
             max_cell_h = slope * dx
 
+            # print "last elevation / max_cell_h = %.5f" % (last_elev / max_cell_h)
+
             if (last_elev / max_cell_h) <= 0:
+                print "shortening course, last cell elev = %.5f" %last_elev
                 riv_i = riv_i[:n]
                 riv_j = riv_j[:n]
                 finding_course = False
                 break
 
             elif (last_elev / max_cell_h) >= 1:
-
+                # print "lengthening course"
                 new_riv_i, new_riv_j = find_course(z, riv_i, riv_j, sea_level=sea_level)
                 # riv_i = new_riv_i
                 # riv_j = new_riv_j
