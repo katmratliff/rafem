@@ -185,12 +185,15 @@ def find_course(z, riv_i, riv_j, sea_level=None):
                 pits = False
                 break
 
-            if z[downstream_ij] > z[new_i[n - 1], new_j[n - 1]]:
+            else: 
                 new_i[n], new_j[n] = downstream_ij
-                fill_upstream(z, zip(new_i[:n + 1], new_j[:n + 1]))
-                break
-            else:
-                new_i[n], new_j[n] = downstream_ij
+            
+            # if z[downstream_ij] > z[new_i[n - 1], new_j[n - 1]]:
+            #     new_i[n], new_j[n] = downstream_ij
+            #     fill_upstream(z, zip(new_i[:n + 1], new_j[:n + 1]))
+            #     break
+            # else:
+            #     new_i[n], new_j[n] = downstream_ij
 
             # new_i[n], new_j[n] = lowest_neighbor(z, (new_i[n - 1], new_j[n - 1]))
 
@@ -214,27 +217,39 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
             if (last_elev / max_cell_h) <= 0:
                 riv_i = riv_i[:n]
                 riv_j = riv_j[:n]
+                finding_course = False
                 break
 
             elif (last_elev / max_cell_h) >= 1:
 
                 new_riv_i, new_riv_j = find_course(z, riv_i, riv_j, sea_level=sea_level)
+                # riv_i = new_riv_i
+                # riv_j = new_riv_j
+                # finding_course = False
+                
                 new_riv_length = new_riv_i.size - riv_i.size
                 if new_riv_length == 0:
                     finding_course = False
                     break
-                elif new_riv_length == 1:
-                    z[new_riv_i[-1], new_riv_j[-1]] -= ch_depth
-                    riv_i = new_riv_i
-                    riv_j = new_riv_j
-
+                
+                # elif new_riv_length == 1:
                 else:
-                    downcut.cut_new(riv_i[-new_riv_length:], riv_j[-new_riv_length:],
-                                z, sea_level, ch_depth, slope, dx=dx, dy=dy)
+                    # z[new_riv_i[-1], new_riv_j[-1]] 
+                    # z[new_riv_i[-1], new_riv_j[-1]] = (z[new_riv_i[-1], new_riv_j[-1]] -
+                    #                                    ch_depth + sea_level)
+                    # z[new_riv_i[-1], new_riv_j[-1]] -= ch_depth
                     riv_i = new_riv_i
                     riv_j = new_riv_j
                     finding_course = False
                     break
+
+                # else:
+                #     downcut.cut_new(riv_i[-new_riv_length:], riv_j[-new_riv_length:],
+                #                 z, sea_level, ch_depth, slope, dx=dx, dy=dy)
+                #     riv_i = new_riv_i
+                #     riv_j = new_riv_j
+                #     finding_course = False
+                #     break
 
                 # prograde_river = True
                 # downstream_ij = lowest_neighbor(z, (riv_i[-1], riv_j[-1]))
