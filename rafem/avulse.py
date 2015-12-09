@@ -118,8 +118,9 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
     new = riv_i, riv_j
     old = riv_i, riv_j
     avulsion_type = 0
+    a = 0
 
-    for a in xrange(1, len(riv_i)):
+    for a in xrange(1, len(riv_i)-1):
         if channel_is_superelevated(n, (riv_i[a], riv_j[a]), ch_depth,
                                     super_ratio):
 
