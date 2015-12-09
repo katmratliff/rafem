@@ -69,6 +69,7 @@ def smooth_rc(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n, sea_level, slope):
                                   ch_depth, slope, dx=dx, dy=dy)
 
     n_river = n[riv_i, riv_j]
+    n_river[-1] = sea_level - ch_depth
     s_river = get_channel_distance((riv_i, riv_j), dx=dx, dy=dy)
     s_river[-1] = s_river[-2] + beach_len
 

@@ -21,7 +21,7 @@ def cut_new(riv_i, riv_j, n, sea_level, ch_depth, slope, dx=1., dy=1.):
     """Set elevations of new portions of a profile."""
 
     # downcut last river cell by a channel depth
-    n[riv_i[-1], riv_j[-1]] -= ch_depth
+    # n[riv_i[-1], riv_j[-1]] = sea_level - ch_depth
     
     if riv_i.size > 1:
 
@@ -36,6 +36,7 @@ def cut_new(riv_i, riv_j, n, sea_level, ch_depth, slope, dx=1., dy=1.):
         z0 = n[riv_i[0], riv_j[0]]
 
         # calculate slope of new stretch of river
-        slope = (n[i0, j0] - n[riv_i[-1], riv_j[-1]]) / lengths.sum()
+        # slope = (n[i0, j0] - n[riv_i[-1], riv_j[-1]]) / lengths.sum()
+        slope = (n[i0, j0] - (sea_level - ch_depth)) / lengths.sum()
 
         n[riv_i[1:], riv_j[1:]] = z0 - slope * lengths.cumsum()
