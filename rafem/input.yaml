@@ -33,8 +33,8 @@ super_ratio: 1       # normalized superelevation ratio to trigger avulsion
 short_path: 1        # flag for using shortest path to complete avulsion
 
 # Floodplain and Wetland parameters
-WL_Z: 0.5              # elevation that wetlands maintain above SL
-WL_dist: 2             # cell distance beyond channel that wetlands exist
+WL_Z: 0.0              # elevation that wetlands maintain above SL
+WL_dist: 1             # cell distance beyond channel that wetlands exist
 blanket_rate_m: 0.005  # "blanket" deposition (frac. of IRR)
 splay_dep_m: 0.005     # splay deposition
 splay_type: 2          # size/type of splay
