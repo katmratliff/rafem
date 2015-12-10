@@ -122,10 +122,10 @@ class RiverModule(object):
                                        np.arange(n_rows) * self._dy)
         # eta, elevation
         n0 = params['n0']
-        max_rand = params['max_rand']
+        self._max_rand = params['max_rand']
         self._slope = params['nslope']
         self._n = n0 - (self._slope * self._y +
-                        np.random.rand(n_rows, n_cols) * max_rand)
+                        np.random.rand(n_rows, n_cols) * self._max_rand)
 
         #self._dn_rc = np.zeros((self._imax))       # change in elevation along river course
         #self._dn_fp = np.zeros_like(self._n)     # change in elevation due to floodplain dep
@@ -188,11 +188,16 @@ class RiverModule(object):
         ### future work: SLRR can be a vector to change rates ###
 
         self._n = avulsion_utils.fix_elevations(self._n, self._riv_i, self._riv_j,
-            self._ch_depth, self._SL, self._slope, self._dx)
+            self._ch_depth, self._SL, self._slope, self._dx, self._max_rand)
 
-        self._riv_i, self._riv_j = steep_desc.update_course(
+        self._riv_i, self._riv_j, self._course_update = steep_desc.update_course(
             self._n, self._riv_i, self._riv_j, self._ch_depth, self._slope,
-            sea_level=self._SL, dx=self._dx, dy=self._dy)
+            self._saveavulsions, sea_level=self._SL, dx=self._dx, dy=self._dy)
+
+        # if self._saveavulsions & self._course_update:
+        #     with open('river_info.txt','a') as file:
+        #         file.write("%.5f %i \n" % ((self._time / _SECONDS_PER_YEAR),
+        #             self._course_update))
 
         # determine if there is an avulsion & find new path if so
         ### need to change this to look for shoreline after coupling ###
@@ -204,6 +209,9 @@ class RiverModule(object):
              dx=self._dx, dy=self._dy)
 
         if self._saveavulsions & self._avulsion_type > 0:
+            with open('river_info.txt','a') as file:
+                file.write("%.5f %i %i \n" % ((self._time / _SECONDS_PER_YEAR),
+                    self._avulsion_type, self._loc))
             new_info = (self._avulsion_type, self._time / _SECONDS_PER_YEAR, self._loc)
             self._avulsion_info = np.vstack([self._avulsion_info, new_info])
 
