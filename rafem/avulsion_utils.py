@@ -255,7 +255,7 @@ def find_beach_length(n, sub0, sub1, sea_level, channel_depth, slope, dx=1., dy=
 
     return (cell_elev / max_cell_h) * d_dist
 
-def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx):
+def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
 
     test_elev = z - sea_level
     test_elev[riv_i, riv_j] += ch_depth
@@ -266,10 +266,21 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx):
             if test_elev[i,j] > 0:
                 cells_from_shore += 1
             if test_elev[i,j] <= 0 and cells_from_shore >= 1:
-                test_elev[i,j] = slope*dx*cells_from_shore
-                test_elev[i,j] -= 0.5*slope*dx
+                test_elev[i,j] = slope*dx + np.random.rand()*max_rand
 
     test_elev[riv_i, riv_j] -= ch_depth
+
+    # for k in (xrange(1, riv_j.size-1)):
+
+    #     if test_elev[riv_i[-k], riv_j[-k]] > test_elev[riv_i[-(k+1)], riv_j[-(k+1)]]:
+
+    #         if k == 1:
+    #             new_elev = (test_elev[riv_i[-(k+1)], riv_j[-(k+1)]] - ch_depth)/2
+    #             test_elev[riv_i[-k], riv_j[-k]] = new_elev
+
+    #         else: 
+
+
     z = test_elev + sea_level
 
     return z
