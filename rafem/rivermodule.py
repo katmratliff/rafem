@@ -15,6 +15,7 @@ import SLR
 import FP
 import downcut
 import flux
+import avulsion_utils
 from avulsion_utils import read_params_from_file
 
 
@@ -185,6 +186,9 @@ class RiverModule(object):
         """ Update avulsion model one time step. """
 
         ### future work: SLRR can be a vector to change rates ###
+
+        self._n = avulsion_utils.fix_elevations(self._n, self._riv_i, self._riv_j,
+            self._ch_depth, self._SL, self._slope, self._dx)
 
         self._riv_i, self._riv_j = steep_desc.update_course(
             self._n, self._riv_i, self._riv_j, self._ch_depth, self._slope,

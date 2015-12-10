@@ -255,4 +255,24 @@ def find_beach_length(n, sub0, sub1, sea_level, channel_depth, slope, dx=1., dy=
 
     return (cell_elev / max_cell_h) * d_dist
 
+def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx):
+
+    test_elev = z - sea_level
+    test_elev[riv_i, riv_j] += ch_depth
+
+    for j in xrange(test_elev.shape[1]):
+        cells_from_shore = 0
+        for i in reversed(xrange(test_elev.shape[0])):
+            if test_elev[i,j] > 0:
+                cells_from_shore += 1
+            if test_elev[i,j] <= 0 and cells_from_shore >= 1:
+                test_elev[i,j] = slope*dx*cells_from_shore
+                test_elev[i,j] -= 0.5*slope*dx
+
+    test_elev[riv_i, riv_j] -= ch_depth
+    z = test_elev + sea_level
+
+    return z
+
+
 
