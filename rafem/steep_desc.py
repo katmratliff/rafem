@@ -203,10 +203,12 @@ def find_course(z, riv_i, riv_j, sea_level=None):
     return new_i[:n], new_j[:n]
 
 
-def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.):
+def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1., dy=1.):
 
     if sea_level is None:
         sea_level = - np.finfo(float).max
+
+    course_update = 0
 
     finding_course = True
     while finding_course:
@@ -217,6 +219,7 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
             # print "last elevation / max_cell_h = %.5f" % (last_elev / max_cell_h)
 
             if (last_elev / max_cell_h) <= 0:
+                course_update = 4 # course update 4 = shortened course
                 #print "shortening course, last cell elev = %.5f" %last_elev
                 riv_i = riv_i[:n]
                 riv_j = riv_j[:n]
@@ -242,13 +245,15 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
                     downcut.cut_new(riv_i[-new_riv_length-1:], riv_j[-new_riv_length-1:],
                                 z, sea_level, ch_depth, slope, dx=dx, dy=dy)
                     finding_course = False
+                    # course update 4 = shortened course
+                    course_update = 5
                     break
 
             else:
                 finding_course = False
                 break
 
-    return riv_i, riv_j
+    return riv_i, riv_j, course_update
 
 
 
