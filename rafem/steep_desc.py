@@ -185,15 +185,19 @@ def find_course(z, riv_i, riv_j, sea_level=None):
                 pits = False
                 break
 
-            else: 
-                new_i[n], new_j[n] = downstream_ij
+            # else: 
+            #     new_i[n], new_j[n] = downstream_ij
             
             # if z[downstream_ij] > z[new_i[n - 1], new_j[n - 1]]:
             #     new_i[n], new_j[n] = downstream_ij
             #     fill_upstream(z, zip(new_i[:n + 1], new_j[:n + 1]))
             #     break
-            # else:
-            #     new_i[n], new_j[n] = downstream_ij
+
+            if z[downstream_ij] > z[new_i[n - 1], new_j[n - 1]]:
+                new_i[n], new_j[n] = downstream_ij
+                z[new_i[n - 1], new_j[n - 1]] +=  1e-7
+            else:
+                new_i[n], new_j[n] = downstream_ij
 
             # new_i[n], new_j[n] = lowest_neighbor(z, (new_i[n - 1], new_j[n - 1]))
 
