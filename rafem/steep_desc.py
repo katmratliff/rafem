@@ -195,7 +195,7 @@ def find_course(z, riv_i, riv_j, sea_level=None):
 
             if z[downstream_ij] > z[new_i[n - 1], new_j[n - 1]]:
                 new_i[n], new_j[n] = downstream_ij
-                z[new_i[n - 1], new_j[n - 1]] +=  1e-7
+                z[new_i[n - 1], new_j[n - 1]] +=  1e-6
             else:
                 new_i[n], new_j[n] = downstream_ij
 
