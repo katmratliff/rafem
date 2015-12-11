@@ -262,11 +262,14 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
 
     for j in xrange(test_elev.shape[1]):
         cells_from_shore = 0
-        for i in reversed(xrange(test_elev.shape[0])):
+        for i in reversed(xrange(1,test_elev.shape[0])):
             if test_elev[i,j] > 0:
                 cells_from_shore += 1
             if test_elev[i,j] <= 0 and cells_from_shore >= 1:
                 test_elev[i,j] = slope*dx + np.random.rand()*max_rand
+            if test_elev[i,j] >= test_elev[i-1,j] and cells_from_shore >= 1:
+                test_elev[i-1,j] = test_elev[i,j]
+                test_elev[i-1,j] += 1e-5
 
     test_elev[riv_i, riv_j] -= ch_depth
 
