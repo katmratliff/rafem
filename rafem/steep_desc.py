@@ -46,7 +46,7 @@ def below_sea_level(z, sea_level):
     boolean
         `True` if at or below sea level. Otherwise, `False`.
     """
-    return z < sea_level
+    return z <= sea_level
 
 
 def at_river_mouth(z, sub, z0):
