@@ -269,7 +269,7 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
                 test_elev[i,j] = slope*dx + np.random.rand()*max_rand
             if test_elev[i,j] >= test_elev[i-1,j] and cells_from_shore >= 1:
                 test_elev[i-1,j] = test_elev[i,j]
-                test_elev[i-1,j] += np.random.rand()*1e-5
+                test_elev[i-1,j] += 1e-5
 
     test_elev[riv_i, riv_j] -= ch_depth
 
