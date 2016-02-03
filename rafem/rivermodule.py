@@ -187,8 +187,8 @@ class RiverModule(object):
 
         ### future work: SLRR can be a vector to change rates ###
 
-        self._n = avulsion_utils.fix_elevations(self._n, self._riv_i, self._riv_j,
-            self._ch_depth, self._SL, self._slope, self._dx, self._max_rand)
+        # self._n = avulsion_utils.fix_elevations(self._n, self._riv_i, self._riv_j,
+        #     self._ch_depth, self._SL, self._slope, self._dx, self._max_rand)
 
         self._riv_i, self._riv_j, self._course_update = steep_desc.update_course(
             self._n, self._riv_i, self._riv_j, self._ch_depth, self._slope,
