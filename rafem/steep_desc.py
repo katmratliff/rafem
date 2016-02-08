@@ -214,50 +214,77 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
 
     course_update = 0
 
-    finding_course = True
-    while finding_course:
-        for n in reversed(xrange(1, riv_i.size)):
-            last_elev = z[riv_i[n], riv_j[n]] + ch_depth - sea_level
-            max_cell_h = slope * dx
+    last_elev = z[riv_i[-1], riv_j[-1]] + ch_depth - sea_level
+    max_cell_h = slope * dx
 
-            # print "last elevation / max_cell_h = %.5f" % (last_elev / max_cell_h)
+    if last_elev <= 0:
+        riv_i = riv_i[:-1]
+        riv_j = riv_j[:-1]
+        course_update = 4   # shortened course
 
-            if (last_elev / max_cell_h) <= 0:
-                course_update = 4 # course update 4 = shortened course
-                #print "shortening course, last cell elev = %.5f" %last_elev
-                riv_i = riv_i[:n]
-                riv_j = riv_j[:n]
-                finding_course = False
-                break
+    elif last_elev >= max_cell_h:
+        new_riv_i, new_riv_j = find_course(z, riv_i, riv_j, sea_level=sea_level)
 
-            elif (last_elev / max_cell_h) >= 1:
-                # print "lengthening course"
-                new_riv_i, new_riv_j = find_course(z, riv_i, riv_j, sea_level=sea_level)
-                # riv_i = new_riv_i
-                # riv_j = new_riv_j
-                # finding_course = False
-                
-                new_riv_length = new_riv_i.size - riv_i.size
+        new_riv_length = new_riv_i.size - riv_i.size
 
-                if new_riv_length == 0:
-                    finding_course = False
-                    break
-                
-                else:
-                    riv_i = new_riv_i
-                    riv_j = new_riv_j
-                    downcut.cut_new(riv_i[-new_riv_length-1:], riv_j[-new_riv_length-1:],
-                                z, sea_level, ch_depth, slope, dx=dx, dy=dy)
-                    finding_course = False
-                    # course update 4 = shortened course
-                    course_update = 5
-                    break
+        riv_i = new_riv_i
+        riv_j = new_riv_j
 
-            else:
-                finding_course = False
-                break
+        downcut.cut_new(riv_i[-new_riv_length-1:], riv_j[-new_riv_length-1:],
+                            z, sea_level, ch_depth, slope, dx=dx, dy=dy)
+        course_update = 5   # lengthened course
+
+    else:
+        riv_i = riv_i
+        riv_j = riv_j
 
     return riv_i, riv_j, course_update
+
+
+    # finding_course = True
+    # while finding_course:
+    #     for n in reversed(xrange(1, riv_i.size)):
+    #         last_elev = z[riv_i[n], riv_j[n]] + ch_depth - sea_level
+    #         max_cell_h = slope * dx
+
+    #         # print "last elevation / max_cell_h = %.5f" % (last_elev / max_cell_h)
+
+    #         if (last_elev / max_cell_h) <= 0:
+    #             course_update = 4 # course update 4 = shortened course
+    #             #print "shortening course, last cell elev = %.5f" %last_elev
+    #             riv_i = riv_i[:n]
+    #             riv_j = riv_j[:n]
+    #             finding_course = False
+    #             break
+
+    #         elif (last_elev / max_cell_h) >= 1:
+    #             # print "lengthening course"
+    #             new_riv_i, new_riv_j = find_course(z, riv_i, riv_j, sea_level=sea_level)
+    #             # riv_i = new_riv_i
+    #             # riv_j = new_riv_j
+    #             # finding_course = False
+                
+    #             new_riv_length = new_riv_i.size - riv_i.size
+
+    #             if new_riv_length == 0:
+    #                 finding_course = False
+    #                 break
+                
+    #             else:
+    #                 riv_i = new_riv_i
+    #                 riv_j = new_riv_j
+    #                 downcut.cut_new(riv_i[-new_riv_length-1:], riv_j[-new_riv_length-1:],
+    #                             z, sea_level, ch_depth, slope, dx=dx, dy=dy)
+    #                 finding_course = False
+    #                 # course update 4 = shortened course
+    #                 course_update = 5
+    #                 break
+
+    #         else:
+    #             finding_course = False
+    #             break
+
+    # return riv_i, riv_j, course_update
 
 
 
