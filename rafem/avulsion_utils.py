@@ -289,4 +289,3 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
     return z
 
 
-

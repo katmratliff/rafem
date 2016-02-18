@@ -33,6 +33,33 @@ def lowest_neighbor(n, sub):
     return i + di[lowest], j + dj[lowest]
 
 
+def lowest_adj_cell(n, sub):
+    i,j = sub
+
+    if j == 0 and i == 0:
+        di, dj = np.array([1, 1, 0]), np.array([0, 1, 1])
+    elif j == 0 and i == n.shape[0] - 1:
+        di, dj = np.array([-1, -1, 0]), np.array([0, 1, 1])
+    elif j == n.shape[1] - 1 and i == 0:
+        di, dj = np.array([0, 1, 1]), np.array([-1, -1, 0])
+    elif j == n.shape[1] - 1 and i == n.shape[0] - 1:
+        di, dj = np.array([0, -1, -1]), np.array([-1, -1, 0])
+    elif j == n.shape[1] - 1:
+        di, dj  = np.array([-1, -1, 0, 1, 1]), np.array([0, -1, -1, -1, 0])
+    elif j == 0:
+        di, dj  = np.array([-1, -1, 0, 1, 1]), np.array([0, 1, 1, 1, 0])
+    elif i == n.shape[0] - 1:
+        di, dj = np.array([0, -1, -1, -1, 0]), np.array([-1, -1, 0, 1, 1])
+    elif i == 0:
+        di, dj = np.array([0, 1, 1, 1, 0]), np.array([-1, -1, 0, 1, 1])
+    else:
+        di, dj = np.array([0, -1, -1, -1, 0, 1, 1, 1]),  np.array([-1, -1, 0, 1, 1, 1, 0, -1])
+
+    lowest = np.amin(n[i + di, j + dj])
+
+    return lowest
+
+
 def below_sea_level(z, sea_level):
     """Check if an elevation is below sea level.
     Parameters
@@ -217,12 +244,17 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
     last_elev = z[riv_i[-1], riv_j[-1]] + ch_depth - sea_level
     max_cell_h = slope * dx
 
+    test_elev = z - sea_level
+    test_elev[riv_i[:-1], riv_j[:-1]] += 2 * ch_depth
+
+    low_adj_cell = lowest_adj_cell(test_elev, (riv_i[-1], riv_j[-1]))
+
     if last_elev <= 0:
         riv_i = riv_i[:-1]
         riv_j = riv_j[:-1]
         course_update = 4   # shortened course
 
-    elif last_elev >= max_cell_h:
+    elif last_elev >= max_cell_h or low_adj_cell >= 0:
         new_riv_i, new_riv_j = find_course(z, riv_i, riv_j, sea_level=sea_level)
 
         new_riv_length = new_riv_i.size - riv_i.size
@@ -239,7 +271,6 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
         riv_j = riv_j
 
     return riv_i, riv_j, course_update
-
 
     # finding_course = True
     # while finding_course:
@@ -285,8 +316,3 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
     #             break
 
     # return riv_i, riv_j, course_update
-
-
-
-
-    
