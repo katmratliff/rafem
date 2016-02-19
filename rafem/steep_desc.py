@@ -33,7 +33,22 @@ def lowest_neighbor(n, sub):
     return i + di[lowest], j + dj[lowest]
 
 
-def lowest_adj_cell(n, sub):
+def lowest_neighbor_prograde(n, sub):
+    i, j = sub
+
+    if j == n.shape[1] - 1:
+        di, dj  = np.array([0, 1, 1]), np.array([-1, -1, 0])
+    elif j == 0:
+        di, dj  = np.array([1, 1, 0]), np.array([0, 1, 1])
+    else:
+        di, dj = np.array([0, 1, 1, 1, 0]),  np.array([-1, -1, 0, 1, 1])
+
+    lowest = np.argmax((n[i + di, j + dj]) >= 0)
+
+    return i + di[lowest], j + dj[lowest]
+
+
+def lowest_cell_elev(n, sub):
     i,j = sub
 
     if j == 0 and i == 0:
@@ -247,23 +262,46 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
     test_elev = z - sea_level
     test_elev[riv_i[:-1], riv_j[:-1]] += 2 * ch_depth
 
-    low_adj_cell = lowest_adj_cell(test_elev, (riv_i[-1], riv_j[-1]))
+    low_adj_cell = lowest_cell_elev(test_elev, (riv_i[-1], riv_j[-1]))
 
     if last_elev <= 0:
         riv_i = riv_i[:-1]
         riv_j = riv_j[:-1]
         course_update = 4   # shortened course
 
-    elif last_elev >= max_cell_h or low_adj_cell >= 0:
+    # if river mouth surrounded by land
+    elif low_adj_cell > 0:
         new_riv_i, new_riv_j = find_course(z, riv_i, riv_j, sea_level=sea_level)
 
         new_riv_length = new_riv_i.size - riv_i.size
 
-        riv_i = new_riv_i
-        riv_j = new_riv_j
+        if new_riv_length > 0:
+            riv_i = new_riv_i
+            riv_j = new_riv_j
 
-        downcut.cut_new(riv_i[-new_riv_length-1:], riv_j[-new_riv_length-1:],
-                            z, sea_level, ch_depth, slope, dx=dx, dy=dy)
+            z[riv_i[-1], riv_j[-1]] -= ch_depth
+        
+        else:
+            riv_i = riv_i
+            riv_j = riv_j
+
+    # if river mouth needs to prograde
+    elif last_elev >= max_cell_h:
+        prograde_ij = lowest_neighbor_prograde(z, (riv_i[-1], riv_j[-1]))
+
+        print(prograde_ij)
+        print(z[prograde_ij])
+
+        if z[prograde_ij] >= sea_level:
+            riv_i = np.append(riv_i, prograde_ij[0])
+            riv_j = np.append(riv_j, prograde_ij[1])
+
+            z[riv_i[-1], riv_j[-1]] -= ch_depth
+
+        else:
+            riv_i = riv_i
+            riv_j = riv_j
+
         course_update = 5   # lengthened course
 
     else:
