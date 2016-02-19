@@ -289,8 +289,8 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
     elif last_elev >= max_cell_h:
         prograde_ij = lowest_neighbor_prograde(z, (riv_i[-1], riv_j[-1]))
 
-        print(prograde_ij)
-        print(z[prograde_ij])
+        # print(prograde_ij)
+        # print(z[prograde_ij])
 
         if z[prograde_ij] >= sea_level:
             riv_i = np.append(riv_i, prograde_ij[0])
