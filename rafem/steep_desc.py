@@ -3,6 +3,7 @@ import warnings
 
 import numpy as np
 import downcut
+import pdb
 
 from avulsion_utils import fill_upstream
 
@@ -43,7 +44,8 @@ def lowest_neighbor_prograde(n, sub):
     else:
         di, dj = np.array([0, 1, 1, 1, 0]),  np.array([-1, -1, 0, 1, 1])
 
-    lowest = np.argmax((n[i + di, j + dj]) >= 0)
+    subaerial_low = min(x for x in (n[i + di, j + dj]) if x >= 0)
+    lowest = np.where((n[i + di, j + dj]) == subaerial_low)[0][0]
 
     return i + di[lowest], j + dj[lowest]
 
@@ -263,6 +265,9 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
     test_elev[riv_i[:-1], riv_j[:-1]] += 2 * ch_depth
 
     low_adj_cell = lowest_cell_elev(test_elev, (riv_i[-1], riv_j[-1]))
+
+    # if last_elev >= max_cell_h or last_elev <=0:
+    #     pdb.set_trace()
 
     if last_elev <= 0:
         riv_i = riv_i[:-1]
