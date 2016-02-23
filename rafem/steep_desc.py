@@ -5,7 +5,7 @@ import numpy as np
 import downcut
 import pdb
 
-from avulsion_utils import fill_upstream
+from avulsion_utils import fill_upstream, lowest_cell_elev
 
 def lowest_neighbor(n, sub):
     """Find lowest neighbor value around a point.
@@ -48,33 +48,6 @@ def lowest_neighbor_prograde(n, sub):
     lowest = np.where((n[i + di, j + dj]) == subaerial_low)[0][0]
 
     return i + di[lowest], j + dj[lowest]
-
-
-def lowest_cell_elev(n, sub):
-    i,j = sub
-
-    if j == 0 and i == 0:
-        di, dj = np.array([1, 1, 0]), np.array([0, 1, 1])
-    elif j == 0 and i == n.shape[0] - 1:
-        di, dj = np.array([-1, -1, 0]), np.array([0, 1, 1])
-    elif j == n.shape[1] - 1 and i == 0:
-        di, dj = np.array([0, 1, 1]), np.array([-1, -1, 0])
-    elif j == n.shape[1] - 1 and i == n.shape[0] - 1:
-        di, dj = np.array([0, -1, -1]), np.array([-1, -1, 0])
-    elif j == n.shape[1] - 1:
-        di, dj  = np.array([-1, -1, 0, 1, 1]), np.array([0, -1, -1, -1, 0])
-    elif j == 0:
-        di, dj  = np.array([-1, -1, 0, 1, 1]), np.array([0, 1, 1, 1, 0])
-    elif i == n.shape[0] - 1:
-        di, dj = np.array([0, -1, -1, -1, 0]), np.array([-1, -1, 0, 1, 1])
-    elif i == 0:
-        di, dj = np.array([0, 1, 1, 1, 0]), np.array([-1, -1, 0, 1, 1])
-    else:
-        di, dj = np.array([0, -1, -1, -1, 0, 1, 1, 1]),  np.array([-1, -1, 0, 1, 1, 1, 0, -1])
-
-    lowest = np.amin(n[i + di, j + dj])
-
-    return lowest
 
 
 def below_sea_level(z, sea_level):
