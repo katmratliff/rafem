@@ -1,5 +1,6 @@
 #! /usr/local/bin/python
 import numpy as np
+import pdb
 
 from avulsion_utils import is_diagonal_neighbor
 from avulsion_utils import get_channel_distance
@@ -64,9 +65,15 @@ def smooth_rc(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n, sea_level, slope):
     # KMR 8/24/15: don't need to divide by dx anymore, diffusion coeff
     # should be fixed with new calculation
 
+    # pdb.set_trace()
+
     beach_len = find_beach_length(n, (riv_i[-2], riv_j[-2]),
                                   (riv_i[-1], riv_j[-1]), sea_level,
                                   ch_depth, slope, dx=dx, dy=dy)
+    
+    # HOW MUCH SHOULD THIS BE FOR STABILITY??
+    if beach_len < dx/10:
+        beach_len = dx/10
 
     n_river = n[riv_i, riv_j]
     n_river[-1] = sea_level - ch_depth

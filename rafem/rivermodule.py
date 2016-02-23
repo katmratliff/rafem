@@ -194,10 +194,10 @@ class RiverModule(object):
             self._n, self._riv_i, self._riv_j, self._ch_depth, self._slope,
             self._saveavulsions, sea_level=self._SL, dx=self._dx, dy=self._dy)
 
-        # if self._saveavulsions & self._course_update:
-        #     with open('river_info.txt','a') as file:
-        #         file.write("%.5f %i \n" % ((self._time / _SECONDS_PER_YEAR),
-        #             self._course_update))
+        if self._saveavulsions & self._course_update:
+            with open('river_info.txt','a') as file:
+                file.write("%.5f %i \n" % ((self._time / _SECONDS_PER_YEAR),
+                    self._course_update))
 
         # determine if there is an avulsion & find new path if so
         ### need to change this to look for shoreline after coupling ###
