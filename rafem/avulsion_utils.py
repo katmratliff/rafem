@@ -255,34 +255,58 @@ def find_beach_length(n, sub0, sub1, sea_level, channel_depth, slope, dx=1., dy=
 
     return (cell_elev / max_cell_h) * d_dist
 
+
+def lowest_cell_elev(n, sub):
+    i,j = sub
+
+    if j == 0 and i == 0:
+        di, dj = np.array([1, 1, 0]), np.array([0, 1, 1])
+    elif j == 0 and i == n.shape[0] - 1:
+        di, dj = np.array([-1, -1, 0]), np.array([0, 1, 1])
+    elif j == n.shape[1] - 1 and i == 0:
+        di, dj = np.array([0, 1, 1]), np.array([-1, -1, 0])
+    elif j == n.shape[1] - 1 and i == n.shape[0] - 1:
+        di, dj = np.array([0, -1, -1]), np.array([-1, -1, 0])
+    elif j == n.shape[1] - 1:
+        di, dj  = np.array([-1, -1, 0, 1, 1]), np.array([0, -1, -1, -1, 0])
+    elif j == 0:
+        di, dj  = np.array([-1, -1, 0, 1, 1]), np.array([0, 1, 1, 1, 0])
+    elif i == n.shape[0] - 1:
+        di, dj = np.array([0, -1, -1, -1, 0]), np.array([-1, -1, 0, 1, 1])
+    elif i == 0:
+        di, dj = np.array([0, 1, 1, 1, 0]), np.array([-1, -1, 0, 1, 1])
+    else:
+        di, dj = np.array([0, -1, -1, -1, 0, 1, 1, 1]),  np.array([-1, -1, 0, 1, 1, 1, 0, -1])
+
+    lowest = np.amin(n[i + di, j + dj])
+
+    return lowest
+
+
 def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
 
     test_elev = z - sea_level
+    riv_prof = test_elev[riv_i, riv_j]
     test_elev[riv_i, riv_j] += ch_depth
 
     for j in xrange(test_elev.shape[1]):
         cells_from_shore = 0
         for i in reversed(xrange(1,test_elev.shape[0])):
-            if test_elev[i,j] > 0:
+            shorecell = 0
+            if test[i,j] >= 0 and lowest_cell_elev(test_elev, (i,j)) < 0:
+                shorecell = 1
+            if test_elev[i,j] >= 0 and not shorecell:
                 cells_from_shore += 1
-            if test_elev[i,j] <= 0 and cells_from_shore >= 1:
+            if test_elev[i,j] <= 0 and not shorecell:
                 test_elev[i,j] = slope*dx + np.random.rand()*max_rand
-            if test_elev[i,j] >= test_elev[i-1,j] and cells_from_shore >= 1:
+            # NEED TO HAVE SOMETHING HERE THAT WILL ROUTE WATER TO SEA??
+            # perhaps find potential shoreline configurations and fix that way
+            if (test_elev[i,j] >= test_elev[i-1,j] and
+                [test_elev[i,j], test_elev[i-1,j]] >= 0):
                 test_elev[i-1,j] = test_elev[i,j]
-                test_elev[i-1,j] += np.random.rand()*1e-5
+                test_elev[i-1,j] += np.random.rand() * (slope*0.1)
 
-    test_elev[riv_i, riv_j] -= ch_depth
-
-    # for k in (xrange(1, riv_j.size-1)):
-
-    #     if test_elev[riv_i[-k], riv_j[-k]] > test_elev[riv_i[-(k+1)], riv_j[-(k+1)]]:
-
-    #         if k == 1:
-    #             new_elev = (test_elev[riv_i[-(k+1)], riv_j[-(k+1)]] - ch_depth)/2
-    #             test_elev[riv_i[-k], riv_j[-k]] = new_elev
-
-    #         else: 
-
+    test_elev[riv_i, riv_j] = riv_prof
 
     z = test_elev + sea_level
 
