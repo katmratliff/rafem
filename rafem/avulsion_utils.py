@@ -1,5 +1,6 @@
 import yaml
 import numpy as np
+import pdb
 
 def read_params_from_file(fname):
     """Read model parameters from a file.
@@ -289,22 +290,32 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
     riv_prof = test_elev[riv_i, riv_j]
     test_elev[riv_i, riv_j] += ch_depth
 
+    riv_cells = np.zeros_like(z)
+    riv_cells[riv_i, riv_j] = 1
+
     for j in xrange(test_elev.shape[1]):
         cells_from_shore = 0
         for i in reversed(xrange(1,test_elev.shape[0])):
             shorecell = 0
-            if test[i,j] >= 0 and lowest_cell_elev(test_elev, (i,j)) < 0:
+            if riv_cells[i,j]:
+                break
+            if test_elev[i,j] >= 0 and lowest_cell_elev(test_elev, (i,j)) < 0:
                 shorecell = 1
             if test_elev[i,j] >= 0 and not shorecell:
                 cells_from_shore += 1
-            if test_elev[i,j] <= 0 and not shorecell:
+            if test_elev[i,j] <= 0 and cells_from_shore >= 1:
+                pdb.set_trace()
                 test_elev[i,j] = slope*dx + np.random.rand()*max_rand
             # NEED TO HAVE SOMETHING HERE THAT WILL ROUTE WATER TO SEA??
             # perhaps find potential shoreline configurations and fix that way
             if (test_elev[i,j] >= test_elev[i-1,j] and
-                [test_elev[i,j], test_elev[i-1,j]] >= 0):
-                test_elev[i-1,j] = test_elev[i,j]
-                test_elev[i-1,j] += np.random.rand() * (slope*0.1)
+                test_elev[i,j] >= 0 and test_elev[i-1,j] >= 0):
+                if riv_cells[i-1,j]:
+                    break
+                else:
+                    pdb.set_trace()
+                    test_elev[i-1,j] = test_elev[i,j]
+                    test_elev[i-1,j] += np.random.rand() * (slope*0.1)
 
     test_elev[riv_i, riv_j] = riv_prof
 
