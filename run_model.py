@@ -70,7 +70,7 @@ RIVER_WIDTH = dict(raf.parameters)['channel_width'] # Convert unit-width flux to
 RHO_SED = 2650. # Used to convert volume flux to mass flux
 N_DAYS = 100 * 365
 TIME_STEP = int(raf.get_time_step())
-save_int = 365
+save_int = 1
 
 dx = (dict(raf.parameters)['row_spacing'])*1000.
 slope = dict(raf.parameters)['delta_slope']
@@ -143,7 +143,7 @@ for time in xrange(0, N_DAYS, TIME_STEP):
     
     cem.set_value('land_surface_water_sediment~bedload__mass_flow_rate', qs)
     
-    # np.savetxt('qs.out',qs,'%.3f')
+    np.savetxt('qs.out',qs,'%.3f')
 
     # Get and set elevations from Rafem to CEM
     
@@ -162,19 +162,19 @@ for time in xrange(0, N_DAYS, TIME_STEP):
     #np.savetxt('prof_before_cem.out',prof_elev,'%.3f')
     #np.savetxt('raf_z_ch_added.out',raf_z,'%.5f')
     
-    # find shoreline cells and fix elevations of subaerial cells
-    shore_flag = np.zeros(raf_z.shape, dtype=np.int)
-    lowest_cell = np.zeros(raf_z.shape)
-    for i in xrange(raf_z.shape[0]):
-        for j in xrange(raf_z.shape[1]):
-            #lowest_elev = lowest_adj_cell(raf_z, (i,j))
-            #lowest_cell[i,j] = lowest_elev
-            if 0 < raf_z[i,j] <= max_cell_h:
-                if lowest_adj_cell(raf_z, (i,j)) <= 0:
-                    shore_flag[i,j] = 1
-                else:
-                    raf_z[i,j] = max_cell_h + np.random.rand()*max_rand
-                    shore_flag[i,j] = 2
+    # # find shoreline cells and fix elevations of subaerial cells
+    # shore_flag = np.zeros(raf_z.shape, dtype=np.int)
+    # lowest_cell = np.zeros(raf_z.shape)
+    # for i in xrange(raf_z.shape[0]):
+    #     for j in xrange(raf_z.shape[1]):
+    #         #lowest_elev = lowest_adj_cell(raf_z, (i,j))
+    #         #lowest_cell[i,j] = lowest_elev
+    #         if 0 < raf_z[i,j] <= max_cell_h:
+    #             if lowest_adj_cell(raf_z, (i,j)) <= 0:
+    #                 shore_flag[i,j] = 1
+    #             else:
+    #                 raf_z[i,j] = max_cell_h + np.random.rand()*max_rand
+    #                 shore_flag[i,j] = 2
 
     # divide subaerial cells by max_cell_h to convert to percent full
     raf_z[raf_z > 0] /= max_cell_h
@@ -214,7 +214,7 @@ for time in xrange(0, N_DAYS, TIME_STEP):
     
     #np.savetxt('cem_z_divided.out',cem_z,'%.3f')
     
-    #cem_z[riv_j, riv_i] -= channel_depth
+    # cem_z[[riv_j, riv_i] >= 0] -= channel_depth
     
     if cem_z[riv_j[-1],riv_i[-1]] > 0:
         cem_z[riv_j[:-1],riv_i[:-1]] = prof_elev[:-1]
