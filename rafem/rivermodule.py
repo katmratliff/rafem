@@ -194,7 +194,7 @@ class RiverModule(object):
             self._n, self._riv_i, self._riv_j, self._ch_depth, self._slope,
             self._saveavulsions, sea_level=self._SL, dx=self._dx, dy=self._dy)
 
-        if self._saveavulsions & self._course_update:
+        if self._saveavulsions and self._course_update > 0:
             with open('river_info.txt','a') as file:
                 file.write("%.5f %i \n" % ((self._time / _SECONDS_PER_YEAR),
                     self._course_update))
@@ -208,12 +208,12 @@ class RiverModule(object):
              self._short_path, self._splay_type, self._splay_dep, self._slope,
              dx=self._dx, dy=self._dy)
 
-        if self._saveavulsions & self._avulsion_type > 0:
+        if self._saveavulsions and self._avulsion_type > 0:
             with open('river_info.txt','a') as file:
                 file.write("%.5f %i %i \n" % ((self._time / _SECONDS_PER_YEAR),
                     self._avulsion_type, self._loc))
-            new_info = (self._avulsion_type, self._time / _SECONDS_PER_YEAR, self._loc)
-            self._avulsion_info = np.vstack([self._avulsion_info, new_info])
+            # new_info = (self._avulsion_type, self._time / _SECONDS_PER_YEAR, self._loc)
+            # self._avulsion_info = np.vstack([self._avulsion_info, new_info])
 
         #assert(self._riv_i[-1] != 0)
 
