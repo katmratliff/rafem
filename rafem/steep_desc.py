@@ -242,7 +242,8 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
     # if last_elev >= max_cell_h or last_elev <=0:
     #     pdb.set_trace()
 
-    if last_elev <= 0:
+    if last_elev < 0:
+        pdb.set_trace()
         riv_i = riv_i[:-1]
         riv_j = riv_j[:-1]
         course_update = 4   # shortened course
@@ -274,6 +275,10 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
         if z[prograde_ij] >= sea_level:
             riv_i = np.append(riv_i, prograde_ij[0])
             riv_j = np.append(riv_j, prograde_ij[1])
+
+            # ADDED BELOW TO STABILIZE PROGRADING RIVER (NOT SURE IF IT'S CORRECT...)
+            if z[prograde_ij] < 0.01 * max_cell_h:
+                z[prograde_ij] = max_cell_h
 
             z[riv_i[-1], riv_j[-1]] -= ch_depth
 
