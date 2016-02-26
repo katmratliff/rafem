@@ -278,7 +278,7 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
 
             # ADDED BELOW TO STABILIZE PROGRADING RIVER (NOT SURE IF IT'S CORRECT...)
             if z[prograde_ij] < 0.01 * max_cell_h:
-                z[prograde_ij] = max_cell_h
+                z[prograde_ij] = 0.01 * max_cell_h
 
             z[riv_i[-1], riv_j[-1]] -= ch_depth
 
