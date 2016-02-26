@@ -186,13 +186,12 @@ class RiverModule(object):
         """ Update avulsion model one time step. """
 
         ### future work: SLRR can be a vector to change rates ###
-
-        self._n = avulsion_utils.fix_elevations(self._n, self._riv_i, self._riv_j,
-            self._ch_depth, self._SL, self._slope, self._dx, self._max_rand)
-
         self._riv_i, self._riv_j, self._course_update = steep_desc.update_course(
             self._n, self._riv_i, self._riv_j, self._ch_depth, self._slope,
             self._saveavulsions, sea_level=self._SL, dx=self._dx, dy=self._dy)
+
+        self._n = avulsion_utils.fix_elevations(self._n, self._riv_i, self._riv_j,
+            self._ch_depth, self._SL, self._slope, self._dx, self._max_rand)
 
         if self._saveavulsions and self._course_update > 0:
             with open('river_info.txt','a') as file:
