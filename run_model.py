@@ -155,8 +155,8 @@ for time in xrange(0, N_DAYS, TIME_STEP):
     riv_y = raf.get_value('channel_centerline__y_coordinate')/dx
     riv_i = riv_x.astype(int)
     riv_j = riv_y.astype(int)
-    if len(riv_x) != riv_length:
-        pdb.set_trace()
+    # if len(riv_x) != riv_length:
+    #     pdb.set_trace()
     prof_elev = raf_z[riv_j, riv_i]
     raf_z[riv_j, riv_i] += channel_depth
     # raf_z[riv_j[:-1], riv_i[:-1]] += 2*channel_depth
@@ -200,9 +200,9 @@ for time in xrange(0, N_DAYS, TIME_STEP):
     #np.savetxt('river_depitted.out',raf_z[riv_j,riv_i],'%.3f')
     #np.savetxt('raf_z_ready_to_pass.out',raf_z,'%.3f')
     
-    if len(riv_x) != riv_length:
-        pdb.set_trace()
-        riv_length = len(riv_x)
+    # if len(riv_x) != riv_length:
+    #     pdb.set_trace()
+    #     riv_length = len(riv_x)
 
     raf_z.reshape(shape[0]*shape[1],)
     cem.set_value('land_surface__elevation', raf_z)
