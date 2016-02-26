@@ -70,13 +70,15 @@ RIVER_WIDTH = dict(raf.parameters)['channel_width'] # Convert unit-width flux to
 RHO_SED = 2650. # Used to convert volume flux to mass flux
 N_DAYS = 100 * 365
 TIME_STEP = int(raf.get_time_step())
-save_int = 1
+save_int = 365
 
 dx = (dict(raf.parameters)['row_spacing'])*1000.
 slope = dict(raf.parameters)['delta_slope']
 max_cell_h = dx*slope
 channel_depth = dict(raf.parameters)['channel_depth']
 max_rand = 0.000001
+
+riv_length = len(riv_x)
 
 # make directories to save run data
 import os
@@ -128,9 +130,9 @@ def lowest_adj_cell(n, sub):
 for time in xrange(0, N_DAYS, TIME_STEP):
     # if time % 5000 == 0:
     #     print 'running rafem until {time}'.format(time=time)
-        
+
     raf.update_until(time)
-    
+
     sea_level = raf.get_value('sea_water_surface__elevation')
     
     # Get and set sediment flux at the river mouth
@@ -143,7 +145,7 @@ for time in xrange(0, N_DAYS, TIME_STEP):
     
     cem.set_value('land_surface_water_sediment~bedload__mass_flow_rate', qs)
     
-    np.savetxt('qs.out',qs,'%.3f')
+    # np.savetxt('qs.out',qs,'%.3f')
 
     # Get and set elevations from Rafem to CEM
     
@@ -153,11 +155,13 @@ for time in xrange(0, N_DAYS, TIME_STEP):
     riv_y = raf.get_value('channel_centerline__y_coordinate')/dx
     riv_i = riv_x.astype(int)
     riv_j = riv_y.astype(int)
+    if len(riv_x) != riv_length:
+        pdb.set_trace()
     prof_elev = raf_z[riv_j, riv_i]
     raf_z[riv_j, riv_i] += channel_depth
     # raf_z[riv_j[:-1], riv_i[:-1]] += 2*channel_depth
     # raf_z[riv_j[-1], riv_i[-1]] += channel_depth
-    
+
     #np.savetxt('extracted_prof.out',raf.get_value('channel_centerline__elevation'),'%.3f')
     #np.savetxt('prof_before_cem.out',prof_elev,'%.3f')
     #np.savetxt('raf_z_ch_added.out',raf_z,'%.5f')
@@ -185,8 +189,8 @@ for time in xrange(0, N_DAYS, TIME_STEP):
     #np.savetxt('output_data_waves/lowest_cell/low_cell'+str(time)+'.out',lowest_cell,'%.3f')
 
     # fix river elevations before passing
+    mouth_cell_count = 0
     for k in reversed(xrange(riv_x.size)):
-        mouth_cell_count = 0
         if raf_z[riv_j[k], riv_i[k]] < 1:
             if mouth_cell_count < 1:
                 mouth_cell_count += 1
@@ -196,6 +200,10 @@ for time in xrange(0, N_DAYS, TIME_STEP):
     #np.savetxt('river_depitted.out',raf_z[riv_j,riv_i],'%.3f')
     #np.savetxt('raf_z_ready_to_pass.out',raf_z,'%.3f')
     
+    if len(riv_x) != riv_length:
+        pdb.set_trace()
+        riv_length = len(riv_x)
+
     raf_z.reshape(shape[0]*shape[1],)
     cem.set_value('land_surface__elevation', raf_z)
 
