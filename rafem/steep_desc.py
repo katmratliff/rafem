@@ -124,7 +124,7 @@ def riv_cell_at_sea_level(z, sub, z0):
     except IndexError:
         return True
 
-def find_course(z, riv_i, riv_j, sea_level=None):
+def find_course(z, riv_i, riv_j, SE_loc, sea_level=None):
     """Find the course of a river.
     Given a river course as subscripts, (*i*, *j*), into an array of
     elevations, (*z*), find the river path until the coast (*sea_level*) or
@@ -166,6 +166,11 @@ def find_course(z, riv_i, riv_j, sea_level=None):
     # function to find the steepest descent route
     # note: this needs to be improved to remove potential bias that may occur
     # if two or more cells have the steepest descent elevation
+    old_course = zip(riv_i, riv_j)
+
+    riv_i = riv_i[:SE_loc]
+    riv_j = riv_j[:SE_loc]
+
     assert(riv_i.size > 0 and riv_j.size > 0)
 
     if sea_level is None:
@@ -175,9 +180,9 @@ def find_course(z, riv_i, riv_j, sea_level=None):
         if at_end_of_domain(z, (riv_i[n - 1], riv_j[n - 1])):
             return riv_i[:n], riv_j[:n]
 
-    for n in xrange(1, riv_i.size):
-        if riv_cell_at_sea_level(z, (riv_i[n - 1], riv_j[n - 1]), sea_level):
-            return riv_i[:n-1], riv_j[:n-1]
+    # for n in xrange(1, riv_i.size):
+    #     if riv_cell_at_sea_level(z, (riv_i[n - 1], riv_j[n - 1]), sea_level):
+    #         return riv_i[:n-1], riv_j[:n-1]
 
     new_i = np.empty(z.size, dtype=np.int)
     new_j = np.empty(z.size, dtype=np.int)
@@ -198,7 +203,7 @@ def find_course(z, riv_i, riv_j, sea_level=None):
 
             downstream_ij = lowest_neighbor(z, (new_i[n - 1], new_j[n - 1]))
 
-            if below_sea_level(z[downstream_ij], sea_level):
+            if downstream_ij not in old_course and below_sea_level(z[downstream_ij], sea_level):
                 pits = False
                 break
 
@@ -239,18 +244,15 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
 
     low_adj_cell = lowest_cell_elev(test_elev, (riv_i[-1], riv_j[-1]))
 
-    # if last_elev >= max_cell_h or last_elev <=0:
-    #     pdb.set_trace()
-
     if last_elev < 0:
-        # pdb.set_trace()
+        pdb.set_trace()
         riv_i = riv_i[:-1]
         riv_j = riv_j[:-1]
         course_update = 4   # shortened course
 
     # if river mouth surrounded by land
     elif low_adj_cell > 0:
-        # pdb.set_trace()
+        pdb.set_trace()
         new_riv_i, new_riv_j = find_course(z, riv_i, riv_j, sea_level=sea_level)
 
         new_riv_length = new_riv_i.size - riv_i.size
@@ -269,7 +271,7 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
 
     # if river mouth needs to prograde
     elif last_elev >= max_cell_h:
-        # pdb.set_trace()
+        pdb.set_trace()
         prograde_ij = lowest_neighbor_prograde(z, (riv_i[-1], riv_j[-1]))
 
         if z[prograde_ij] >= sea_level:
