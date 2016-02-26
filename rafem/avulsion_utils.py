@@ -297,8 +297,10 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
         for i in reversed(xrange(1,test_elev.shape[0])):
             if riv_cells[i,j]:
                 break
-            if test_elev[i,j] <= 0 and lowest_cell_elev(test_elev, (i,j)) >= 0:
-                pdb.set_trace()
+            if test_elev[i,j] == 0:
+                test_elev[i,j] == np.random.rand() * (slope*0.1)
+            if test_elev[i,j] < 0 and lowest_cell_elev(test_elev, (i,j)) >= 0:
+                #pdb.set_trace()
                 test_elev[i,j] = slope*dx + np.random.rand()*max_rand
             # NEED TO HAVE SOMETHING HERE THAT WILL ROUTE WATER TO SEA??
             # perhaps find potential shoreline configurations and fix that way
@@ -306,7 +308,7 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
                     break
             if (test_elev[i,j] >= test_elev[i-1,j] and
                 test_elev[i,j] >= 0 and test_elev[i-1,j] >= 0):
-                pdb.set_trace()
+                #pdb.set_trace()
                 test_elev[i-1,j] = test_elev[i,j]
                 test_elev[i-1,j] += np.random.rand() * (slope*0.1)
 
