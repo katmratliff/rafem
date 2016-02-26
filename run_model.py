@@ -48,7 +48,7 @@ cem.set_value('land_surface__elevation', z)
 
 waves.set_value('sea_shoreline_wave~incoming~deepwater__ashton_et_al_approach_angle_asymmetry_parameter', .5)
 waves.set_value('sea_shoreline_wave~incoming~deepwater__ashton_et_al_approach_angle_highness_parameter', .2)
-cem.set_value("sea_surface_water_wave__height", 0.05)
+cem.set_value("sea_surface_water_wave__height", 0.25)
 cem.set_value("sea_surface_water_wave__period", 9.)
 #cem.set_value("sea_surface_water_wave__azimuth_angle_of_opposite_of_phase_velocity", 0. * np.pi / 180.)
 
@@ -68,7 +68,7 @@ flux_array = np.zeros(2, dtype=np.float)
 
 RIVER_WIDTH = dict(raf.parameters)['channel_width'] # Convert unit-width flux to flux
 RHO_SED = 2650. # Used to convert volume flux to mass flux
-N_DAYS = 100 * 365
+N_DAYS = 2000 * 365
 TIME_STEP = int(raf.get_time_step())
 save_int = 365
 
@@ -155,8 +155,8 @@ for time in xrange(0, N_DAYS, TIME_STEP):
     riv_y = raf.get_value('channel_centerline__y_coordinate')/dx
     riv_i = riv_x.astype(int)
     riv_j = riv_y.astype(int)
-    # if len(riv_x) != riv_length:
-    #     pdb.set_trace()
+    if len(riv_x) != riv_length:
+        pdb.set_trace()
     prof_elev = raf_z[riv_j, riv_i]
     raf_z[riv_j, riv_i] += channel_depth
     # raf_z[riv_j[:-1], riv_i[:-1]] += 2*channel_depth
@@ -200,9 +200,9 @@ for time in xrange(0, N_DAYS, TIME_STEP):
     #np.savetxt('river_depitted.out',raf_z[riv_j,riv_i],'%.3f')
     #np.savetxt('raf_z_ready_to_pass.out',raf_z,'%.3f')
     
-    # if len(riv_x) != riv_length:
-    #     pdb.set_trace()
-    #     riv_length = len(riv_x)
+    if len(riv_x) != riv_length:
+        pdb.set_trace()
+        riv_length = len(riv_x)
 
     raf_z.reshape(shape[0]*shape[1],)
     cem.set_value('land_surface__elevation', raf_z)
