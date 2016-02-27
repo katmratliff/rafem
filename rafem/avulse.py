@@ -125,7 +125,7 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
         if channel_is_superelevated(n, (riv_i[a], riv_j[a]), ch_depth,
                                     super_ratio):
 
-            pdb.set_trace()
+            # pdb.set_trace()
 
             # if superelevation greater than trigger ratio, determine
             # length of new steepest descent path
@@ -157,6 +157,13 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
 
                     new = (np.append(riv_i[:a - 1], new[0]),
                            np.append(riv_j[:a - 1], new[1]))
+
+                    # fill up old channel... could be some fraction in the future
+                    # (determines whether channels are repellors or attractors)
+
+                    new_profile = n[new[0], new[1]]
+                    n[riv_i[a:], riv_j[a:]] += ch_depth
+                    n[new[0], new[1]] = new_profile
 
                     break
 
