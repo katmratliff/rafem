@@ -57,11 +57,11 @@ grid_id = cem.get_var_grid('land_surface__elevation')
 spacing = cem.get_grid_spacing(grid_id)
 shape = cem.get_grid_shape(grid_id)
 
-# z0 = raf.get_value('land_surface__elevation').reshape(shape)
-# riv_x = raf.get_value('channel_centerline__x_coordinate')/1000
-# riv_y = raf.get_value('channel_centerline__y_coordinate')/1000
-# plot_coast(spacing, z0)
-# plt.plot(riv_y,riv_x)
+z0 = raf.get_value('land_surface__elevation').reshape(shape)
+riv_x = raf.get_value('channel_centerline__x_coordinate')/1000
+riv_y = raf.get_value('channel_centerline__y_coordinate')/1000
+plot_coast(spacing, z0)
+plt.plot(riv_y,riv_x)
 # plt.savefig('elev_initial.png')
 
 qs = np.zeros_like(z0)
