@@ -21,6 +21,7 @@ def plot_coast(spacing, z):
     plt.pcolormesh(y * 1e-3, x * 1e-3, z, cmap=m, vmin=-100, vmax=100)
     
     plt.gca().set_aspect(1.) 
+    plt.axis([0, 1500, 0, 500])
     plt.colorbar(orientation='horizontal').ax.set_xlabel('Elevation (m)')
     plt.xlabel('Cross-shore (km)')
     plt.ylabel('Alongshore (km)')
@@ -56,11 +57,11 @@ grid_id = cem.get_var_grid('land_surface__elevation')
 spacing = cem.get_grid_spacing(grid_id)
 shape = cem.get_grid_shape(grid_id)
 
-z0 = raf.get_value('land_surface__elevation').reshape(shape)
-riv_x = raf.get_value('channel_centerline__x_coordinate')/1000
-riv_y = raf.get_value('channel_centerline__y_coordinate')/1000
-plot_coast(spacing, z0)
-plt.plot(riv_y,riv_x)
+# z0 = raf.get_value('land_surface__elevation').reshape(shape)
+# riv_x = raf.get_value('channel_centerline__x_coordinate')/1000
+# riv_y = raf.get_value('channel_centerline__y_coordinate')/1000
+# plot_coast(spacing, z0)
+# plt.plot(riv_y,riv_x)
 # plt.savefig('elev_initial.png')
 
 qs = np.zeros_like(z0)
@@ -96,10 +97,6 @@ if not os.path.exists("output_data_waves/prof_figs"):
     os.mkdir("output_data_waves/prof_figs")
 if not os.path.exists("output_data_waves/rel_elev"):
     os.mkdir("output_data_waves/rel_elev")
-#if not os.path.exists("output_data_waves/shoreline_pos"):
-#    os.mkdir("output_data_waves/shoreline_pos")
-#if not os.path.exists("output_data_waves/lowest_cell"):
-#    os.mkdir("output_data_waves/lowest_cell")
 
 def lowest_adj_cell(n, sub):
     i,j = sub
@@ -144,8 +141,6 @@ for time in xrange(0, N_DAYS, TIME_STEP):
     flux_array = np.vstack([flux_array, [(time, raf_qs[0] * RIVER_WIDTH * RHO_SED)]])
     
     cem.set_value('land_surface_water_sediment~bedload__mass_flow_rate', qs)
-    
-    # np.savetxt('qs.out',qs,'%.3f')
 
     # Get and set elevations from Rafem to CEM
     
@@ -155,38 +150,13 @@ for time in xrange(0, N_DAYS, TIME_STEP):
     riv_y = raf.get_value('channel_centerline__y_coordinate')/dx
     riv_i = riv_x.astype(int)
     riv_j = riv_y.astype(int)
-    if len(riv_x) != riv_length:
-        pdb.set_trace()
+    # if len(riv_x) != riv_length:
+    #     pdb.set_trace()
     prof_elev = raf_z[riv_j, riv_i]
     raf_z[riv_j, riv_i] += channel_depth
-    # raf_z[riv_j[:-1], riv_i[:-1]] += 2*channel_depth
-    # raf_z[riv_j[-1], riv_i[-1]] += channel_depth
-
-    #np.savetxt('extracted_prof.out',raf.get_value('channel_centerline__elevation'),'%.3f')
-    #np.savetxt('prof_before_cem.out',prof_elev,'%.3f')
-    #np.savetxt('raf_z_ch_added.out',raf_z,'%.5f')
-    
-    # # find shoreline cells and fix elevations of subaerial cells
-    # shore_flag = np.zeros(raf_z.shape, dtype=np.int)
-    # lowest_cell = np.zeros(raf_z.shape)
-    # for i in xrange(raf_z.shape[0]):
-    #     for j in xrange(raf_z.shape[1]):
-    #         #lowest_elev = lowest_adj_cell(raf_z, (i,j))
-    #         #lowest_cell[i,j] = lowest_elev
-    #         if 0 < raf_z[i,j] <= max_cell_h:
-    #             if lowest_adj_cell(raf_z, (i,j)) <= 0:
-    #                 shore_flag[i,j] = 1
-    #             else:
-    #                 raf_z[i,j] = max_cell_h + np.random.rand()*max_rand
-    #                 shore_flag[i,j] = 2
 
     # divide subaerial cells by max_cell_h to convert to percent full
     raf_z[raf_z > 0] /= max_cell_h
-    
-    #np.savetxt('raf_z_divided.out',raf_z,'%.5f')
-    
-    #np.savetxt('output_data_waves/shoreline_pos/shoreline'+str(time)+'.out',shore_flag,'%i')
-    #np.savetxt('output_data_waves/lowest_cell/low_cell'+str(time)+'.out',lowest_cell,'%.3f')
 
     # fix river elevations before passing
     mouth_cell_count = 0
@@ -197,12 +167,9 @@ for time in xrange(0, N_DAYS, TIME_STEP):
             else:
                 raf_z[riv_j[k], riv_i[k]] = 1
     
-    #np.savetxt('river_depitted.out',raf_z[riv_j,riv_i],'%.3f')
-    #np.savetxt('raf_z_ready_to_pass.out',raf_z,'%.3f')
-    
-    if len(riv_x) != riv_length:
-        pdb.set_trace()
-        riv_length = len(riv_x)
+    # if len(riv_x) != riv_length:
+    #     pdb.set_trace()
+    #     riv_length = len(riv_x)
 
     raf_z.reshape(shape[0]*shape[1],)
     cem.set_value('land_surface__elevation', raf_z)
@@ -216,11 +183,7 @@ for time in xrange(0, N_DAYS, TIME_STEP):
     
     # Get and set elevations from CEM to Rafem
     cem_z = cem.get_value('land_surface__elevation').reshape(shape)
-    #np.savetxt('cem_z_raw.out',cem_z,'%.3f')
-    
     cem_z[cem_z > 0] *= max_cell_h
-    
-    #np.savetxt('cem_z_divided.out',cem_z,'%.3f')
     
     # cem_z[[riv_j, riv_i] >= 0] -= channel_depth
     
@@ -232,9 +195,6 @@ for time in xrange(0, N_DAYS, TIME_STEP):
         cem_z[riv_j[:-2],riv_i[:-2]] = prof_elev[:-2]
         cem_z[riv_j[-2],riv_i[-2]] -= channel_depth
 
-    #np.savetxt('reset_cem_prof.out',cem_z[riv_j,riv_i],'%.3f')
-    #np.savetxt('cem_to_rafem.out',cem_z,'%.3f')
-    
     cem_z.reshape(shape[0]*shape[1],)
     raf.set_value('land_surface__elevation', cem_z + sea_level)
     
@@ -271,8 +231,5 @@ for time in xrange(0, N_DAYS, TIME_STEP):
         plt.title('time = '+str(time/save_int)+' years')
         plt.savefig('output_data_waves/prof_figs/prof_fig_'+str(time/save_int)+'.png')
         plt.close(p)
-    
-#    if cem_z[riv_j[-2],riv_i[-2]] < cem_z[riv_j[-1],riv_i[-1]]:
-#        break
         
 np.savetxt('output_data_waves/fluxes.out',flux_array,fmt='%i,%.5f')
