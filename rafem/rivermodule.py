@@ -185,7 +185,6 @@ class RiverModule(object):
     def advance_in_time(self):
         """ Update avulsion model one time step. """
 
-        ### future work: SLRR can be a vector to change rates ###
         self._riv_i, self._riv_j, self._course_update = steep_desc.update_course(
             self._n, self._riv_i, self._riv_j, self._ch_depth, self._slope,
             self._saveavulsions, sea_level=self._SL, dx=self._dx, dy=self._dy)
@@ -203,8 +202,6 @@ class RiverModule(object):
                     self._course_update))
 
         # determine if there is an avulsion & find new path if so
-        ### need to change this to look for shoreline after coupling ###
-        ### (instead of looking for sea level)
         (self._riv_i, self._riv_j), self._avulsion_type, self._loc = avulse.find_avulsion(
              self._riv_i, self._riv_j, self._n,
              self._super_ratio, self._SL, self._ch_depth,
@@ -215,22 +212,19 @@ class RiverModule(object):
             with open('river_info.txt','a') as file:
                 file.write("%.5f %i %i \n" % ((self._time / _SECONDS_PER_YEAR),
                     self._avulsion_type, self._loc))
-            # new_info = (self._avulsion_type, self._time / _SECONDS_PER_YEAR, self._loc)
-            # self._avulsion_info = np.vstack([self._avulsion_info, new_info])
+
+        # need to fill old river channels if coupled to CEM
+        if self._avulsion_type == 1 or 2:
+            self._n = avulsion_utils.fix_elevations(self._n, self._riv_i, self._riv_j,
+                self._ch_depth, self._SL, self._slope, self._dx, self._max_rand)
 
         #assert(self._riv_i[-1] != 0)
-
-        # save timestep and avulsion location if there was one
-        #if len(loc) != 0:
-        #    self._avulsions = self._avulsions + [(self._time/_SECONDS_PER_DAY),
-        #                loc[-1], avulsion_type, length_old,
-        #                length_new_sum, self._SL)]
         
         # raise first two rows by inlet rise rate (subsidence)
         self._n[:2, :] += self._IRR
 
         # change elevations according to sea level rise (SLRR)
-        ### elevations now subtracted in coupling script ###
+        ### if not coupled (this occurs in coupling script otherwise) ###
         # SLR.elev_change(self._SL, self._n, self._riv_i,
         #                 self._riv_j, self._ch_depth, self._SLRR)
 
