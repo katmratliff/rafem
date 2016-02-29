@@ -125,7 +125,7 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
         if channel_is_superelevated(n, (riv_i[a], riv_j[a]), ch_depth,
                                     super_ratio):
 
-            # pdb.set_trace()
+            pdb.set_trace()
 
             # if superelevation greater than trigger ratio, determine
             # length of new steepest descent path
@@ -169,10 +169,6 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
 
                 elif splay_type > 0:
                     avulsion_type = 3
-
-                    # print(a)
-                    # print(new)
-                    # print(new[0][a], new[1][a])
 
                     # below should just be a??? not a-1???
                     FP.dep_splay(n, (new[0][a-1], new[1][a-1]), (riv_i, riv_j),
