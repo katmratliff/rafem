@@ -262,6 +262,9 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
             riv_i = new_riv_i
             riv_j = new_riv_j
 
+            if z[riv_i[-1], riv_j[-1]] < 0.01 * max_cell_h:
+                z[riv_i[-1], riv_j[-1]] = 0.01 * max_cell_h
+
             z[riv_i[-1], riv_j[-1]] -= ch_depth
 
             course_update = 6
