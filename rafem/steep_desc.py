@@ -5,7 +5,7 @@ import numpy as np
 import downcut
 import pdb
 
-from avulsion_utils import fill_upstream, lowest_cell_elev
+from avulsion_utils import lowest_cell_elev
 
 def lowest_neighbor(n, sub):
     """Find lowest neighbor value around a point.
