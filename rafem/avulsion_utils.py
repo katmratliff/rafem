@@ -293,7 +293,7 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
     riv_cells = np.zeros_like(z)
     riv_cells[riv_i, riv_j] = 1
 
-    for i in reversed(xrange(1,test_elev.shape[0])):
+    for i in xrange(1,test_elev.shape[0])):
         for j in xrange(test_elev.shape[1]):
             if riv_cells[i,j]:
                 break
@@ -306,11 +306,10 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
             # perhaps find potential shoreline configurations and fix that way
             if riv_cells[i-1,j]:
                     break
-            if (test_elev[i,j] >= test_elev[i-1,j] and
-                test_elev[i,j] >= 0 and test_elev[i-1,j] >= 0):
-                #pdb.set_trace()
-                test_elev[i-1,j] = test_elev[i,j]
-                test_elev[i-1,j] += np.random.rand() * (slope*0.1)
+            if test_elev[i,j] >= test_elev[i-1,j]:
+                if test_elev[i,j] >= 0 and test_elev[i-1,j] >= 0:
+                    #pdb.set_trace()
+                    test_elev[i-1,j] = test_elev[i,j] + (np.random.rand() * (slope*0.1))
 
     test_elev[riv_i, riv_j] = riv_prof
 
