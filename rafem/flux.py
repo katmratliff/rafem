@@ -14,8 +14,13 @@ def calc_qs(nu, riv_i, riv_j, n, sea_level, ch_depth, dx, dy, dt, slope):
                                   (riv_i[-1], riv_j[-1]), sea_level,
                                   ch_depth, slope, dx=dx, dy=dy)
 
+    if is_diagonal_neighbor((riv_i[-2], riv_j[-2]), (riv_i[-1], riv_j[-1])):
+        last_len = (dx/2 * np.sqrt(2.)) + beach_len
+    else:
+        last_len = dx/2 + beach_len
+
     ds = get_link_lengths((riv_i[-2:], riv_j[-2:]), dx=dx, dy=dy)
-    ds[-1] = ds[-1]/2 + beach_len
+    ds[-1] = ds[-1]/2 + last_len
     dz = (sea_level - ch_depth) - n[riv_i[-2], riv_j[-2]]
     
     return - nu * dz / ds

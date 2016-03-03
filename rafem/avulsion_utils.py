@@ -293,7 +293,7 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
     riv_cells = np.zeros_like(z)
     riv_cells[riv_i, riv_j] = 1
 
-    for i in xrange(1,test_elev.shape[0])):
+    for i in xrange(1,test_elev.shape[0]):
         for j in xrange(test_elev.shape[1]):
             if riv_cells[i,j]:
                 break

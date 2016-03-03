@@ -71,14 +71,20 @@ def smooth_rc(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n, sea_level, slope):
                                   (riv_i[-1], riv_j[-1]), sea_level,
                                   ch_depth, slope, dx=dx, dy=dy)
     
-    # HOW MUCH SHOULD THIS BE FOR STABILITY??
-    if beach_len < dx/10:
-        beach_len = dx/10
+    # # HOW MUCH SHOULD THIS BE FOR STABILITY??
+    # if beach_len < dx/10:
+    #     beach_len = dx/10
+
+    if is_diagonal_neighbor((riv_i[-2], riv_j[-2]), (riv_i[-1], riv_j[-1])):
+        last_len = (dx/2 * np.sqrt(2.)) + beach_len
+    else:
+        last_len = dx/2 + beach_len
+
 
     n_river = n[riv_i, riv_j]
     n_river[-1] = sea_level - ch_depth
     s_river = get_channel_distance((riv_i, riv_j), dx=dx, dy=dy)
-    s_river[-1] = s_river[-2] + beach_len
+    s_river[-1] = s_river[-2] + last_len
 
     dn_rc = (nu * dt) * solve_second_derivative(s_river, n_river)
 
