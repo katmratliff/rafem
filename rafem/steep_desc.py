@@ -207,17 +207,11 @@ def find_course(z, riv_i, riv_j, SE_loc, sea_level=None):
                 pits = False
                 break
 
-            # else: 
-            #     new_i[n], new_j[n] = downstream_ij
-            
-            # if z[downstream_ij] > z[new_i[n - 1], new_j[n - 1]]:
-            #     new_i[n], new_j[n] = downstream_ij
-            #     fill_upstream(z, zip(new_i[:n + 1], new_j[:n + 1]))
-            #     break
-
             if z[downstream_ij] > z[new_i[n - 1], new_j[n - 1]]:
                 new_i[n], new_j[n] = downstream_ij
                 z[new_i[n - 1], new_j[n - 1]] +=  1e-6
+            elif downstream_ij in zip(new_i[:n], new_j[:n]):
+                pdb.set_trace()
             else:
                 new_i[n], new_j[n] = downstream_ij
 
@@ -265,7 +259,9 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
             if z[riv_i[-1], riv_j[-1]] < 0.01 * max_cell_h:
                 z[riv_i[-1], riv_j[-1]] = 0.01 * max_cell_h
 
-            z[riv_i[-1], riv_j[-1]] -= ch_depth
+            downcut.cut_new(riv_i[-new_riv_length-1:], riv_j[-new_riv_length-1:],
+                                z, sea_level, ch_depth, slope, dx=dx, dy=dy)
+            # z[riv_i[-1], riv_j[-1]] -= ch_depth
 
             course_update = 6
         
