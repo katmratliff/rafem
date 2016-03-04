@@ -5,7 +5,7 @@ import numpy as np
 import downcut
 import pdb
 
-from avulsion_utils import lowest_cell_elev
+from avulsion_utils import lowest_cell_elev, sort_lowest_neighbors
 
 def lowest_neighbor(n, sub):
     """Find lowest neighbor value around a point.
@@ -203,10 +203,15 @@ def find_course(z, riv_i, riv_j, SE_loc, sea_level=None):
 
             sorted_n = sort_lowest_neighbors(z, (new_i[n - 1], new_j[n - 1]))
 
-            for i in sorted_n[0]:
-                if (sorted_n[0][i], sorted_n[1][i]) not in zip(new_i[:n - 1], new_j[:n - 1]):
-                    downstream_ij = (sorted_n[0][i], sorted_n[1][i])
-                    break
+            if (sorted_n[0][0], sorted_n[1][0]) not in zip(new_i[:n - 1], new_j[:n - 1]):
+                downstream_ij = (sorted_n[0][0], sorted_n[1][0])
+            elif (sorted_n[0][1], sorted_n[1][1]) not in zip(new_i[:n - 1], new_j[:n - 1]):
+                downstream_ij = (sorted_n[0][1], sorted_n[1][1])
+            elif (sorted_n[0][2], sorted_n[1][2]) not in zip(new_i[:n - 1], new_j[:n - 1]):
+                downstream_ij = (sorted_n[0][2], sorted_n[1][2])
+            else:
+                raise RuntimeError('river course is going crazy!')
+
 
             if downstream_ij not in old_course and below_sea_level(z[downstream_ij], sea_level):
                 pits = False
