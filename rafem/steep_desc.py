@@ -201,7 +201,12 @@ def find_course(z, riv_i, riv_j, SE_loc, sea_level=None):
                 pits = False
                 break
 
-            downstream_ij = lowest_neighbor(z, (new_i[n - 1], new_j[n - 1]))
+            sorted_n = sort_lowest_neighbors(z, (new_i[n - 1], new_j[n - 1]))
+
+            for i in sorted_n[0]:
+                if (sorted_n[0][i], sorted_n[1][i]) not in zip(new_i[:n - 1], new_j[:n - 1]):
+                    downstream_ij = (sorted_n[0][i], sorted_n[1][i])
+                    break
 
             if downstream_ij not in old_course and below_sea_level(z[downstream_ij], sea_level):
                 pits = False
