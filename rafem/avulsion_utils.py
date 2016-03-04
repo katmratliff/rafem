@@ -339,29 +339,35 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
             if test_elev[i,j] > 0:
                 if test_elev[i,j] >= test_elev[i-1,j] and not is_shore_cell(test_elev,(i,j)):
                     test_elev[i-1,j] = test_elev[i,j] + (np.random.rand() * (slope*0.1))
-
-    for i in xrange(1,test_elev.shape[0]):
-        for j in xrange(test_elev.shape[1]):
-            if riv_cells[i,j]:
-                break
-            if test_elev[i,j] == 0:
-                test_elev[i,j] == np.random.rand() * (slope*0.1)
-            if test_elev[i,j] < 0 and lowest_cell_elev(test_elev, (i,j)) >= 0:
-                #pdb.set_trace()
-                test_elev[i,j] = slope*dx + np.random.rand()*max_rand
-            # NEED TO HAVE SOMETHING HERE THAT WILL ROUTE WATER TO SEA??
-            # perhaps find potential shoreline configurations and fix that way
-            if riv_cells[i-1,j]:
-                    break
-            if test_elev[i,j] >= test_elev[i-1,j]:
-                if test_elev[i,j] >= 0 and test_elev[i-1,j] >= 0:
-                    #pdb.set_trace()
-                    test_elev[i-1,j] = test_elev[i,j] + (np.random.rand() * (slope*0.1))
-
+    
     test_elev[riv_i, riv_j] = riv_prof
 
     z = test_elev + sea_level
 
     return z
+
+    # for i in xrange(1,test_elev.shape[0]):
+    #     for j in xrange(test_elev.shape[1]):
+    #         if riv_cells[i,j]:
+    #             break
+    #         if test_elev[i,j] == 0:
+    #             test_elev[i,j] == np.random.rand() * (slope*0.1)
+    #         if test_elev[i,j] < 0 and lowest_cell_elev(test_elev, (i,j)) >= 0:
+    #             #pdb.set_trace()
+    #             test_elev[i,j] = slope*dx + np.random.rand()*max_rand
+    #         # NEED TO HAVE SOMETHING HERE THAT WILL ROUTE WATER TO SEA??
+    #         # perhaps find potential shoreline configurations and fix that way
+    #         if riv_cells[i-1,j]:
+    #                 break
+    #         if test_elev[i,j] >= test_elev[i-1,j]:
+    #             if test_elev[i,j] >= 0 and test_elev[i-1,j] >= 0:
+    #                 #pdb.set_trace()
+    #                 test_elev[i-1,j] = test_elev[i,j] + (np.random.rand() * (slope*0.1))
+
+    # test_elev[riv_i, riv_j] = riv_prof
+
+    # z = test_elev + sea_level
+
+    # return z
 
 
