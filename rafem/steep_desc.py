@@ -215,8 +215,6 @@ def find_course(z, riv_i, riv_j, SE_loc, sea_level=None):
             if z[downstream_ij] > z[new_i[n - 1], new_j[n - 1]]:
                 new_i[n], new_j[n] = downstream_ij
                 z[new_i[n - 1], new_j[n - 1]] +=  1e-6
-            elif downstream_ij in zip(new_i[:n], new_j[:n]):
-                pdb.set_trace()
             else:
                 new_i[n], new_j[n] = downstream_ij
 
