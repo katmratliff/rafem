@@ -254,8 +254,16 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
         course_update = 4   # shortened course
 
     # if river mouth surrounded by land
-    elif low_adj_cell > 0:
+    elif last_elev >= max_cell_h or low_adj_cell > 0:
         # pdb.set_trace()
+
+        if last_elev >= max_cell_h:
+            # river mouth prograded
+            course_update = 5
+        else:
+            # river mouth cell was surrounded by land
+            course_update = 6
+
         new_riv_i, new_riv_j = find_course(z, riv_i, riv_j, len(riv_i), sea_level=sea_level)
 
         new_riv_length = new_riv_i.size - riv_i.size
@@ -271,32 +279,10 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
                                 z, sea_level, ch_depth, slope, dx=dx, dy=dy)
             # z[riv_i[-1], riv_j[-1]] -= ch_depth
 
-            course_update = 6
-        
         else:
             riv_i = riv_i
             riv_j = riv_j
-
-    # if river mouth needs to prograde
-    elif last_elev >= max_cell_h:
-        # pdb.set_trace()
-        prograde_ij = lowest_neighbor_prograde(z, (riv_i[-1], riv_j[-1]))
-
-        if z[prograde_ij] >= sea_level:
-            riv_i = np.append(riv_i, prograde_ij[0])
-            riv_j = np.append(riv_j, prograde_ij[1])
-
-            # ADDED BELOW TO STABILIZE PROGRADING RIVER (NOT SURE IF IT'S CORRECT...)
-            if z[prograde_ij] < 0.01 * max_cell_h:
-                z[prograde_ij] = 0.01 * max_cell_h
-
-            z[riv_i[-1], riv_j[-1]] -= ch_depth
-
-        else:
-            riv_i = riv_i
-            riv_j = riv_j
-
-        course_update = 5   # lengthened course
+            course_update = 0
 
     else:
         riv_i = riv_i
