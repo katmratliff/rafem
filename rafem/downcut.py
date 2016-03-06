@@ -30,7 +30,7 @@ def cut_new(riv_i, riv_j, n, sea_level, ch_depth, slope, dx=1., dy=1.):
                                       ch_depth, slope, dx=dx, dy=dy)
 
         lengths = get_link_lengths((riv_i, riv_j), dx=dx, dy=dy)
-        lengths[-1] = np.divide(lengths[-1], 2) + beach_len
+        lengths[-1] += beach_len 
 
         i0, j0 = riv_i[1], riv_j[1]
         z0 = n[riv_i[0], riv_j[0]]
