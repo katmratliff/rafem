@@ -271,7 +271,11 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
                                 z, sea_level, ch_depth, slope, dx=dx, dy=dy)
             # z[riv_i[-1], riv_j[-1]] -= ch_depth
 
-            course_update = 6
+            course_update = 6 # lengthened land-locked course
+        
+        else:
+            riv_i = riv_i
+            riv_j = riv_j
 
     # if river mouth needs to prograde
     elif last_elev >= max_cell_h:
@@ -288,14 +292,8 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
 
             z[riv_i[-1], riv_j[-1]] -= ch_depth
 
-        else:
-            riv_i = riv_i
-            riv_j = riv_j
+            course_update = 5   # lengthened course
 
-        course_update = 5   # lengthened course
-
-
-        
         else:
             riv_i = riv_i
             riv_j = riv_j
