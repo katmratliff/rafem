@@ -34,7 +34,7 @@ waves = Waves()
 
 cem.setup('_run_cem', number_of_cols=100, number_of_rows=300, grid_spacing=5000.)
 raf.setup('_run_rafem', number_of_columns=100, number_of_rows=300, row_spacing=5.,
-          column_spacing=5., rate_of_sea_level_rise=0.000, channel_discharge=10000.)
+          column_spacing=5., rate_of_sea_level_rise=0.00, channel_discharge=10000.)
 
 cem.initialize('_run_cem/cem.txt')
 raf.initialize('_run_rafem/input.yaml')
@@ -69,7 +69,7 @@ flux_array = np.zeros(2, dtype=np.float)
 
 RIVER_WIDTH = dict(raf.parameters)['channel_width'] # Convert unit-width flux to flux
 RHO_SED = 2650. # Used to convert volume flux to mass flux
-N_DAYS = 1000 * 365
+N_DAYS = 2000 * 365
 TIME_STEP = int(raf.get_time_step())
 save_int = 365
 
