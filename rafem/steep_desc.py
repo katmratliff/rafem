@@ -44,7 +44,7 @@ def lowest_neighbor_prograde(n, sub):
     else:
         di, dj = np.array([0, 1, 1, 1, 0]),  np.array([-1, -1, 0, 1, 1])
 
-    subaerial_low = min(x for x in (n[i + di, j + dj]) if x >= 0)
+    subaerial_low = min(x for x in (n[i + di, j + dj]) if x > 0)
     lowest = np.where((n[i + di, j + dj]) == subaerial_low)[0][0]
 
     return i + di[lowest], j + dj[lowest]
@@ -63,7 +63,7 @@ def below_sea_level(z, sea_level):
     boolean
         `True` if at or below sea level. Otherwise, `False`.
     """
-    return z < sea_level
+    return z <= sea_level
 
 
 def at_river_mouth(z, sub, z0):
@@ -244,10 +244,9 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
     test_elev = z - sea_level
     test_elev[riv_i[:-1], riv_j[:-1]] += 2 * ch_depth
 
-    test_elev[test_elev == 0] = np.random.rand() * (slope*0.1)
     low_adj_cell = lowest_cell_elev(test_elev, (riv_i[-1], riv_j[-1]))
 
-    if last_elev < 0:
+    if last_elev <= 0:
         # pdb.set_trace()
         riv_i = riv_i[:-1]
         riv_j = riv_j[:-1]
@@ -269,7 +268,6 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
 
             downcut.cut_new(riv_i[-new_riv_length-1:], riv_j[-new_riv_length-1:],
                                 z, sea_level, ch_depth, slope, dx=dx, dy=dy)
-            # z[riv_i[-1], riv_j[-1]] -= ch_depth
 
             course_update = 6 # lengthened land-locked course
         
@@ -282,13 +280,13 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
         # pdb.set_trace()
         prograde_ij = lowest_neighbor_prograde(test_elev, (riv_i[-1], riv_j[-1]))
 
-        if z[prograde_ij] >= sea_level:
+        if z[prograde_ij] > sea_level:
             riv_i = np.append(riv_i, prograde_ij[0])
             riv_j = np.append(riv_j, prograde_ij[1])
 
             # ADDED BELOW TO STABILIZE PROGRADING RIVER (NOT SURE WHAT VALUE IS CORRECT...)
-            if z[prograde_ij] < 0.1 * max_cell_h:
-                z[prograde_ij] = 0.1 * max_cell_h
+            if (z[prograde_ij] - sea_level) < (0.1 * max_cell_h):
+                z[prograde_ij] = (0.1 * max_cell_h) + sea_level
 
             z[riv_i[-1], riv_j[-1]] -= ch_depth
 

@@ -328,8 +328,6 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
         for j in xrange(test_elev.shape[1]):
             if riv_cells[i,j]:
                 break
-            if test_elev[i,j] == 0:
-                test_elev[i,j] == np.random.rand() * (slope*0.1)
             if 0 < test_elev[i,j] < max_cell_h and not is_shore_cell(test_elev, (i,j)):
                 test_elev[i,j] = max_cell_h + np.random.rand()*max_rand
             # Note: below keeps things sloping seaward. Needs revision
