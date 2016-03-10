@@ -284,7 +284,7 @@ def lowest_cell_elev(n, sub):
     return lowest
 
 
-def is_shore_cell(n, sub):
+def lowest_face(n, sub):
     i,j = sub
 
     shore_cell = 0
@@ -308,12 +308,9 @@ def is_shore_cell(n, sub):
     else:
         di, dj = np.array([0, -1, 0, 1]),  np.array([-1, 0, 1, 0])
 
-    lowest = np.amin(n[i + di, j + dj])
+    lowest_face = np.amin(n[i + di, j + dj])
 
-    if n[i,j] >= 0 and lowest < 0:
-        shore_cell = 1
-
-    return lowest, shore_cell
+    return lowest_face
 
 
 def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
@@ -330,26 +327,24 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
         for j in xrange(test_elev.shape[1]):
             if riv_cells[i,j]:
                 break
-            # fix lakes (why do they form????)
-            low_face_cell, shore_cell = is_shore_cell(test_elev, (i,j))
-
-            if test_elev[i,j] <= 0 and low_face_cell > 0:
-                if j == 0:
-                    test_elev[i,j] = test_elev[i,j+1] - np.random.rand()*max_rand
-                elif j == z.shape[1] - 1:
-                    test_elev[i,j] = test_elev[i,j-1] - np.random.rand()*max_rand
-                else:
-                    test_elev[i,j] = ((test_elev[i,j+1] + test_elev[i,j-1])/2
-                                      - np.random.rand()*max_rand)
-            # fix partially full cells away from shoreline (could form from SLR)
-            if 0 < test_elev[i,j] < max_cell_h and not shore_cell:
-                test_elev[i,j] = max_cell_h + np.random.rand()*max_rand
+            # fix lakes (why do they form????) and partially full cells that aren't
+            # part of the shoreline
+            if test_elev[i,j] < max_cell_h and lowest_face(test_elev, (i,j)) > 0:
+                if test_elev[i,j] <= 0:
+                    if j == 0:
+                        test_elev[i,j] = test_elev[i,j+1] - np.random.rand()*max_rand
+                    elif j == z.shape[1] - 1:
+                        test_elev[i,j] = test_elev[i,j-1] - np.random.rand()*max_rand
+                    else:
+                        test_elev[i,j] = ((test_elev[i,j+1] + test_elev[i,j-1])/2
+                                          - np.random.rand()*max_rand)
+                else: test_elev[i,j] = max_cell_h + np.random.rand()*max_rand
             # Note: below keeps things sloping seaward. Needs revision to slope 
             # towards nearest shoreline cell (or perhaps a better idea is out there?)
             if riv_cells[i-1,j]:
                 break
             if test_elev[i,j] > 0:
-                if test_elev[i,j] >= test_elev[i-1,j] and not is_shore_cell(test_elev,(i,j)):
+                if test_elev[i,j] >= test_elev[i-1,j] and lowest_face(test_elev,(i,j)) > 0:
                     test_elev[i-1,j] = test_elev[i,j] + (np.random.rand() * (slope*0.1))
     
     test_elev[riv_i, riv_j] = riv_prof

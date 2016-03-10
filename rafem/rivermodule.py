@@ -208,6 +208,9 @@ class RiverModule(object):
              self._short_path, self._splay_type, self._splay_dep, self._slope,
              dx=self._dx, dy=self._dy)
 
+        if self._course_update == 5 and self._avulsion_type == 3:
+            pdb.set_trace()
+
         if self._saveavulsions and self._avulsion_type > 0:
             with open('river_info.txt','a') as file:
                 file.write("%.5f %i %i \n" % ((self._time / _SECONDS_PER_YEAR),
