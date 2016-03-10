@@ -283,6 +283,7 @@ def lowest_cell_elev(n, sub):
 
     return lowest
 
+
 def is_shore_cell(n, sub):
     i,j = sub
 
@@ -312,7 +313,8 @@ def is_shore_cell(n, sub):
     if n[i,j] >= 0 and lowest < 0:
         shore_cell = 1
 
-    return shore_cell
+    return lowest, shore_cell
+
 
 def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
 
@@ -329,7 +331,9 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
             if riv_cells[i,j]:
                 break
             # fix lakes (why do they form????)
-            if test_elev[i,j] <= 0 and lowest_cell_elev(test_elev, (i,j)) > 0:
+            low_face_cell, shore_cell = is_shore_cell(test_elev, (i,j))
+
+            if test_elev[i,j] <= 0 and low_face_cell > 0:
                 if j == 0:
                     test_elev[i,j] = test_elev[i,j+1] - np.random.rand()*max_rand
                 elif j == z.shape[1] - 1:
@@ -338,7 +342,7 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
                     test_elev[i,j] = ((test_elev[i,j+1] + test_elev[i,j-1])/2
                                       - np.random.rand()*max_rand)
             # fix partially full cells away from shoreline (could form from SLR)
-            if 0 < test_elev[i,j] < max_cell_h and not is_shore_cell(test_elev, (i,j)):
+            if 0 < test_elev[i,j] < max_cell_h and not shore_cell:
                 test_elev[i,j] = max_cell_h + np.random.rand()*max_rand
             # Note: below keeps things sloping seaward. Needs revision to slope 
             # towards nearest shoreline cell (or perhaps a better idea is out there?)
