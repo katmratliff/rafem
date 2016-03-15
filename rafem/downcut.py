@@ -1,4 +1,3 @@
-#! /usr/local/bin/python
 # -*- coding: utf-8 -*-
 """
 Created on Tue Mar 17 21:22:00 2015
