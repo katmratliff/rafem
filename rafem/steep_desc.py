@@ -279,14 +279,14 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
 
     # if river mouth needs to prograde
     elif last_elev >= max_cell_h:
-        # pdb.set_trace()
+        pdb.set_trace()
         sorted_n = sort_lowest_neighbors(test_elev, (riv_i[-1], riv_j[-1]))
         subaerial_loc = np.where(test_elev[sorted_n] > 0)
 
         if subaerial_loc:
             subaerial_cells = sorted_n[0][subaerial_loc], sorted_n[1][subaerial_loc]
 
-            if (subaerial_cells[0][0], subaerial_cells[1][0]) not in zip(riv_i, riv_j):
+            if (subaerial_cells[0][0], subaerial_cells[1][0]) not in zip(riv_i, riv_js):
                 riv_i = np.append(riv_i, subaerial_cells[0][0])
                 riv_j = np.append(riv_j, subaerial_cells[1][0])
 
