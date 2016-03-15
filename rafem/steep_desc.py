@@ -44,6 +44,8 @@ def lowest_neighbor_prograde(n, sub):
     else:
         di, dj = np.array([0, 1, 1, 1, 0]),  np.array([-1, -1, 0, 1, 1])
 
+    subaerial_cells = np.where(n[i + di, j + dj] > 0)
+
     subaerial_low = min(x for x in (n[i + di, j + dj]) if x > 0)
     lowest = np.where((n[i + di, j + dj]) == subaerial_low)[0][0]
 
@@ -278,23 +280,48 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
     # if river mouth needs to prograde
     elif last_elev >= max_cell_h:
         # pdb.set_trace()
-        prograde_ij = lowest_neighbor_prograde(test_elev, (riv_i[-1], riv_j[-1]))
+        sorted_n = sort_lowest_neighbors(test_elev, (riv_i[-1], riv_j[-1]))
+        subaerial_loc = np.where(test_elev[sorted_n] > 0)
 
-        if z[prograde_ij] > sea_level:
-            riv_i = np.append(riv_i, prograde_ij[0])
-            riv_j = np.append(riv_j, prograde_ij[1])
+        if subaerial_loc:
+            subaerial_cells = sorted_n[0][subaerial_loc], sorted_n[1][subaerial_loc]
 
-            # ADDED BELOW TO STABILIZE PROGRADING RIVER (NOT SURE WHAT VALUE IS CORRECT...)
-            if (z[prograde_ij] - sea_level) < (0.1 * max_cell_h):
-                z[prograde_ij] = (0.1 * max_cell_h) + sea_level
+            if (subaerial_cells[0][0], subaerial_cells[1][0]) not in zip(riv_i, riv_j):
+                riv_i = np.append(riv_i, subaerial_cells[0][0])
+                riv_j = np.append(riv_j, subaerial_cells[1][0])
 
-            z[riv_i[-1], riv_j[-1]] -= ch_depth
+                if (z[riv_i[-1], riv_j[-1]] - sea_level) < (0.1 * max_cell_h):
+                    z[riv_i[-1], riv_j[-1]] = (0.1 * max_cell_h) + sea_level
+                
+                z[riv_i[-1], riv_j[-1]] -= ch_depth
 
-            course_update = 5   # lengthened course
+                course_update = 5
+            else:
+                riv_i = riv_i
+                riv_j = riv_j
 
         else:
             riv_i = riv_i
             riv_j = riv_j
+
+
+        # prograde_ij = lowest_neighbor_prograde(test_elev, (riv_i[-1], riv_j[-1]))
+
+        # if z[prograde_ij] > sea_level:
+        #     riv_i = np.append(riv_i, prograde_ij[0])
+        #     riv_j = np.append(riv_j, prograde_ij[1])
+
+        #     # ADDED BELOW TO STABILIZE PROGRADING RIVER (NOT SURE WHAT VALUE IS CORRECT...)
+        #     if (z[prograde_ij] - sea_level) < (0.1 * max_cell_h):
+        #         z[prograde_ij] = (0.1 * max_cell_h) + sea_level
+
+        #     z[riv_i[-1], riv_j[-1]] -= ch_depth
+
+        #     course_update = 5   # lengthened course
+
+        # else:
+        #     riv_i = riv_i
+        #     riv_j = riv_j
 
     else:
         riv_i = riv_i

@@ -17,6 +17,7 @@ import downcut
 import flux
 import avulsion_utils
 from avulsion_utils import read_params_from_file
+import pdb
 
 
 _SECONDS_PER_YEAR = 31536000.
@@ -189,9 +190,9 @@ class RiverModule(object):
             self._n, self._riv_i, self._riv_j, self._ch_depth, self._slope,
             self._saveavulsions, sea_level=self._SL, dx=self._dx, dy=self._dy)
 
-        if self._course_update > 0:
-            diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt, self._ch_depth,
-                              self._riv_i, self._riv_j, self._n, self._SL, self._slope)
+        # if self._course_update > 0:
+        #     diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt, self._ch_depth,
+        #                       self._riv_i, self._riv_j, self._n, self._SL, self._slope)
 
         self._n = avulsion_utils.fix_elevations(self._n, self._riv_i, self._riv_j,
             self._ch_depth, self._SL, self._slope, self._dx, self._max_rand)
@@ -208,8 +209,8 @@ class RiverModule(object):
              self._short_path, self._splay_type, self._splay_dep, self._slope,
              dx=self._dx, dy=self._dy)
 
-        if self._course_update == 5 and self._avulsion_type == 3:
-            pdb.set_trace()
+        # if self._course_update == 5 and self._avulsion_type == 3:
+        #     pdb.set_trace()
 
         if self._saveavulsions and self._avulsion_type > 0:
             with open('river_info.txt','a') as file:
