@@ -1,3 +1,4 @@
+#! /usr/local/bin/python
 import yaml
 import numpy as np
 import pdb
@@ -329,7 +330,12 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
                 break
             # fix lakes (why do they form????) and partially full cells that aren't
             # part of the shoreline
-            if test_elev[i,j] < max_cell_h and lowest_face(test_elev, (i,j)) > 0:
+            if (test_elev[i,j] < max_cell_h and
+                np.any(test_elev[:i,j]) > 0 and
+                np.any(test_elev[i+1:,j]) > 0 and
+                np.any(test_elev[i,:j]) > 0 and
+                np.any(test_elev[i,j+1:] > 0)):
+
                 if test_elev[i,j] <= 0:
                     if j == 0:
                         test_elev[i,j] = test_elev[i,j+1] - np.random.rand()*max_rand
