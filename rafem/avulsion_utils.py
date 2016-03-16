@@ -35,7 +35,7 @@ def is_same_row(sub0, sub1):
     return sub0[0] == sub1[0]
 
 
-def channel_is_superelevated(z, sub, channel_depth, super_ratio):
+def channel_is_superelevated(z, sub, channel_depth, super_ratio, sea_level):
     """Check if a channel location is super-elevated.
 
     Parameters
@@ -55,13 +55,25 @@ def channel_is_superelevated(z, sub, channel_depth, super_ratio):
     boolean
         `True` if channel is super-elevated. Otherwise, `False`.
     """
+    superelev = 0
     z_bankfull = z[sub] + channel_depth
     z_left, z_right = z[sub[0], sub[1] - 1], z[sub[0], sub[1] + 1]
 
     threshold = super_ratio * channel_depth
 
-    return (z_bankfull - z_right >= threshold or
-            z_bankfull - z_left >= threshold)
+    if (z_left < sea_level) and (z_right < sea_level):
+        superelev = 0
+    elif z_left < sea_level:
+        if z_bankfull - z_right >= threshold:
+            superelev = 1
+    elif z_right < sea_level:
+        if z_bankfull - z_left >= threshold:
+            superelev = 1
+    else:
+        if ((z_bankfull - z_right) or (z_bankfull - z_left)) >= threshold:
+            superelev = 1
+
+    return superelev
 
 
 def get_link_lengths(path, dx=1., dy=1.):
