@@ -286,7 +286,7 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
         if subaerial_loc:
             subaerial_cells = sorted_n[0][subaerial_loc], sorted_n[1][subaerial_loc]
 
-            if (subaerial_cells[0][0], subaerial_cells[1][0]) not in zip(riv_i, riv_js):
+            if (subaerial_cells[0][0], subaerial_cells[1][0]) not in zip(riv_i, riv_j):
                 riv_i = np.append(riv_i, subaerial_cells[0][0])
                 riv_j = np.append(riv_j, subaerial_cells[1][0])
 
