@@ -342,16 +342,16 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
                 break
             # fix lakes (why do they form????) and partially full cells that aren't
             # part of the shoreline
-            if test_elev[i,j] < max_cell_h and lowest_face(test_elev, (i,j)) > 0:
-                if test_elev[i,j] <= 0:
-                    if j == 0:
-                        test_elev[i,j] = test_elev[i,j+1] - np.random.rand()*max_rand
-                    elif j == z.shape[1] - 1:
-                        test_elev[i,j] = test_elev[i,j-1] - np.random.rand()*max_rand
-                    else:
-                        test_elev[i,j] = ((test_elev[i,j+1] + test_elev[i,j-1])/2
-                                          - np.random.rand()*max_rand)
-                else: test_elev[i,j] = max_cell_h + np.random.rand()*max_rand
+            # if test_elev[i,j] < max_cell_h and lowest_face(test_elev, (i,j)) > 0:
+            #     if test_elev[i,j] <= 0:
+            #         if j == 0:
+            #             test_elev[i,j] = test_elev[i,j+1] - np.random.rand()*max_rand
+            #         elif j == z.shape[1] - 1:
+            #             test_elev[i,j] = test_elev[i,j-1] - np.random.rand()*max_rand
+            #         else:
+            #             test_elev[i,j] = ((test_elev[i,j+1] + test_elev[i,j-1])/2
+            #                               - np.random.rand()*max_rand)
+            #     else: test_elev[i,j] = max_cell_h + np.random.rand()*max_rand
             # Note: below keeps things sloping seaward. Needs revision to slope 
             # towards nearest shoreline cell (or perhaps a better idea is out there?)
             if riv_cells[i-1,j]:
