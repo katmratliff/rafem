@@ -263,8 +263,8 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
             riv_i = new_riv_i
             riv_j = new_riv_j
 
-            if z[riv_i[-1], riv_j[-1]] < 0.1 * max_cell_h:
-                z[riv_i[-1], riv_j[-1]] = 0.1 * max_cell_h
+            if z[riv_i[-1], riv_j[-1]] < 0.0001 * max_cell_h:
+                z[riv_i[-1], riv_j[-1]] = 0.0001 * max_cell_h
 
             downcut.cut_new(riv_i[-new_riv_length-1:], riv_j[-new_riv_length-1:],
                                 z, sea_level, ch_depth, slope, dx=dx, dy=dy)
@@ -287,8 +287,8 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
                 riv_i = np.append(riv_i, subaerial_cells[0][0])
                 riv_j = np.append(riv_j, subaerial_cells[1][0])
 
-                if (z[riv_i[-1], riv_j[-1]] - sea_level) < (0.1 * max_cell_h):
-                    z[riv_i[-1], riv_j[-1]] = (0.1 * max_cell_h) + sea_level
+                if (z[riv_i[-1], riv_j[-1]] - sea_level) < (0.0001 * max_cell_h):
+                    z[riv_i[-1], riv_j[-1]] = (0.0001 * max_cell_h) + sea_level
                 
                 z[riv_i[-1], riv_j[-1]] -= ch_depth
 
