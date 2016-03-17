@@ -127,6 +127,7 @@ class RiverModule(object):
         self._slope = params['nslope']
         self._n = n0 - (self._slope * self._y +
                         np.random.rand(n_rows, n_cols) * self._max_rand)
+        self._n -= 0.05
 
         #self._dn_rc = np.zeros((self._imax))       # change in elevation along river course
         #self._dn_fp = np.zeros_like(self._n)     # change in elevation due to floodplain dep
@@ -208,9 +209,6 @@ class RiverModule(object):
              self._super_ratio, self._SL, self._ch_depth,
              self._short_path, self._splay_type, self._splay_dep, self._slope,
              dx=self._dx, dy=self._dy)
-
-        # if self._course_update == 5 and self._avulsion_type == 3:
-        #     pdb.set_trace()
 
         if self._saveavulsions and self._avulsion_type > 0:
             with open('river_info.txt','a') as file:
