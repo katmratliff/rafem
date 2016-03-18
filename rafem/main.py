@@ -78,6 +78,12 @@ def main():
             np.savetxt('run' + str(args.runID) + '/riv_profile' + str(args.runID) + '/prof_'
                        + str(k*avulsion.get_time_step()/365) + '.out', prof, fmt='%.5f')
 
+    if args.save:
+        avul_info = avulsion.get_value('avulsion_record')
+        if np.sum(avul_info) > 0:
+            np.savetxt('run' + str(args.runID) + '/avulsions' + str(args.runID), avul_info,
+                       fmt='%i %.2f %i')
+
     if args.plot_elev:
         plot_elevation(avulsion)
 

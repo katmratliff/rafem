@@ -85,6 +85,10 @@ class RiverModule(object):
         return self._sed_flux
 
     @property
+    def avulsions(self):
+        return self._avulsion_info
+
+    @property
     def profile(self):
         self._profile[-1] = self._SL - self._ch_depth
         return self._profile
@@ -158,6 +162,7 @@ class RiverModule(object):
         self._splay_type = params['splay_type']
 
         self._sed_flux = 0.
+        self._avulsion_info = np.zeros(3, dtype=np.float)
 
         # Saving information
         self._saveavulsions = params['saveavulsions']
