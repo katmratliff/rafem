@@ -35,7 +35,8 @@ def is_same_row(sub0, sub1):
     return sub0[0] == sub1[0]
 
 
-def channel_is_superelevated(z, sub, channel_depth, super_ratio, sea_level):
+def channel_is_superelevated(z, riv, behind, channel_depth,
+                             super_ratio, sea_level):
     """Check if a channel location is super-elevated.
 
     Parameters
@@ -56,21 +57,28 @@ def channel_is_superelevated(z, sub, channel_depth, super_ratio, sea_level):
         `True` if channel is super-elevated. Otherwise, `False`.
     """
     superelev = 0
-    z_bankfull = z[sub] + channel_depth
-    z_left, z_right = z[sub[0], sub[1] - 1], z[sub[0], sub[1] + 1]
+    z_bankfull = z[riv] + channel_depth
+
+    # cross-shore river orientation
+    if behind[0]+1 == riv[0]:
+        adj1, adj2 = z[riv[0], riv[1]-1], z[riv[0], riv[1]+1]
+
+    # alongshore river orientation
+    if behind[0] == riv[0]:
+        adj1, adj2 = z[riv[0] + 1, riv[1]], z[riv[0] - 1, riv[1]]
 
     threshold = super_ratio * channel_depth
 
-    if (z_left < sea_level) and (z_right < sea_level):
+    if (adj1 < sea_level) and (adj2 < sea_level):
         superelev = 0
-    elif z_left < sea_level:
-        if z_bankfull - z_right >= threshold:
+    elif adj1 < sea_level:
+        if z_bankfull - adj2 >= threshold:
             superelev = 1
-    elif z_right < sea_level:
-        if z_bankfull - z_left >= threshold:
+    elif adj2 < sea_level:
+        if z_bankfull - adj1 >= threshold:
             superelev = 1
     else:
-        if ((z_bankfull - z_right) or (z_bankfull - z_left)) >= threshold:
+        if ((z_bankfull - adj2) or (z_bankfull - adj1)) >= threshold:
             superelev = 1
 
     return superelev
@@ -357,7 +365,7 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
             if riv_cells[i-1,j]:
                 break
             if test_elev[i,j] > 0:
-                if test_elev[i,j] >= test_elev[i-1,j] and lowest_face(test_elev,(i,j)) > 0:
+                if test_elev[i,j] >= test_elev[i-1,j] and test_elev[i,j] >= max_cell_h:
                     test_elev[i-1,j] = test_elev[i,j] + (np.random.rand() * (slope*0.1))
     
     test_elev[riv_i, riv_j] = riv_prof
