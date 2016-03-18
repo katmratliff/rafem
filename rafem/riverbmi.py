@@ -13,6 +13,7 @@ class BmiRiverModule(object):
     _name = 'Rafem'
     _input_var_names = (
         'land_surface__elevation',
+        'sea_water_surface__rise_rate',
         'channel_exit__x_coordinate',
         'channel_exit__y_coordinate',
     )
@@ -24,8 +25,7 @@ class BmiRiverModule(object):
         'channel_exit__x_coordinate',
         'channel_exit__y_coordinate',
         'land_surface__elevation',
-        'sea_water_surface__elevation',
-        'avulsion_record')
+        'sea_water_surface__elevation')
 
     def __init__(self):
         """Create a BmiRiver module that is ready for initialization."""
@@ -49,9 +49,9 @@ class BmiRiverModule(object):
             'channel_exit__y_coordinate':
                 lambda: self._model.river_y_coordinates[-1],
             'land_surface__elevation': lambda: self._model.elevation,
+            'sea_water_surface__rise_rate': lambda: self._model.sea_level_rise_rate,
             'channel_centerline__elevation': lambda: self._model.profile,
             'sea_water_surface__elevation': lambda: self._model.sea_level,
-            'avulsion_record': lambda: self._model.avulsions,
         }
 
         self._var_units = {
@@ -61,9 +61,9 @@ class BmiRiverModule(object):
             'channel_exit__x_coordinate': 'm',
             'channel_exit__y_coordinate': 'm',
             'land_surface__elevation': 'm',
+            'sea_water_surface__rise_rate': 'm yr^-1',
             'channel_centerline__elevation': 'm',
             'sea_water_surface__elevation': 'm',
-            'avulsion_record': 'none',
         }
 
         self._var_type = {}
@@ -77,9 +77,9 @@ class BmiRiverModule(object):
             'channel_exit__x_coordinate': 2,
             'channel_exit__y_coordinate': 2,
             'land_surface__elevation': 0,
+            'sea_water_surface__rise_rate': 2,
             'channel_centerline__elevation': 1,
             'sea_water_surface__elevation': 2,
-            'avulsion_record': None,
         }
 
         self._grid_rank = {
@@ -182,20 +182,15 @@ class BmiRiverModule(object):
         if var_name == 'land_surface__elevation':
             np.copyto(self._model.elevation.reshape((-1, )),
                       new_vals.reshape((-1, )))
+        elif var_name == 'sea_water_surface__rise_rate':
+            np.copyto(self._model.sea_level_rise_rate,
+                      new_SLRR)
         elif var_name == 'channel_exit__x_coordinate':
             self._model.river_x_coordinates = np.append(
                 self._model.river_x_coordinates, new_vals)
         elif var_name == 'channel_exit__y_coordinate':
             self._model.river_y_coordinates = np.append(
                 self._model.river_y_coordinates, new_vals)
-
-        # Remove duplicate river mouth coordinates (if they exist).
-        # This seems clunky... must be better way to get values without
-        # duplicating each time?
-        #if (self._model.river_x_coordinates[-1] == self._model.river_x_coordinates[-2] and 
-        #    self._model.river_y_coordinates[-1] == self._model.river_y_coordinates[-2]):
-        #    self._model.river_x_coordinates.pop()
-        #    self._model.river_y_coordinates.pop()
 
     def get_component_name(self):
         """Name of the component."""
