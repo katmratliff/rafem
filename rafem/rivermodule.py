@@ -188,7 +188,7 @@ class RiverModule(object):
 
         self._riv_i, self._riv_j, self._course_update = steep_desc.update_course(
             self._n, self._riv_i, self._riv_j, self._ch_depth, self._slope,
-            self._saveavulsions, sea_level=self._SL, dx=self._dx, dy=self._dy)
+            sea_level=self._SL, dx=self._dx, dy=self._dy)
 
         # if self._course_update > 0:
         #     diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt, self._ch_depth,

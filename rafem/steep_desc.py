@@ -233,7 +233,7 @@ def find_course(z, riv_i, riv_j, SE_loc, sea_level=None):
     return new_i[:n], new_j[:n]
 
 
-def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1., dy=1.):
+def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.):
 
     if sea_level is None:
         sea_level = - np.finfo(float).max
