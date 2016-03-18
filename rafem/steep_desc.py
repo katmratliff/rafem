@@ -325,4 +325,3 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, save, sea_level=None, dx=1.,
         riv_j = riv_j
 
     return riv_i, riv_j, course_update
-
