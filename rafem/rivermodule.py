@@ -169,8 +169,8 @@ class RiverModule(object):
         #self._savefiles = params['savefiles']
         #self._savespacing = params['savespacing']
 
-        self._riv_i, self._riv_j = steep_desc.find_course(self._n, self._riv_i,
-                                                          self._riv_j, len(self._riv_i),
+        self._riv_i, self._riv_j = steep_desc.find_course(self._n, self._riv_i, self._riv_j,
+                                                          len(self._riv_i), self._ch_depth,
                                                           sea_level=self._SL)
 
         # downcut into new river course by amount determined by init_cut

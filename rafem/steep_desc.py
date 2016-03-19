@@ -126,7 +126,7 @@ def riv_cell_at_sea_level(z, sub, z0):
     except IndexError:
         return True
 
-def find_course(z, riv_i, riv_j, SE_loc, sea_level=None):
+def find_course(z, riv_i, riv_j, SE_loc, channel_depth, sea_level=None):
     """Find the course of a river.
     Given a river course as subscripts, (*i*, *j*), into an array of
     elevations, (*z*), find the river path until the coast (*sea_level*) or
@@ -173,6 +173,11 @@ def find_course(z, riv_i, riv_j, SE_loc, sea_level=None):
     riv_i = riv_i[:SE_loc]
     riv_j = riv_j[:SE_loc]
 
+    test_elev = z
+    # add channel depth to old river cells
+    # (approximates levee height)
+    test_elev[old_course] += channel_depth
+
     assert(riv_i.size > 0 and riv_j.size > 0)
 
     if sea_level is None:
@@ -203,7 +208,7 @@ def find_course(z, riv_i, riv_j, SE_loc, sea_level=None):
                 pits = False
                 break
 
-            sorted_n = sort_lowest_neighbors(z, (new_i[n - 1], new_j[n - 1]))
+            sorted_n = sort_lowest_neighbors(test_elev, (new_i[n - 1], new_j[n - 1]))
 
             if (sorted_n[0][0], sorted_n[1][0]) not in zip(new_i[:n - 1], new_j[:n - 1]):
                 downstream_ij = (sorted_n[0][0], sorted_n[1][0])
@@ -280,7 +285,7 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
         sorted_n = sort_lowest_neighbors(test_elev, (riv_i[-1], riv_j[-1]))
         subaerial_loc = np.where(test_elev[sorted_n] > 0)
 
-        if subaerial_loc:
+        if subaerial_loc.size:
             subaerial_cells = sorted_n[0][subaerial_loc], sorted_n[1][subaerial_loc]
 
             if (subaerial_cells[0][0], subaerial_cells[1][0]) not in zip(riv_i, riv_j):
