@@ -268,8 +268,8 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
             riv_i = new_riv_i
             riv_j = new_riv_j
 
-            if z[riv_i[-1], riv_j[-1]] < 0.001 * max_cell_h:
-                z[riv_i[-1], riv_j[-1]] = 0.001 * max_cell_h
+            if (z[riv_i[-1], riv_j[-1]] - sea_level) < (0.001 * max_cell_h):
+                z[riv_i[-1], riv_j[-1]] = (0.001 * max_cell_h) + sea_level
 
             downcut.cut_new(riv_i[-new_riv_length-1:], riv_j[-new_riv_length-1:],
                                 z, sea_level, ch_depth, slope, dx=dx, dy=dy)
