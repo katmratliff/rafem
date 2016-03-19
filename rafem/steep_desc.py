@@ -173,11 +173,6 @@ def find_course(z, riv_i, riv_j, SE_loc, channel_depth, sea_level=None):
     riv_i = riv_i[:SE_loc]
     riv_j = riv_j[:SE_loc]
 
-    test_elev = z
-    # add channel depth to old river cells
-    # (approximates levee height)
-    test_elev[old_course] += channel_depth
-
     assert(riv_i.size > 0 and riv_j.size > 0)
 
     if sea_level is None:
@@ -218,7 +213,6 @@ def find_course(z, riv_i, riv_j, SE_loc, channel_depth, sea_level=None):
                 downstream_ij = (sorted_n[0][2], sorted_n[1][2])
             else:
                 raise RuntimeError('river course is going crazy!')
-
 
             if downstream_ij not in old_course and below_sea_level(z[downstream_ij], sea_level):
                 pits = False
@@ -285,7 +279,7 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
         sorted_n = sort_lowest_neighbors(test_elev, (riv_i[-1], riv_j[-1]))
         subaerial_loc = np.where(test_elev[sorted_n] > 0)
 
-        if subaerial_loc.size:
+        if len(subaerial_loc[0]):
             subaerial_cells = sorted_n[0][subaerial_loc], sorted_n[1][subaerial_loc]
 
             if (subaerial_cells[0][0], subaerial_cells[1][0]) not in zip(riv_i, riv_j):
