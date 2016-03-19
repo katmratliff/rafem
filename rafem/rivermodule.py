@@ -162,7 +162,6 @@ class RiverModule(object):
         self._splay_type = params['splay_type']
 
         self._sed_flux = 0.
-        self._avulsion_info = np.zeros(3, dtype=np.float)
 
         # Saving information
         self._saveavulsions = params['saveavulsions']

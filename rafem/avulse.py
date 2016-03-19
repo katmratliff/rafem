@@ -107,8 +107,9 @@ def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
         new_i = np.append(new_i, old_i[ind + 1:])
         new_j = np.append(new_j, old_j[ind + 1:])
     else:
-        if (z[riv_i[-1], riv_j[-1]] - sea_level) < (0.001 * max_cell_h):
-            z[riv_i[-1], riv_j[-1]] = (0.001 * max_cell_h) + sea_level
+        max_cell_h = slope * dx
+        if (z[new_i[-1], new_j[-1]] - sea_level) < (0.001 * max_cell_h):
+            z[new_i[-1], new_j[-1]] = (0.001 * max_cell_h) + sea_level
         
         downcut.cut_new(new_i, new_j, z, sea_level, channel_depth, slope,
                         dx=dx, dy=dy)
