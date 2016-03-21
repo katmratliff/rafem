@@ -33,11 +33,12 @@ def cut_new(riv_i, riv_j, n, sea_level, ch_depth, slope, dx=1., dy=1.):
         lengths = get_link_lengths((riv_i, riv_j), dx=dx, dy=dy)
         lengths[-1] += beach_len 
 
-        i0, j0 = riv_i[1], riv_j[1]
+        i0, j0 = riv_i[0], riv_j[0]
         z0 = n[riv_i[0], riv_j[0]]
 
         # calculate slope of new stretch of river
         # slope = (n[i0, j0] - n[riv_i[-1], riv_j[-1]]) / lengths.sum()
-        slope = (n[i0, j0] - (sea_level - ch_depth)) / lengths.sum()
+        slope = ((n[i0, j0] - (n[riv_i[-1], riv_j[-1]] + sea_level - ch_depth))
+                / lengths.sum())
 
         n[riv_i[1:], riv_j[1:]] = z0 - slope * lengths.cumsum()
