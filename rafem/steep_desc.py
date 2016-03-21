@@ -170,6 +170,9 @@ def find_course(z, riv_i, riv_j, SE_loc, channel_depth, sea_level=None):
     # if two or more cells have the steepest descent elevation
     old_course = zip(riv_i, riv_j)
 
+    n_levee = np.copy(z)
+    n_levee[riv_i, riv_j] += channel_depth
+
     riv_i = riv_i[:SE_loc]
     riv_j = riv_j[:SE_loc]
 
@@ -203,7 +206,7 @@ def find_course(z, riv_i, riv_j, SE_loc, channel_depth, sea_level=None):
                 pits = False
                 break
 
-            sorted_n = sort_lowest_neighbors(z, (new_i[n - 1], new_j[n - 1]))
+            sorted_n = sort_lowest_neighbors(n_levee, (new_i[n - 1], new_j[n - 1]))
 
             if (sorted_n[0][0], sorted_n[1][0]) not in zip(new_i[:n - 1], new_j[:n - 1]):
                 downstream_ij = (sorted_n[0][0], sorted_n[1][0])
@@ -215,6 +218,13 @@ def find_course(z, riv_i, riv_j, SE_loc, channel_depth, sea_level=None):
                 raise RuntimeError('river course is going crazy!')
 
             if downstream_ij not in old_course and below_sea_level(z[downstream_ij], sea_level):
+                pits = False
+                break
+
+            if downstream_ij in old_course:
+                pdb.set_trace()
+                new_i[n], new_j[n] = downstream_ij
+                n = len(new_i)
                 pits = False
                 break
 
@@ -242,7 +252,8 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
     last_elev = z[riv_i[-1], riv_j[-1]] + ch_depth - sea_level
     max_cell_h = slope * dx
 
-    test_elev = z - sea_level
+    test_elev = np.copy(z)
+    test_elev -= sea_level
     test_elev[riv_i, riv_j] += 2 * ch_depth
 
     low_adj_cell = lowest_cell_elev(test_elev, (riv_i[-1], riv_j[-1]))
@@ -254,7 +265,8 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
 
     # if river mouth surrounded by land
     elif low_adj_cell > 0:
-        new_riv_i, new_riv_j = find_course(z, riv_i, riv_j, len(riv_i), sea_level=sea_level)
+        new_riv_i, new_riv_j = find_course(z, riv_i, riv_j, len(riv_i), 
+                                           ch_depth, sea_level=sea_level)
 
         new_riv_length = new_riv_i.size - riv_i.size
 
@@ -299,25 +311,6 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
         else:
             riv_i = riv_i
             riv_j = riv_j
-
-
-        # prograde_ij = lowest_neighbor_prograde(test_elev, (riv_i[-1], riv_j[-1]))
-
-        # if z[prograde_ij] > sea_level:
-        #     riv_i = np.append(riv_i, prograde_ij[0])
-        #     riv_j = np.append(riv_j, prograde_ij[1])
-
-        #     # ADDED BELOW TO STABILIZE PROGRADING RIVER (NOT SURE WHAT VALUE IS CORRECT...)
-        #     if (z[prograde_ij] - sea_level) < (0.1 * max_cell_h):
-        #         z[prograde_ij] = (0.1 * max_cell_h) + sea_level
-
-        #     z[riv_i[-1], riv_j[-1]] -= ch_depth
-
-        #     course_update = 5   # lengthened course
-
-        # else:
-        #     riv_i = riv_i
-        #     riv_j = riv_j
 
     else:
         riv_i = riv_i
