@@ -185,6 +185,9 @@ class RiverModule(object):
     def advance_in_time(self):
         """ Update avulsion model one time step. """
 
+        # if (self._time / _SECONDS_PER_YEAR) > 2000:
+        #     self._SLRR = 0.01 / _SECONDS_PER_YEAR * self._dt
+
         self._riv_i, self._riv_j, self._course_update = steep_desc.update_course(
             self._n, self._riv_i, self._riv_j, self._ch_depth, self._slope,
             sea_level=self._SL, dx=self._dx, dy=self._dy)
@@ -251,3 +254,4 @@ class RiverModule(object):
         # Update sea level
         self._SL += self._SLRR
         self._time += self._dt
+        # print('%.5f %.3f' % (self._SL, self._time / _SECONDS_PER_YEAR *365))

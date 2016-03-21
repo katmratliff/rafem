@@ -9,7 +9,7 @@ import numpy as np
 import math
 
 from avulsion_utils import get_link_lengths
-from avulsion_utils import find_beach_length
+from avulsion_utils import find_new_beach_length
 
 
 def cut_init(riv_i, riv_j, n, init_cut):
@@ -26,9 +26,9 @@ def cut_new(riv_i, riv_j, n, sea_level, ch_depth, slope, dx=1., dy=1.):
     
     if riv_i.size > 1:
         #print zip(riv_i, riv_j)
-        beach_len = find_beach_length(n, (riv_i[-2], riv_j[-2]),
+        beach_len = find_new_beach_length(n, (riv_i[-2], riv_j[-2]),
                                       (riv_i[-1], riv_j[-1]), sea_level,
-                                      ch_depth, slope, dx=dx, dy=dy)
+                                      dx=dx, dy=dy)
 
         lengths = get_link_lengths((riv_i, riv_j), dx=dx, dy=dy)
         lengths[-1] += beach_len 

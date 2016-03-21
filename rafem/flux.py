@@ -3,24 +3,18 @@
 import numpy as np
 
 from avulsion_utils import get_link_lengths
-from avulsion_utils import is_diagonal_neighbor
-from avulsion_utils import find_beach_length
+from avulsion_utils import find_beach_length_riv_cell
 
 
 def calc_qs(nu, riv_i, riv_j, n, sea_level, ch_depth, dx, dy, dt, slope):
     """Calculate sediment flux at river mouth."""
 
-    beach_len = find_beach_length(n, (riv_i[-2], riv_j[-2]),
+    beach_len = find_beach_length_riv_cell(n, (riv_i[-2], riv_j[-2]),
                                   (riv_i[-1], riv_j[-1]), sea_level,
                                   ch_depth, slope, dx=dx, dy=dy)
 
-    if is_diagonal_neighbor((riv_i[-2], riv_j[-2]), (riv_i[-1], riv_j[-1])):
-        last_len = (dx/2 * np.sqrt(2.)) + beach_len
-    else:
-        last_len = dx/2 + beach_len
-
     ds = get_link_lengths((riv_i[-2:], riv_j[-2:]), dx=dx, dy=dy)
-    ds[-1] = ds[-1]/2 + last_len
+    ds[-1] += beach_len
     dz = (sea_level - ch_depth) - n[riv_i[-2], riv_j[-2]]
     
     return - nu * dz / ds

@@ -8,7 +8,7 @@ import math
 import pdb
 
 from avulsion_utils import (find_point_in_path, channel_is_superelevated,
-                            find_path_length)
+                            find_path_length, find_riv_path_length)
 
 
 def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
@@ -130,7 +130,7 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
                                     (riv_i[a-1], riv_j[a-1]),
                                     ch_depth, super_ratio, current_SL):
             # if superelevation greater than trigger ratio, determine
-            # length of new steepest descent path
+            # new steepest descent path
 
             new = steep_desc.find_course(n, riv_i, riv_j, a, ch_depth,
                                          sea_level=current_SL)
@@ -139,9 +139,14 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
             # the lengths of the previous and newly calculated subaerial
             # paths will be compared
             if short_path == 1:
-                new_length = find_path_length(n, new, current_SL, ch_depth,
-                                              slope, dx=dx, dy=dy)
-                old_length = find_path_length(n, old, current_SL, ch_depth,
+
+                if n[new[0][-1], new[1][-1]] < current_SL:
+                    new_length = find_riv_path_length(n, new, current_SL, ch_depth,
+                                                  slope, dx=dx, dy=dy)
+                else:
+                    new_length = find_path_length(n, new, current_SL, ch_depth,
+                                                      slope, dx=dx, dy=dy)
+                old_length = find_riv_path_length(n, old, current_SL, ch_depth,
                                               slope, dx=dx, dy=dy)
 
                 if new_length < old_length:
@@ -169,7 +174,6 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
 
                 elif splay_type > 0:
                     avulsion_type = 3
-
                     # below should just be a??? not a-1???
                     FP.dep_splay(n, (new[0][a-1], new[1][a-1]), (riv_i, riv_j),
                                  splay_dep, splay_type=splay_type)

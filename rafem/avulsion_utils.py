@@ -19,11 +19,6 @@ def read_params_from_file(fname):
     with open(fname, 'r') as fp:
         params = yaml.load(fp)
 
-#    params.setdefault('shape', (10, 20))
-#    params.setdefault('spacing', (1., 1.))
-#    params.setdefault('alpha', 1)
-#    params.setdefault('end_time', 100.)
-
     return params
 
 
@@ -61,7 +56,7 @@ def channel_is_superelevated(z, riv, behind, channel_depth,
 
     # cross-shore river orientation
     if behind[0]+1 == riv[0]:
-        adj1, adj2 = z[riv[0], riv[1]-1], z[riv[0], riv[1]+1]
+        adj1, adj2 = z[riv[0], riv[1] - 1], z[riv[0], riv[1] + 1]
 
     # alongshore river orientation
     if behind[0] == riv[0]:
@@ -106,9 +101,20 @@ def get_channel_distance(path, dx=1., dy=1.):
     total_distance = get_link_lengths(path, dx=dx, dy=dy).cumsum()
     return np.append(0, total_distance)
 
-
 def find_path_length(n, path, sea_level, ch_depth, slope, dx=1., dy=1.):
-    beach_len = find_beach_length(n, (path[0][-2], path[1][-2]),
+    beach_len = find_new_beach_length(n, (path[0][-2], path[1][-2]),
+                                  (path[0][-1], path[1][-1]), sea_level,
+                                  dx=dx, dy=dy)
+
+    lengths = (get_link_lengths(path, dx=dx, dy=dy))
+    lengths[-1] = np.divide(lengths[-1], 2.) + beach_len
+    riv_length = lengths.sum()
+
+    return (riv_length)
+
+
+def find_riv_path_length(n, path, sea_level, ch_depth, slope, dx=1., dy=1.):
+    beach_len = find_beach_length_riv_cell (n, (path[0][-2], path[1][-2]),
                                   (path[0][-1], path[1][-1]), sea_level,
                                   ch_depth, slope, dx=dx, dy=dy)
 
@@ -240,8 +246,26 @@ def sort_lowest_neighbors(n, sub):
 
     return i + di[sorted], j + dj[sorted]
 
-def find_beach_length(n, sub0, sub1, sea_level, channel_depth, slope, dx=1., dy=1.):
-    """Find length of beach in shoreline cell.
+def find_new_beach_length(n, sub0, sub1, sea_level, dx=1., dy=1.):
+
+    cell_elev = n[sub1] - sea_level
+
+    DIAGONAL_LENGTH = np.sqrt(dx ** 2. + dy ** 2.)
+    
+    if is_diagonal_neighbor(sub0, sub1):
+        d_dist = DIAGONAL_LENGTH
+
+    elif is_same_row(sub0, sub1):
+        d_dist = dx
+
+    else:
+        d_dist = dy
+
+    return cell_elev * d_dist
+
+def find_beach_length_riv_cell (n, sub0, sub1, sea_level, channel_depth,
+                                slope, dx=1., dy=1.):
+    """Find length of beach in shoreline cell with river.
 
     Parameters
     ----------
@@ -373,29 +397,3 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
     z = test_elev + sea_level
 
     return z
-
-    # for i in xrange(1,test_elev.shape[0]):
-    #     for j in xrange(test_elev.shape[1]):
-    #         if riv_cells[i,j]:
-    #             break
-    #         if test_elev[i,j] == 0:
-    #             test_elev[i,j] == np.random.rand() * (slope*0.1)
-    #         if test_elev[i,j] < 0 and lowest_cell_elev(test_elev, (i,j)) >= 0:
-    #             #pdb.set_trace()
-    #             test_elev[i,j] = slope*dx + np.random.rand()*max_rand
-    #         # NEED TO HAVE SOMETHING HERE THAT WILL ROUTE WATER TO SEA??
-    #         # perhaps find potential shoreline configurations and fix that way
-    #         if riv_cells[i-1,j]:
-    #                 break
-    #         if test_elev[i,j] >= test_elev[i-1,j]:
-    #             if test_elev[i,j] >= 0 and test_elev[i-1,j] >= 0:
-    #                 #pdb.set_trace()
-    #                 test_elev[i-1,j] = test_elev[i,j] + (np.random.rand() * (slope*0.1))
-
-    # test_elev[riv_i, riv_j] = riv_prof
-
-    # z = test_elev + sea_level
-
-    # return z
-
-
