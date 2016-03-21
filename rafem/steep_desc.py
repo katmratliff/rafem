@@ -224,7 +224,7 @@ def find_course(z, riv_i, riv_j, SE_loc, channel_depth, sea_level=None):
             if downstream_ij in old_course:
                 # pdb.set_trace()
                 new_i[n], new_j[n] = downstream_ij
-                n = len(new_i)
+                n += 1
                 pits = False
                 break
 
