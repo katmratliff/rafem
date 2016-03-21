@@ -131,6 +131,7 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
         if channel_is_superelevated(n, (riv_i[a], riv_j[a]),
                                     (riv_i[a-1], riv_j[a-1]),
                                     ch_depth, super_ratio, current_SL):
+            # pdb.set_trace()
             # if superelevation greater than trigger ratio, determine
             # new steepest descent path
 
@@ -171,7 +172,8 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
                     new_profile = n[new[0], new[1]]
                     # fills channels to be even with surrounding topography
                     # (after fix_elevations is run)
-                    n[riv_i[a:], riv_j[a:]] = slope * dx
+                    n[riv_i[a:], riv_j[a:]] = (current_SL + (slope * dx)
+                                               + (np.random.rand() * slope))
 
                     ### fills to levee height ###
                     # n[riv_i[a:], riv_j[a:]] += ch_depth
