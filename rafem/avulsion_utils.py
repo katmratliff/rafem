@@ -185,12 +185,22 @@ def set_linear_profile(z, riv_ij, dx=1., dy=1.):
     lengths = get_link_lengths(zip(*riv_ij), dx=dx, dy=dy)
     ds = lengths.sum()
 
-    # z[zip(*riv_ij[1:])] = z0 + dz / ds * lengths.cumsum()
-
     z[zip(*riv_ij[:-1])] = z[riv_ij[-1]] + np.arange(len(riv_ij) - 1, 0, -1) * 1e-6
 
     return z
 
+def set_linear_slope(z, riv_ij, dx=1., dy=1.):
+    """Set slope along a path to be linear."""
+
+    z0 = z[riv_ij[0]]
+    dz = z[riv_ij[-1]] - z[riv_ij[0]]
+
+    lengths = get_link_lengths(zip(*riv_ij), dx=dx, dy=dy)
+    ds = lengths.sum()
+
+    z[zip(*riv_ij[1:])] = z0 + dz / ds * lengths.cumsum()
+
+    return z
 
 def fill_upstream(z, riv_ij, dx=1., dy=1.):
     """Fill depressions upstream of a pit.
@@ -374,8 +384,7 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
                 break
             # fix lakes (why do they form????) and partially full cells that aren't
             # part of the shoreline
-            if ((0 < test_elev[i,j] < max_cell_h)
-                and lowest_face(test_elev, (i,j)) > 0):
+            if test_elev[i,j] < max_cell_h and lowest_face(test_elev, (i,j)) > 0:
                 test_elev[i,j] = max_cell_h + np.random.rand()*max_rand
             # if test_elev[i,j] < max_cell_h and lowest_face(test_elev, (i,j)) > 0:
             #     if test_elev[i,j] <= 0:

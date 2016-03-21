@@ -105,7 +105,7 @@ def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
     if ind is not None:
         avulsion_type = 2
 
-        set_linear_profile(z, zip(new_i, new_j), dx=dx, dy=dy)
+        set_linear_slope(z, zip(new_i, new_j), dx=dx, dy=dy)
 
         new_i = np.append(new_i, old_i[ind + 1:])
         new_j = np.append(new_j, old_j[ind + 1:])
