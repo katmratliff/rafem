@@ -8,7 +8,8 @@ import math
 import pdb
 
 from avulsion_utils import (find_point_in_path, channel_is_superelevated,
-                            find_path_length, find_riv_path_length)
+                            find_path_length, find_riv_path_length,
+                            set_linear_slope)
 
 
 def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,

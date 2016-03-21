@@ -8,8 +8,7 @@ Created on Tue Mar 17 21:22:00 2015
 import numpy as np
 import math
 
-from avulsion_utils import get_link_lengths
-from avulsion_utils import find_new_beach_length
+from avulsion_utils import get_link_lengths, find_new_beach_length
 
 
 def cut_init(riv_i, riv_j, n, init_cut):
@@ -42,3 +41,4 @@ def cut_new(riv_i, riv_j, n, sea_level, ch_depth, slope, dx=1., dy=1.):
                 / lengths.sum())
 
         n[riv_i[1:], riv_j[1:]] = z0 - slope * lengths.cumsum()
+
