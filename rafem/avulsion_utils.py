@@ -4,6 +4,7 @@ import numpy as np
 import pdb
 from pylab import *
 from scipy.ndimage import measurements
+import pudb
 
 def read_params_from_file(fname):
     """Read model parameters from a file.
@@ -371,7 +372,6 @@ def lowest_face(n, sub):
 
 
 def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
-
     test_elev = z - sea_level
     max_cell_h = slope * dx
     riv_prof = test_elev[riv_i, riv_j]
@@ -380,17 +380,15 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
     # fill in ponds that aren't the ocean!
     ocean_mask = test_elev < 0
     labeled_ponds, ocean = measurements.label(ocean_mask)
-    ocean_cells = labeled_ponds
+    ocean_cells = np.copy(labeled_ponds)
     ocean_cells[ocean_cells < ocean] = 0
-    # labeled_ponds[labeled_ponds == ocean] = 0
-    # test_elev[labeled_ponds > 0] = max_cell_h + (np.random.rand() * max_rand)
+    labeled_ponds[labeled_ponds == ocean] = 0
+    test_elev[labeled_ponds > 0] = max_cell_h + (np.random.rand() * max_rand)
 
     riv_cells = zip(riv_i, riv_j)
 
     for i in xrange(1, test_elev.shape[0]):
         for j in xrange(test_elev.shape[1]):
-            if test_elev[i, j] <= 0 and not ocean_cells[i, j]:
-                test_elev[i, j] = max_cell_h + (np.random.rand() * max_rand)
             if ocean_cells[i, j] or ocean_cells[i-1, j] or ocean_cells[i-2, j]:
                 break
             if ((i, j) in riv_cells) or ((i-1, j) in riv_cells):
