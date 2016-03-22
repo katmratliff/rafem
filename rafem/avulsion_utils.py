@@ -4,7 +4,6 @@ import numpy as np
 import pdb
 from pylab import *
 from scipy.ndimage import measurements
-import pudb
 
 def read_params_from_file(fname):
     """Read model parameters from a file.
