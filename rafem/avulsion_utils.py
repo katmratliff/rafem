@@ -2,6 +2,8 @@
 import yaml
 import numpy as np
 import pdb
+from pylab import *
+from scipy.ndimage import measurements
 
 def read_params_from_file(fname):
     """Read model parameters from a file.
@@ -373,37 +375,30 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand):
     test_elev = z - sea_level
     max_cell_h = slope * dx
     riv_prof = test_elev[riv_i, riv_j]
-    test_elev[riv_i, riv_j] += ch_depth
+    test_elev[riv_i, riv_j] += 2*ch_depth
 
-    riv_cells = np.zeros_like(z)
-    riv_cells[riv_i, riv_j] = 1
+    # fill in ponds that aren't the ocean!
+    ocean_mask = test_elev < 0
+    labeled_ponds, ocean = measurements.label(ocean_mask)
+    if ocean > 1:
+        pdb.set_trace()
+    ocean_cells = np.copy(labeled_ponds)
+    ocean_cells[ocean_cells < ocean] = 0
+    # labeled_ponds[labeled_ponds == ocean] = 0
+    # test_elev[labeled_ponds > 0] = max_cell_h + (np.random.rand() * max_rand)
+
+    riv_cells = zip(riv_i, riv_j)
 
     for i in xrange(1, test_elev.shape[0]):
         for j in xrange(test_elev.shape[1]):
-            if riv_cells[i,j]:
+            if test_elev[i,j] <= 0 and not ocean_cells[i,j]:
+                test_elev = max_cell_h + (np.random.rand() * max_rand)
+            if ocean_cells[i, j] or ocean_cells[i-1, j] or ocean_cells[i-2, j]:
                 break
-            # fix lakes (why do they form????) and partially full cells that aren't
-            # part of the shoreline
-            if test_elev[i,j] < max_cell_h and lowest_face(test_elev, (i,j)) > 0:
-                test_elev[i,j] = max_cell_h + np.random.rand()*max_rand
-            # if test_elev[i,j] < max_cell_h and lowest_face(test_elev, (i,j)) > 0:
-            #     if test_elev[i,j] <= 0:
-            #         if j == 0:
-            #             test_elev[i,j] = test_elev[i,j+1] - np.random.rand()*max_rand
-            #         elif j == z.shape[1] - 1:
-            #             test_elev[i,j] = test_elev[i,j-1] - np.random.rand()*max_rand
-            #         else:
-            #             test_elev[i,j] = ((test_elev[i,j+1] + test_elev[i,j-1])/2
-            #                               - np.random.rand()*max_rand)
-            #     else: test_elev[i,j] = max_cell_h + np.random.rand()*max_rand
-            # Note: below keeps things sloping seaward. Needs revision to slope 
-            # towards nearest shoreline cell (or perhaps a better idea is out there?)
-            if riv_cells[i-1,j]:
+            if ((i, j) in riv_cells) or ((i-1, j) in riv_cells):
                 break
-            if test_elev[i,j] > 0:
-                if test_elev[i,j] >= test_elev[i-1,j]:
-                    if test_elev[i-1,j] >= max_cell_h:
-                        test_elev[i-1,j] = test_elev[i,j] + (np.random.rand() * slope)
+            if test_elev[i,j] >= test_elev[i-1,j]:
+                test_elev[i-1,j] = test_elev[i,j] + (np.random.rand() * slope)
     
     test_elev[riv_i, riv_j] = riv_prof
 
