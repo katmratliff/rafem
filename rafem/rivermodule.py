@@ -197,7 +197,7 @@ class RiverModule(object):
         #                       self._riv_i, self._riv_j, self._n, self._SL, self._slope)
 
         self._n = avulsion_utils.fix_elevations(self._n, self._riv_i, self._riv_j,
-            self._ch_depth, self._SL, self._slope, self._dx, self._max_rand)
+            self._ch_depth, self._SL, self._slope, self._dx, self._max_rand, self._SLRR)
 
         if self._saveavulsions and self._course_update > 0:
             with open('river_info.txt','a') as file:
@@ -219,7 +219,7 @@ class RiverModule(object):
         # need to fill old river channels if coupled to CEM
         if self._avulsion_type == 1 or 2:
             self._n = avulsion_utils.fix_elevations(self._n, self._riv_i, self._riv_j,
-                self._ch_depth, self._SL, self._slope, self._dx, self._max_rand)
+                self._ch_depth, self._SL, self._slope, self._dx, self._max_rand, self._SLRR)
 
         #assert(self._riv_i[-1] != 0)
         
@@ -251,7 +251,7 @@ class RiverModule(object):
 
         self._profile = self._n[self._riv_i, self._riv_j]
 
-        # Update sea level
-        self._SL += self._SLRR
+        # Update time
         self._time += self._dt
-        # print('%.5f %.3f' % (self._SL, self._time / _SECONDS_PER_YEAR *365))
+        # update sea level
+        self._SL += self._SLRR
