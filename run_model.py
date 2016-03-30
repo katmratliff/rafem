@@ -1,10 +1,16 @@
 
+#!/usr/bin/python
 # %matplotlib inline
 import matplotlib.pyplot as plt
 import numpy as np
 import inspect, os
 import pdb
 #from rafem.riverbmi import BmiRiverModule
+
+N_DAYS = 10 * 365
+Save_Daily_Timesteps = 1
+Save_Yearly_Timesteps = 0
+save_int = 1  # (in days)
 
 def plot_coast(spacing, z):
     import matplotlib.pyplot as plt
@@ -18,10 +24,10 @@ def plot_coast(spacing, z):
     (y, x) = np.meshgrid(np.arange(z.shape[0]) * spacing[0],
                          np.arange(z.shape[1]) * spacing[1], indexing='ij')
     
-    plt.pcolormesh(y * 1e-3, x * 1e-3, z, cmap=m, vmin=-100, vmax=100)
+    plt.pcolormesh(y * 1e-3, x * 1e-3, z, cmap=m, vmin=-50, vmax=50)
     
     plt.gca().set_aspect(1.) 
-    plt.axis([0, 1500, 0, 500])
+    plt.axis([0, 20, 0, 10])
     plt.colorbar(orientation='horizontal').ax.set_xlabel('Elevation (m)')
     plt.xlabel('Cross-shore (km)')
     plt.ylabel('Alongshore (km)')
@@ -32,9 +38,10 @@ cem = Cem()
 raf = Rafem()
 waves = Waves()
 
-cem.setup('_run_cem', number_of_cols=100, number_of_rows=300, grid_spacing=5000.)
-raf.setup('_run_rafem', number_of_columns=100, number_of_rows=300, row_spacing=5.,
-          column_spacing=5., rate_of_sea_level_rise=0.00, channel_discharge=10000.)
+cem.setup('_run_cem', number_of_cols=100, number_of_rows=200, grid_spacing=100.)
+raf.setup('_run_rafem', number_of_columns=100, number_of_rows=200, row_spacing=0.1,
+          column_spacing=0.1, rate_of_sea_level_rise=0.00, channel_discharge=10.,
+          upstream_elevation=10.)
 
 cem.initialize('_run_cem/cem.txt')
 raf.initialize('_run_rafem/input.yaml')
@@ -43,13 +50,12 @@ waves.initialize(None)
 set(raf.get_output_var_names()) & set(cem.get_input_var_names())
 
 z = raf.get_value('land_surface__elevation')
-z = z - 0.05
 raf.set_value('land_surface__elevation', z)
 cem.set_value('land_surface__elevation', z)
 
 waves.set_value('sea_shoreline_wave~incoming~deepwater__ashton_et_al_approach_angle_asymmetry_parameter', .5)
-waves.set_value('sea_shoreline_wave~incoming~deepwater__ashton_et_al_approach_angle_highness_parameter', .2)
-cem.set_value("sea_surface_water_wave__height", 0.25)
+waves.set_value('sea_shoreline_wave~incoming~deepwater__ashton_et_al_approach_angle_highness_parameter', .3)
+cem.set_value("sea_surface_water_wave__height", 0.1)
 cem.set_value("sea_surface_water_wave__period", 9.)
 #cem.set_value("sea_surface_water_wave__azimuth_angle_of_opposite_of_phase_velocity", 0. * np.pi / 180.)
 
@@ -60,75 +66,48 @@ shape = cem.get_grid_shape(grid_id)
 z0 = raf.get_value('land_surface__elevation').reshape(shape)
 riv_x = raf.get_value('channel_centerline__x_coordinate')/1000
 riv_y = raf.get_value('channel_centerline__y_coordinate')/1000
-plot_coast(spacing, z0)
-plt.plot(riv_y,riv_x)
+# plot_coast(spacing, z0)
+# plt.plot(riv_y,riv_x)
 # plt.savefig('elev_initial.png')
 
 qs = np.zeros_like(z0)
 flux_array = np.zeros(2, dtype=np.float)
 
+# np.random.seed(1991)
+
 RIVER_WIDTH = dict(raf.parameters)['channel_width'] # Convert unit-width flux to flux
 RHO_SED = 2650. # Used to convert volume flux to mass flux
-N_DAYS = 2000 * 365
-TIME_STEP = int(raf.get_time_step())
-save_int = 365
+TIME_STEP = raf.get_time_step()
 
 dx = (dict(raf.parameters)['row_spacing'])*1000.
 slope = dict(raf.parameters)['delta_slope']
 max_cell_h = dx*slope
 channel_depth = dict(raf.parameters)['channel_depth']
-max_rand = 0.000001
+max_rand = 0.00001
 
-riv_length = len(riv_x)
-
+if Save_Daily_Timesteps or Save_Yearly_Timesteps:
 # make directories to save run data
-import os
-if not os.path.exists("output_data_waves"):
-    os.mkdir("output_data_waves")
-if not os.path.exists("output_data_waves/elev_grid"):
-    os.mkdir("output_data_waves/elev_grid")
-if not os.path.exists("output_data_waves/riv_course"):
-    os.mkdir("output_data_waves/riv_course")
-if not os.path.exists("output_data_waves/riv_profile"):
-    os.mkdir("output_data_waves/riv_profile")
-if not os.path.exists("output_data_waves/elev_figs"):
-    os.mkdir("output_data_waves/elev_figs")
-if not os.path.exists("output_data_waves/prof_figs"):
-    os.mkdir("output_data_waves/prof_figs")
-if not os.path.exists("output_data_waves/rel_elev"):
-    os.mkdir("output_data_waves/rel_elev")
+    if not os.path.exists("output_data_waves"):
+        os.mkdir("output_data_waves")
+    # if not os.path.exists("output_data_waves/elev_grid"):
+    #     os.mkdir("output_data_waves/elev_grid")
+    if not os.path.exists("output_data_waves/riv_course"):
+        os.mkdir("output_data_waves/riv_course")
+    if not os.path.exists("output_data_waves/riv_profile"):
+        os.mkdir("output_data_waves/riv_profile")
+    if not os.path.exists("output_data_waves/elev_figs"):
+        os.mkdir("output_data_waves/elev_figs")
+    if not os.path.exists("output_data_waves/prof_figs"):
+        os.mkdir("output_data_waves/prof_figs")
+    if not os.path.exists("output_data_waves/rel_elev"):
+        os.mkdir("output_data_waves/rel_elev")
+    # if not os.path.exists("output_data_waves/cem_elev"):
+    #     os.mkdir("output_data_waves/cem_elev")
 
-def lowest_adj_cell(n, sub):
-    i,j = sub
-
-    if j == 0 and i == 0:
-        di, dj = np.array([1, 1, 0]), np.array([0, 1, 1])
-    elif j == 0 and i == n.shape[0] - 1:
-        di, dj = np.array([-1, -1, 0]), np.array([0, 1, 1])
-    elif j == n.shape[1] - 1 and i == 0:
-        di, dj = np.array([0, 1, 1]), np.array([-1, -1, 0])
-    elif j == n.shape[1] - 1 and i == n.shape[0] - 1:
-        di, dj = np.array([0, -1, -1]), np.array([-1, -1, 0])
-    elif j == n.shape[1] - 1:
-        di, dj  = np.array([-1, -1, 0, 1, 1]), np.array([0, -1, -1, -1, 0])
-    elif j == 0:
-        di, dj  = np.array([-1, -1, 0, 1, 1]), np.array([0, 1, 1, 1, 0])
-    elif i == n.shape[0] - 1:
-        di, dj = np.array([0, -1, -1, -1, 0]), np.array([-1, -1, 0, 1, 1])
-    elif i == 0:
-        di, dj = np.array([0, 1, 1, 1, 0]), np.array([-1, -1, 0, 1, 1])
-    else:
-        di, dj = np.array([0, -1, -1, -1, 0, 1, 1, 1]),  np.array([-1, -1, 0, 1, 1, 1, 0, -1])
-
-    lowest = np.amin(n[i + di, j + dj])
-
-    return lowest
-
-for time in xrange(0, N_DAYS, TIME_STEP):
-    # if time % 5000 == 0:
-    #     print 'running rafem until {time}'.format(time=time)
+for time in np.arange(0, N_DAYS, TIME_STEP):
 
     raf.update_until(time)
+    nyears = float(time/365.)
 
     sea_level = raf.get_value('sea_water_surface__elevation')
     
@@ -143,15 +122,11 @@ for time in xrange(0, N_DAYS, TIME_STEP):
     cem.set_value('land_surface_water_sediment~bedload__mass_flow_rate', qs)
 
     # Get and set elevations from Rafem to CEM
-    
     raf_z = (raf.get_value('land_surface__elevation') - sea_level).reshape(shape)
-    # np.savetxt('raf_z_orig.out',raf_z,'%.5f')
     riv_x = raf.get_value('channel_centerline__x_coordinate')/dx
     riv_y = raf.get_value('channel_centerline__y_coordinate')/dx
     riv_i = riv_x.astype(int)
     riv_j = riv_y.astype(int)
-    # if len(riv_x) != riv_length:
-    #     pdb.set_trace()
     prof_elev = raf_z[riv_j, riv_i]
     raf_z[riv_j, riv_i] += channel_depth
 
@@ -166,10 +141,9 @@ for time in xrange(0, N_DAYS, TIME_STEP):
                 mouth_cell_count += 1
             else:
                 raf_z[riv_j[k], riv_i[k]] = 1
-    
-    # if len(riv_x) != riv_length:
-    #     pdb.set_trace()
-    #     riv_length = len(riv_x)
+
+    # save grid passed to cem
+    # np.savetxt('output_data_waves/cem_elev/cem_elev_'+str("%.3f" % nyears)+'.out',raf_z,fmt='%.5f')
 
     raf_z.reshape(shape[0]*shape[1],)
     cem.set_value('land_surface__elevation', raf_z)
@@ -185,8 +159,8 @@ for time in xrange(0, N_DAYS, TIME_STEP):
     cem_z = cem.get_value('land_surface__elevation').reshape(shape)
     cem_z[cem_z > 0] *= max_cell_h
     
+    # reset river elevations back for Rafem
     # cem_z[[riv_j, riv_i] >= 0] -= channel_depth
-    
     if cem_z[riv_j[-1],riv_i[-1]] > 0:
         cem_z[riv_j[:-1],riv_i[:-1]] = prof_elev[:-1]
         cem_z[riv_j[-1],riv_i[-1]] -= channel_depth
@@ -208,28 +182,58 @@ for time in xrange(0, N_DAYS, TIME_STEP):
         y = raf.get_value('channel_centerline__y_coordinate')
         prof = raf.get_value('channel_centerline__elevation')
         real_prof = rel_z[(y/dx).astype(int), (x/dx).astype(int)]
-
-        np.savetxt('output_data_waves/elev_grid/elev_'+str(time/save_int)+'.out',z,fmt='%.5f')
-        np.savetxt('output_data_waves/rel_elev/rel_elev_'+str(time/save_int)+'.out',rel_z,fmt='%.5f')
-        np.savetxt('output_data_waves/riv_course/riv_'+str(time/save_int)+'.out',zip(x,y),fmt='%i')
-        np.savetxt('output_data_waves/riv_profile/prof_'+str(time/save_int)+'.out',real_prof,fmt='%.5f')
-
         river_x = x/1000
         river_y = y/1000
 
-        # save figures
-        f = plt.figure()
-        plot_coast(spacing, z - sea_level)
-        plt.plot(river_y,river_x)
-        plt.title('time = '+str(time/save_int)+' years')
-        plt.savefig('output_data_waves/elev_figs/elev_fig_'+str(time/save_int)+'.png')
-        plt.close(f)
 
-        p = plt.figure()
-        plt.plot(prof)
-        plt.axis([0, 300, -20, 120])
-        plt.title('time = '+str(time/save_int)+' years')
-        plt.savefig('output_data_waves/prof_figs/prof_fig_'+str(time/save_int)+'.png')
-        plt.close(p)
+        ### SAVE DAILY TIMESTEPS ###
+        ##########################################################################################
+        if Save_Daily_Timesteps == 1:
+
+            # np.savetxt('output_data_waves/elev_grid/elev_'+str("%.3f" % nyears)+'.out',z,fmt='%.5f')
+            np.savetxt('output_data_waves/rel_elev/rel_elev_'+str("%i" % time)+'.out',rel_z,fmt='%.5f')
+            np.savetxt('output_data_waves/riv_course/riv_'+str("%i" % time)+'.out',zip(x,y),fmt='%i')
+            np.savetxt('output_data_waves/riv_profile/prof_'+str("%i" % time)+'.out',real_prof,fmt='%.5f')
+
+            # save figures
+            f = plt.figure()
+            plot_coast(spacing, z - sea_level)
+            plt.plot(river_y,river_x, LineWidth=2.0)
+            plt.title('time = '+str("%i" % time)+' days')
+            plt.savefig('output_data_waves/elev_figs/elev_fig_'+str(int(time))+'.png')
+            plt.close(f)
+
+            p = plt.figure()
+            plt.plot(prof)
+            plt.axis([0, 200, -10, 20])
+            plt.title('time = '+str("%.i" % time)+' days')
+            plt.savefig('output_data_waves/prof_figs/prof_fig_'+str(int(time))+'.png')
+            plt.close(p)
+        ##########################################################################################
         
+
+        ### SAVE YEARLY TIMESTEPS ###
+        ##########################################################################################
+        if Save_Yearly_Timesteps == 1:
+            # np.savetxt('output_data_waves/elev_grid/elev_'+str(time/save_int)+'.out',z,fmt='%.5f')
+            np.savetxt('output_data_waves/rel_elev/rel_elev_'+str(time/save_int)+'.out',rel_z,fmt='%.5f')
+            np.savetxt('output_data_waves/riv_course/riv_'+str(time/save_int)+'.out',zip(x,y),fmt='%i')
+            np.savetxt('output_data_waves/riv_profile/prof_'+str(time/save_int)+'.out',real_prof,fmt='%.5f')
+
+            # save figures
+            f = plt.figure()
+            plot_coast(spacing, z - sea_level)
+            plt.plot(river_y,river_x, linewidth=2)
+            plt.title('time = '+str(time/save_int)+' years, sea level = '+str("%.3f" % sea_level)+' m')
+            plt.savefig('output_data_waves/elev_figs/elev_fig_'+str(time/save_int)+'.png')
+            plt.close(f)
+
+            p = plt.figure()
+            plt.plot(prof)
+            plt.axis([0, 200, -20, 120])
+            plt.title('time = '+str(time/save_int)+' years')
+            plt.savefig('output_data_waves/prof_figs/prof_fig_'+str(time/save_int)+'.png')
+            plt.close(p)
+        ##########################################################################################
+
 np.savetxt('output_data_waves/fluxes.out',flux_array,fmt='%i,%.5f')
