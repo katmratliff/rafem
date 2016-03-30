@@ -17,6 +17,7 @@ import flux
 import avulsion_utils
 from avulsion_utils import read_params_from_file
 import pdb
+import pudb
 
 
 _SECONDS_PER_YEAR = 31536000.
@@ -184,7 +185,6 @@ class RiverModule(object):
 
     def advance_in_time(self):
         """ Update avulsion model one time step. """
-
         # if (self._time / _SECONDS_PER_YEAR) > 2000:
         #     self._SLRR = 0.01 / _SECONDS_PER_YEAR * self._dt
 

@@ -2,8 +2,9 @@
 import yaml
 import numpy as np
 import pdb
-# from pylab import *
-# from scipy.ndimage import measurements
+from pylab import *
+from scipy.ndimage import measurements
+import pudb
 
 def read_params_from_file(fname):
     """Read model parameters from a file.
@@ -58,11 +59,22 @@ def channel_is_superelevated(z, riv, behind, channel_depth,
 
     # cross-shore river orientation
     if behind[0]+1 == riv[0]:
-        adj1, adj2 = z[riv[0], riv[1] - 1], z[riv[0], riv[1] + 1]
+        if riv[1] == 0:
+            adj1 = z[riv[0], riv[1] + 1]
+            adj2 = z[riv[0], riv[1] + 1] # not sure if this needs to be included
+        elif riv[1] == z.shape[1] - 1:
+            adj1 = z[riv[0], riv[1] - 1]
+            adj2 = z[riv[0], riv[1] - 1]
+        else:
+            adj1, adj2 = z[riv[0], riv[1] - 1], z[riv[0], riv[1] + 1]
 
     # alongshore river orientation
     if behind[0] == riv[0]:
-        adj1, adj2 = z[riv[0] + 1, riv[1]], z[riv[0] - 1, riv[1]]
+        if riv[0] == z.shape[0] - 1:
+            adj1 = z[riv[0] + 1, riv[1]]
+            adj2 = z[riv[0] + 1, riv[1]]
+        else:
+            adj1, adj2 = z[riv[0] + 1, riv[1]], z[riv[0] - 1, riv[1]]
 
     threshold = super_ratio * channel_depth
 
@@ -377,15 +389,39 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand, SL
     riv_prof = test_elev[riv_i, riv_j]
     test_elev[riv_i, riv_j] += 2*ch_depth
 
-    for j in xrange(test_elev.shape[1]):
-        shore_count = 0
-        for i in reversed(xrange(test_elev.shape[0])):
-            if shore_count == 0:
-                if test_elev [i,j] > 0:
-                    shore_count = 1
-            else:
-                if test_elev[i,j] <= max_cell_h + SLRR:
-                    test_elev[i,j] = max_cell_h + SLRR + (np.random.rand() * max_rand)
+    # make mask for depressions
+    ocean_mask = test_elev < max_cell_h
+    labeled_ponds, ocean = measurements.label(ocean_mask)
+    # if ocean > 1:
+    #     pu.db
+
+    # # fill in underwater spots that are below SL (?)
+    # below_SL = [z <= sea_level]
+    # underwater_cells, big_ocean = measurements.label(below_SL)
+    # underwater_cells[underwater_cells == big_ocean] = 0
+    # test_elev[underwater_cells > 0] = max_cell_h + SLRR + (np.random.rand() * max_rand)
+
+    # create an ocean and shoreline mask
+    ocean_and_shore = np.copy(labeled_ponds)
+
+    # create an ocean mask
+    # ocean_cells = np.copy(ocean_and_shore)
+    # ocean_and_shore[test_elev > 0] = 0
+
+    # create mask for pond cells and fix them
+    area = measurements.sum(ocean_mask, labeled_ponds, index=arange(labeled_ponds.max() + 1))
+    areaPonds = area[labeled_ponds]
+    labeled_ponds[areaPonds == areaPonds.max()] = 0
+
+    #finish creating ocean and shoreline mask
+    ocean_and_shore[areaPonds != areaPonds.max()] = 0
+
+    # something here to get rid of ocean cells
+    test_elev[labeled_ponds > 0] = max_cell_h + SLRR + (np.random.rand() * max_rand)
+
+    # raise cells close to sea level above it
+    test_elev[(test_elev >= max_cell_h) & (test_elev <= (max_cell_h + SLRR))] = \
+        (max_cell_h + SLRR + (np.random.rand() * max_rand))
 
     riv_buffer = np.zeros_like(test_elev)
     riv_buffer[riv_i, riv_j] = 1
@@ -394,42 +430,28 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand, SL
 
     for i in xrange(1, test_elev.shape[0]):
         for j in xrange(test_elev.shape[1]):
-            if test_elev[i,j] > 0 and not riv_buffer[i, j]:
+            if not ocean_and_shore[i, j] and not ocean_and_shore[i-1, j]:
+                if not riv_buffer[i, j]:
                     if test_elev[i, j] >= test_elev[i-1, j]:
                         test_elev[i-1, j] = test_elev[i, j] + (np.random.rand() * slope)
-
+    
     test_elev[riv_i, riv_j] = riv_prof
 
     z = test_elev + sea_level
 
     return z
-
-    ### BELOW: AN ATTEMPT THAT FAILED :( ###
     ########################################
-    # fill in ponds that aren't the ocean!
-    # ocean_mask = test_elev < max_cell_h
-    # labeled_ponds, ocean = measurements.label(ocean_mask)
 
-    # below_SL = test_elev <= 0
-    # underwater_cells, big_ocean = measurements.label(below_SL)
-    # underwater_cells[underwater_cells == big_ocean] = 0
-    # test_elev[underwater_cells > 0] = max_cell_h + SLRR + (np.random.rand() * max_rand)
-
-    # # create an ocean and shoreline mask
-    # ocean_and_shore = np.copy(labeled_ponds)
-    # ocean_and_shore[ocean_and_shore != ocean] = 0
-
-    # # create an ocean mask
-    # # ocean_cells = np.copy(ocean_and_shore)
-    # # ocean_and_shore[test_elev > 0] = 0
-
-    # # create mask for pond cells and fix them
-    # labeled_ponds[labeled_ponds == ocean] = 0
-    # test_elev[labeled_ponds > 0] = max_cell_h + SLRR + (np.random.rand() * max_rand)
-
-    # # raise cells close to sea level above it
-    # test_elev[(test_elev >= max_cell_h) & (test_elev <= (max_cell_h + SLRR))] = \
-    #     (max_cell_h + SLRR + (np.random.rand() * max_rand))
+    ### works but fills in way to much mass: ###
+        # for j in xrange(test_elev.shape[1]):
+    #     shore_count = 0
+    #     for i in reversed(xrange(test_elev.shape[0])):
+    #         if shore_count == 0:
+    #             if test_elev [i,j] > 0:
+    #                 shore_count = 1
+    #         else:
+    #             if test_elev[i,j] <= max_cell_h + SLRR:
+    #                 test_elev[i,j] = max_cell_h + SLRR + (np.random.rand() * max_rand)
 
     # riv_buffer = np.zeros_like(test_elev)
     # riv_buffer[riv_i, riv_j] = 1
@@ -438,14 +460,12 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand, SL
 
     # for i in xrange(1, test_elev.shape[0]):
     #     for j in xrange(test_elev.shape[1]):
-    #         if not ocean_and_shore[i, j] and not ocean_and_shore[i-1, j]:
-    #             if not riv_buffer[i, j]:
+    #         if test_elev[i,j] > 0 and not riv_buffer[i, j]:
     #                 if test_elev[i, j] >= test_elev[i-1, j]:
     #                     test_elev[i-1, j] = test_elev[i, j] + (np.random.rand() * slope)
-    
+
     # test_elev[riv_i, riv_j] = riv_prof
 
     # z = test_elev + sea_level
 
     # return z
-    ########################################
