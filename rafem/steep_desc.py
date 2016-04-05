@@ -4,6 +4,7 @@ import warnings
 import numpy as np
 import downcut
 import pdb
+import pudb
 
 from avulsion_utils import lowest_cell_elev, sort_lowest_neighbors
 
@@ -257,7 +258,36 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
 
     low_adj_cell = lowest_cell_elev(test_elev, (riv_i[-1], riv_j[-1]))
 
-    if last_elev <= 0:
+    # check for coastal avulsion (happens if river is prograding too far alongshore)
+    if ((riv_i[-1] == riv_i[-2] == riv_i[-3] == riv_i[-4] == riv_i[-5]) and   # if last 5 river cells flowing alongshore
+        # (z[riv_i[-1+1],riv_j[-1]] > sea_level) and  # if land between river and ocean for last 3 cells
+        (z[riv_i[-2]+1,riv_j[-2]] > sea_level) and
+        (z[riv_i[-3]+1,riv_j[-3]] > sea_level) and
+        (z[riv_i[-4]+1,riv_j[-4]] > sea_level) and
+        (z[riv_i[-5]+1,riv_j[-5]] > sea_level) and
+        (z[riv_i[-1]+2,riv_j[-1]] <= sea_level) and
+        (z[riv_i[-2]+2,riv_j[-2]] <= sea_level) and
+        (z[riv_i[-3]+2,riv_j[-3]] <= sea_level) and
+        (z[riv_i[-4]+2,riv_j[-4]] <= sea_level) and
+        (z[riv_i[-5]+2,riv_j[-5]] <= sea_level)):
+
+        # pu.db
+
+        # fill up old river mouth
+        z[riv_i[-1],riv_j[-1]] += ch_depth
+
+        # turn river towards ocean
+        riv_i[-1] = riv_i[-2]+1
+        riv_j[-1] = riv_j[-2]
+
+        if (z[riv_i[-1], riv_j[-1]] - sea_level) < (0.001 * max_cell_h):
+            z[riv_i[-1], riv_j[-1]] = (0.001 * max_cell_h) + sea_level
+
+        z[riv_i[-1],riv_j[-1]] -= ch_depth
+
+        course_update = 7   # coastal avulsion
+
+    elif last_elev <= 0:
         riv_i = riv_i[:-1]
         riv_j = riv_j[:-1]
         course_update = 4   # shortened course
