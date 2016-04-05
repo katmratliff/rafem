@@ -5,7 +5,7 @@ import downcut
 import FP
 import numpy as np
 import math
-import pdb
+import pudb
 
 from avulsion_utils import (find_point_in_path, channel_is_superelevated,
                             find_path_length, find_riv_path_length,
@@ -105,7 +105,7 @@ def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
     if ind is not None:
         avulsion_type = 2
 
-        set_linear_slope(z, zip(new_i, new_j), dx=dx, dy=dy)
+        downcut.cut_local(new_i, new_j, z, dx=dx, dy=dy)
 
         new_i = np.append(new_i, old_i[ind + 1:])
         new_j = np.append(new_j, old_j[ind + 1:])
@@ -132,6 +132,8 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
         if channel_is_superelevated(n, (riv_i[a], riv_j[a]),
                                     (riv_i[a-1], riv_j[a-1]),
                                     ch_depth, super_ratio, current_SL):
+
+            # pu.db
 
             # if superelevation greater than trigger ratio, determine
             # new steepest descent path
