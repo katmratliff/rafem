@@ -114,7 +114,7 @@ def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
         if (z[new_i[-1], new_j[-1]] - sea_level) < (0.001 * max_cell_h):
             z[new_i[-1], new_j[-1]] = (0.001 * max_cell_h) + sea_level
         
-        downcut.cut_new(new_i, new_j, z, sea_level, channel_depth, slope,
+        downcut.cut_new(new_i, new_j, z, sea_level, channel_depth,
                         dx=dx, dy=dy)
 
     return (new_i, new_j), avulsion_type
