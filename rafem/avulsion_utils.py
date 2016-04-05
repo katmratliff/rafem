@@ -193,6 +193,7 @@ def set_linear_profile(z, riv_ij, dx=1., dy=1.):
            [ 3.,  3.,  3.,  3.,  3.]])
 
     """
+
     z0 = z[riv_ij[0]]
     dz = z[riv_ij[-1]] - z[riv_ij[0]]
 
@@ -206,13 +207,14 @@ def set_linear_profile(z, riv_ij, dx=1., dy=1.):
 def set_linear_slope(z, riv_ij, dx=1., dy=1.):
     """Set slope along a path to be linear."""
 
-    z0 = z[riv_ij[0]]
-    dz = z[riv_ij[-1]] - z[riv_ij[0]]
+    if len(riv_ij) > 1:
+        z0 = z[riv_ij[0]]
+        dz = z[riv_ij[-1]] - z[riv_ij[0]]
 
-    lengths = get_link_lengths(zip(*riv_ij), dx=dx, dy=dy)
-    ds = lengths.sum()
+        lengths = get_link_lengths(zip(*riv_ij), dx=dx, dy=dy)
+        ds = lengths.sum()
 
-    z[zip(*riv_ij[1:])] = z0 + dz / ds * lengths.cumsum()
+        z[zip(*riv_ij[1:])] = z0 + dz / ds * lengths.cumsum()
 
     return z
 
