@@ -283,7 +283,10 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
         if (z[riv_i[-1], riv_j[-1]] - sea_level) < (0.001 * max_cell_h):
             z[riv_i[-1], riv_j[-1]] = (0.001 * max_cell_h) + sea_level
 
-        z[riv_i[-1],riv_j[-1]] -= ch_depth
+        # z[riv_i[-1],riv_j[-1]] -= ch_depth
+
+        downcut.cut_new(riv_i[-3:], riv_j[-3:], z, sea_level, ch_depth,
+                        dx=dx, dy=dy)
 
         course_update = 7   # coastal avulsion
 
@@ -294,6 +297,7 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
 
     # if river mouth surrounded by land
     elif low_adj_cell > 0:
+        pu.db
         new_riv_i, new_riv_j = find_course(z, riv_i, riv_j, len(riv_i), 
                                            ch_depth, sea_level=sea_level)
 
@@ -306,7 +310,7 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
             if (z[riv_i[-1], riv_j[-1]] - sea_level) < (0.001 * max_cell_h):
                 z[riv_i[-1], riv_j[-1]] = (0.001 * max_cell_h) + sea_level
 
-            downcut.cut_new(riv_i[-(new_riv_length+1):], riv_j[-(new_riv_length+1):],
+            downcut.cut_new(riv_i[-(new_riv_length+2):], riv_j[-(new_riv_length+2):],
                                 z, sea_level, ch_depth, dx=dx, dy=dy)
 
             course_update = 6 # lengthened land-locked course
@@ -330,9 +334,15 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
                 if (z[riv_i[-1], riv_j[-1]] - sea_level) < (0.001 * max_cell_h):
                     z[riv_i[-1], riv_j[-1]] = (0.001 * max_cell_h) + sea_level
                 
-                z[riv_i[-1], riv_j[-1]] -= ch_depth
+                ### line below not needed if downcutting ###
+                # z[riv_i[-1], riv_j[-1]] -= ch_depth
+
+                # try downcutting new river course for stability
+                downcut.cut_new(riv_i[-3:], riv_j[-3:], z, sea_level, ch_depth,
+                                dx=dx, dy=dy)
 
                 course_update = 5
+
             else:
                 riv_i = riv_i
                 riv_j = riv_j
