@@ -133,7 +133,7 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
                                     (riv_i[a-1], riv_j[a-1]),
                                     ch_depth, super_ratio, current_SL):
 
-            # pu.db
+            pu.db
 
             # if superelevation greater than trigger ratio, determine
             # new steepest descent path

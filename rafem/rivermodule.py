@@ -201,7 +201,7 @@ class RiverModule(object):
 
         if self._saveavulsions and self._course_update > 0:
             with open('river_info.txt','a') as file:
-                file.write("%.5f %i \n" % ((self._time / _SECONDS_PER_YEAR),
+                file.write("%.5f %i \n" % ((self._time / _SECONDS_PER_YEAR * 365),
                     self._course_update))
 
         # determine if there is an avulsion & find new path if so
@@ -213,7 +213,7 @@ class RiverModule(object):
 
         if self._saveavulsions and self._avulsion_type > 0:
             with open('river_info.txt','a') as file:
-                file.write("%.5f %i %i \n" % ((self._time / _SECONDS_PER_YEAR),
+                file.write("%.5f %i %i \n" % ((self._time / _SECONDS_PER_YEAR * 365),
                     self._avulsion_type, self._loc))
 
         # need to fill old river channels if coupled to CEM
