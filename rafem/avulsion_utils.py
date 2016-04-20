@@ -445,32 +445,3 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand, SL
     z = test_elev + sea_level
 
     return z
-    ########################################
-
-    ### works but fills in way to much mass: ###
-        # for j in xrange(test_elev.shape[1]):
-    #     shore_count = 0
-    #     for i in reversed(xrange(test_elev.shape[0])):
-    #         if shore_count == 0:
-    #             if test_elev [i,j] > 0:
-    #                 shore_count = 1
-    #         else:
-    #             if test_elev[i,j] <= max_cell_h + SLRR:
-    #                 test_elev[i,j] = max_cell_h + SLRR + (np.random.rand() * max_rand)
-
-    # riv_buffer = np.zeros_like(test_elev)
-    # riv_buffer[riv_i, riv_j] = 1
-    # riv_buffer[riv_i[:-1]+1, riv_j[:-1]] = 1
-    # riv_buffer[riv_i[1:]-1, riv_j[1:]] = 1
-
-    # for i in xrange(1, test_elev.shape[0]):
-    #     for j in xrange(test_elev.shape[1]):
-    #         if test_elev[i,j] > 0 and not riv_buffer[i, j]:
-    #                 if test_elev[i, j] >= test_elev[i-1, j]:
-    #                     test_elev[i-1, j] = test_elev[i, j] + (np.random.rand() * slope)
-
-    # test_elev[riv_i, riv_j] = riv_prof
-
-    # z = test_elev + sea_level
-
-    # return z
