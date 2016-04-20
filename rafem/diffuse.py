@@ -1,6 +1,6 @@
 #! /usr/local/bin/python
 import numpy as np
-import pdb
+import pudb
 
 from avulsion_utils import is_diagonal_neighbor
 from avulsion_utils import get_channel_distance
@@ -59,26 +59,16 @@ def smooth_rc(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n, sea_level, slope):
     n : ndarray
         2D array of grid elevations.
     """
-    # NOTE: Divide by dx to match the old way, but I don't think this is
-    # correct.
-    # nu /= dx
-    # KMR 8/24/15: don't need to divide by dx anymore, diffusion coeff
-    # should be fixed with new calculation
 
     beach_len = find_beach_length_riv_cell(n, (riv_i[-2], riv_j[-2]),
                                   (riv_i[-1], riv_j[-1]), sea_level,
                                   ch_depth, slope, dx=dx, dy=dy)
 
-    if is_diagonal_neighbor((riv_i[-2], riv_j[-2]), (riv_i[-1], riv_j[-1])):
-        last_len = (dx/2 * np.sqrt(2.)) + beach_len
-    else:
-        last_len = dx/2 + beach_len
-
 
     n_river = n[riv_i, riv_j]
     n_river[-1] = sea_level - ch_depth
     s_river = get_channel_distance((riv_i, riv_j), dx=dx, dy=dy)
-    s_river[-1] = s_river[-2] + last_len
+    s_river[-1] += beach_len
 
     dn_rc = (nu * dt) * solve_second_derivative(s_river, n_river)
 
