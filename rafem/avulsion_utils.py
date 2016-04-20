@@ -391,6 +391,9 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand, SL
     riv_prof = test_elev[riv_i, riv_j]
     test_elev[riv_i, riv_j] += 2*ch_depth
 
+    # set new subaerial cells to marsh elevation
+    test_elev[test_elev == 0] = max_cell_h
+
     # make mask for depressions
     ocean_mask = test_elev < max_cell_h
     labeled_ponds, ocean = measurements.label(ocean_mask)
