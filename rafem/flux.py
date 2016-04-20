@@ -16,7 +16,7 @@ def calc_qs(nu, riv_i, riv_j, n, sea_level, ch_depth, dx, dy, dt, slope):
     ds = get_link_lengths((riv_i[-2:], riv_j[-2:]), dx=dx, dy=dy)
     ds[-1] += beach_len
     dz = (sea_level - ch_depth) - n[riv_i[-2], riv_j[-2]]
-    
+
     return - nu * dz / ds
 
     # ds = get_link_lengths((riv_i[-3:-1], riv_j[-3:-1]), dx=dx, dy=dy)

@@ -217,7 +217,7 @@ class RiverModule(object):
                     self._avulsion_type, self._loc))
 
         # need to fill old river channels if coupled to CEM
-        if self._avulsion_type == 1 or 2:
+        if (self._avulsion_type == 1) or (self._avulsion_type == 2):
             self._n = avulsion_utils.fix_elevations(self._n, self._riv_i, self._riv_j,
                 self._ch_depth, self._SL, self._slope, self._dx, self._max_rand, self._SLRR)
 
