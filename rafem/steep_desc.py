@@ -3,7 +3,6 @@ import warnings
 
 import numpy as np
 import downcut
-import pdb
 import pudb
 
 from avulsion_utils import lowest_cell_elev, sort_lowest_neighbors
@@ -271,8 +270,6 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
         (z[riv_i[-4]+2,riv_j[-4]] <= sea_level) and
         (z[riv_i[-5]+2,riv_j[-5]] <= sea_level)):
 
-        # pu.db
-
         # fill up old river mouth
         z[riv_i[-1],riv_j[-1]] += ch_depth
 
@@ -297,7 +294,6 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
 
     # if river mouth surrounded by land
     elif low_adj_cell > 0:
-        pu.db
         new_riv_i, new_riv_j = find_course(z, riv_i, riv_j, len(riv_i), 
                                            ch_depth, sea_level=sea_level)
 
@@ -320,7 +316,7 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
             riv_j = riv_j
 
     # if river mouth needs to prograde
-    elif last_elev >= max_cell_h:
+    elif last_elev >= max_cell_h:       
         sorted_n = sort_lowest_neighbors(test_elev, (riv_i[-1], riv_j[-1]))
         subaerial_loc = np.where(test_elev[sorted_n] > 0)
 
@@ -337,7 +333,6 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
                 ### line below not needed if downcutting ###
                 # z[riv_i[-1], riv_j[-1]] -= ch_depth
 
-                # try downcutting new river course for stability
                 downcut.cut_new(riv_i[-3:], riv_j[-3:], z, sea_level, ch_depth,
                                 dx=dx, dy=dy)
 
