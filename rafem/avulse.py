@@ -133,6 +133,7 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
                                     (riv_i[a-1], riv_j[a-1]),
                                     ch_depth, super_ratio, current_SL):
 
+            # pu.db
 
             # if superelevation greater than trigger ratio, determine
             # new steepest descent path
@@ -180,8 +181,14 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
 
                     avulsion_type = 3
                     # below should just be a??? not a-1???
-                    FP.dep_splay(n, (new[0][a-1], new[1][a-1]), (riv_i, riv_j),
+                    FP.dep_splay(n, (new[0][a], new[1][a]), (riv_i, riv_j),
                                  splay_dep, splay_type=splay_type)
+
+                    # river doesn't actually change course
+                    new = riv_i, riv_j
+
+                    break
+
             # if shortest path is not an avulsion criterion, then the new
             # steepest descent path will become the new course regardless
             # of new course length relative to the old course...
