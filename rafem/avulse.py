@@ -133,8 +133,6 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
                                     (riv_i[a-1], riv_j[a-1]),
                                     ch_depth, super_ratio, current_SL):
 
-            # pu.db
-
             # if superelevation greater than trigger ratio, determine
             # new steepest descent path
             new = steep_desc.find_course(n, riv_i, riv_j, a, ch_depth,
@@ -176,8 +174,6 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
                     break
 
                 elif splay_type > 0:
-
-                    pu.db
 
                     avulsion_type = 3
                     # below should just be a??? not a-1???
