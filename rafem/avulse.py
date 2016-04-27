@@ -9,7 +9,7 @@ import pudb
 
 from avulsion_utils import (find_point_in_path, channel_is_superelevated,
                             find_path_length, find_riv_path_length,
-                            set_linear_slope)
+                            set_linear_slope, fill_abandoned_channel)
 
 
 def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
@@ -133,7 +133,6 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
                                     (riv_i[a-1], riv_j[a-1]),
                                     ch_depth, super_ratio, current_SL):
 
-            pu.db
 
             # if superelevation greater than trigger ratio, determine
             # new steepest descent path
@@ -170,27 +169,23 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
 
                     # fill up old channel... could be some fraction in the future
                     # (determines whether channels are repellors or attractors)
-
-                    new_profile = n[new[0], new[1]]
-                    # fills channels to be even with surrounding topography
-                    # (after fix_elevations is run)
-                    n[riv_i[a:], riv_j[a:]] = (current_SL + (slope * dx)
-                                               + (np.random.rand() * slope))
-
-                    ### fills to levee height ###
-                    # n[riv_i[a:], riv_j[a:]] += ch_depth
-                    #############################
-                    n[new[0], new[1]] = new_profile
+                    fill_abandoned_channel(a, n, new, riv_i, riv_j, current_SL,
+                                           ch_depth, slope, dx)
 
                     break
 
                 elif splay_type > 0:
+
+                    pu.db
+
                     avulsion_type = 3
                     # below should just be a??? not a-1???
                     FP.dep_splay(n, (new[0][a-1], new[1][a-1]), (riv_i, riv_j),
                                  splay_dep, splay_type=splay_type)
             # if shortest path is not an avulsion criterion, then the new
             # steepest descent path will become the new course regardless
-            # of new course length relative to the old course
+            # of new course length relative to the old course...
+            # NEED TO INCLUDE DOWNCUTTING & RECORDING AVULSION TYPE FOR 
+            # NOT USING STEEPEST DESCENT
 
     return new, avulsion_type, a
