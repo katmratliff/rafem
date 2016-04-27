@@ -10,6 +10,7 @@ import pdb
 N_DAYS = 10 * 365
 Save_Daily_Timesteps = 1
 Save_Yearly_Timesteps = 0
+Save_Fluxes = 1
 save_int = 1  # (in days)
 
 def plot_coast(spacing, z):
@@ -55,7 +56,7 @@ cem.set_value('land_surface__elevation', z)
 
 waves.set_value('sea_shoreline_wave~incoming~deepwater__ashton_et_al_approach_angle_asymmetry_parameter', .5)
 waves.set_value('sea_shoreline_wave~incoming~deepwater__ashton_et_al_approach_angle_highness_parameter', .3)
-cem.set_value("sea_surface_water_wave__height", 0.1)
+cem.set_value("sea_surface_water_wave__height", 0.2)
 cem.set_value("sea_surface_water_wave__period", 9.)
 #cem.set_value("sea_surface_water_wave__azimuth_angle_of_opposite_of_phase_velocity", 0. * np.pi / 180.)
 
@@ -83,7 +84,7 @@ dx = (dict(raf.parameters)['row_spacing'])*1000.
 slope = dict(raf.parameters)['delta_slope']
 max_cell_h = dx*slope
 channel_depth = dict(raf.parameters)['channel_depth']
-max_rand = 0.00001
+max_rand = 0.0001
 
 if Save_Daily_Timesteps or Save_Yearly_Timesteps:
 # make directories to save run data
@@ -116,8 +117,12 @@ for time in np.arange(0, N_DAYS, TIME_STEP):
     
     y, x = raf.get_value('channel_exit__y_coordinate'), raf.get_value('channel_exit__x_coordinate')
     qs[int(y[0] / spacing[0]), int(x[0] / spacing[1])] = raf_qs[0] * RIVER_WIDTH * RHO_SED
-    
-    flux_array = np.vstack([flux_array, [(time, raf_qs[0] * RIVER_WIDTH * RHO_SED)]])
+
+    if Save_Fluxes:
+        with open('fluxes.out','a') as file:
+            file.write("%.2f %.5f \n" % (time, raf_qs[0] * RIVER_WIDTH * RHO_SED))
+
+    # flux_array = np.vstack([flux_array, [(time, raf_qs[0] * RIVER_WIDTH * RHO_SED)]])
     
     cem.set_value('land_surface_water_sediment~bedload__mass_flow_rate', qs)
 
@@ -175,6 +180,8 @@ for time in np.arange(0, N_DAYS, TIME_STEP):
     qs.fill(0)
 
     if time % save_int == 0:
+
+        print('time = %.3f days' % time)
         # save outputs
         z = raf.get_value('land_surface__elevation').reshape(shape)
         rel_z = z - sea_level
@@ -236,4 +243,4 @@ for time in np.arange(0, N_DAYS, TIME_STEP):
             plt.close(p)
         ##########################################################################################
 
-np.savetxt('output_data_waves/fluxes.out',flux_array,fmt='%i,%.5f')
+# np.savetxt('output_data_waves/fluxes.out',flux_array,fmt='%i,%.5f')
