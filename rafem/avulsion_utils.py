@@ -430,15 +430,16 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand, SL
 
     riv_buffer = np.zeros_like(test_elev)
     riv_buffer[riv_i, riv_j] = 1
-    riv_buffer[riv_i[:-1]+1, riv_j[:-1]] = 1
     riv_buffer[riv_i[1:]-1, riv_j[1:]] = 1
 
-    for i in xrange(1, test_elev.shape[0]):
+    for i in xrange(1, test_elev.shape[0]-1):
         for j in xrange(test_elev.shape[1]):
-            if not ocean_and_shore[i, j] and not ocean_and_shore[i-1, j]:
-                if not riv_buffer[i, j]:
-                    if test_elev[i, j] >= test_elev[i-1, j]:
-                        test_elev[i-1, j] = test_elev[i, j] + (np.random.rand() * slope)
+            if (not ocean_and_shore[i, j]
+                and not ocean_and_shore[i-1, j]
+                and not ocean_and_shore[i+1, j]
+                and not riv_buffer[i, j]):
+                if test_elev[i+1, j] >= test_elev[i, j]:
+                    test_elev[i, j] = test_elev[i+1, j] + (np.random.rand() * slope)
     
     test_elev[riv_i, riv_j] = riv_prof
 
