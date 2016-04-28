@@ -462,15 +462,17 @@ def fill_abandoned_channel(breach_loc, n, new, riv_i, riv_j, current_SL,
 
     if len(riv_i) - breach_loc > 1:
         for k in xrange(breach_loc, len(riv_i)-1):
-            if (riv_cells[riv_i[k], riv_j[k]+1] and riv_cells[riv_i[k], riv_j[k]-1]):
+            if (riv_j[k] == n.shape[1] - 1) or (riv_j[k] == 0):
                 n[riv_i[k], riv_j[k]] = max_shorecell_h + (np.random.rand() * slope)
-            elif riv_cells[riv_i[k], riv_j[k]+1] or (riv_j[k] == n.shape[1] - 1):
+            elif (riv_cells[riv_i[k], riv_j[k]+1] and riv_cells[riv_i[k], riv_j[k]-1]):
+                n[riv_i[k], riv_j[k]] = max_shorecell_h + (np.random.rand() * slope)
+            elif riv_cells[riv_i[k], riv_j[k]+1]:
                 if n[riv_i[k], riv_j[k]-1] <= max_shorecell_h:
                     n[riv_i[k], riv_j[k]] = max_shorecell_h + (np.random.rand() * slope)
                 else:
                     n[riv_i[k], riv_j[k]] = (n[riv_i[k], riv_j[k]-1]
                                              + (np.random.rand() * slope))
-            elif riv_cells[riv_i[k], riv_j[k]-1] or (riv_j[k] == 0):
+            elif riv_cells[riv_i[k], riv_j[k]-1]:
                 if n[riv_i[k], riv_j[k]+1] <= max_shorecell_h:
                     n[riv_i[k], riv_j[k]] = max_shorecell_h + (np.random.rand() * slope)
                 else:
