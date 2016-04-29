@@ -143,12 +143,17 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
             # paths will be compared
             if short_path == 1:
 
+                avulse_length = find_riv_path_length(n, (riv_i[a:], riv_j[a:]),
+                                                     current_SL, ch_depth,
+                                                     slope, dx=dx, dy=dy)
+
                 if n[new[0][-1], new[1][-1]] < current_SL:
                     new_length = find_riv_path_length(n, new, current_SL, ch_depth,
-                                                  slope, dx=dx, dy=dy)
+                                                      slope, dx=dx, dy=dy)
                 else:
                     new_length = find_path_length(n, new, current_SL, ch_depth,
                                                       slope, dx=dx, dy=dy)
+
                 old_length = find_riv_path_length(n, old, current_SL, ch_depth,
                                               slope, dx=dx, dy=dy)
 
@@ -191,4 +196,4 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
             # NEED TO INCLUDE DOWNCUTTING & RECORDING AVULSION TYPE FOR 
             # NOT USING STEEPEST DESCENT
 
-    return new, avulsion_type, a
+    return new, avulsion_type, a, avulse_length, (new_length - old_length)
