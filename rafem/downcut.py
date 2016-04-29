@@ -1,10 +1,6 @@
 #! /usr/local/bin/python
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Mar 17 21:22:00 2015
 
-@author: kmratliff
-"""
 import numpy as np
 import math
 
