@@ -2,7 +2,6 @@
 import yaml
 import numpy as np
 import pdb
-from pylab import *
 from scipy.ndimage import measurements
 import pudb
 
@@ -414,7 +413,7 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand, SL
     # ocean_and_shore[test_elev > 0] = 0
 
     # create mask for pond cells and fix them
-    area = measurements.sum(ocean_mask, labeled_ponds, index=arange(labeled_ponds.max() + 1))
+    area = measurements.sum(ocean_mask, labeled_ponds, index=np.arange(labeled_ponds.max() + 1))
     areaPonds = area[labeled_ponds]
     labeled_ponds[areaPonds == areaPonds.max()] = 0
 
