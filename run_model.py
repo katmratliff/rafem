@@ -7,7 +7,7 @@ import inspect, os
 import pdb
 #from rafem.riverbmi import BmiRiverModule
 
-N_DAYS = 10 * 365
+N_DAYS = 5 * 365
 Save_Daily_Timesteps = 1
 Save_Yearly_Timesteps = 0
 Save_Fluxes = 1
@@ -22,16 +22,16 @@ def plot_coast(spacing, z):
     colors = np.vstack((ocean, land))
     m = LinearSegmentedColormap.from_list('land_ocean', colors)
     
-    (y, x) = np.meshgrid(np.arange(z.shape[0]) * spacing[0],
+    (x, y) = np.meshgrid(np.arange(z.shape[0]) * spacing[0],
                          np.arange(z.shape[1]) * spacing[1], indexing='ij')
     
     plt.pcolormesh(y * 1e-3, x * 1e-3, z, cmap=m, vmin=-50, vmax=50)
     
     plt.gca().set_aspect(1.) 
-    plt.axis([0, 20, 0, 10])
-    plt.colorbar(orientation='horizontal').ax.set_xlabel('Elevation (m)')
-    plt.xlabel('Cross-shore (km)')
-    plt.ylabel('Alongshore (km)')
+    plt.axis([0, 20, 0, 15])
+    # plt.colorbar(orientation='horizontal').ax.set_xlabel('Elevation (m)')
+    plt.xlabel('alongshore (km)')
+    plt.ylabel('cross-shore (km)')
 
 
 from cmt.components import Cem, Rafem, Waves
@@ -39,10 +39,10 @@ cem = Cem()
 raf = Rafem()
 waves = Waves()
 
-cem.setup('_run_cem', number_of_cols=100, number_of_rows=200, grid_spacing=100.)
-raf.setup('_run_rafem', number_of_columns=100, number_of_rows=200, row_spacing=0.1,
+cem.setup('_run_cem', number_of_cols=200, number_of_rows=150, grid_spacing=100.)
+raf.setup('_run_rafem', number_of_columns=200, number_of_rows=150, row_spacing=0.1,
           column_spacing=0.1, rate_of_sea_level_rise=0.00, channel_discharge=10.,
-          upstream_elevation=10.)
+          upstream_elevation=5.)
 
 cem.initialize('_run_cem/cem.txt')
 raf.initialize('_run_rafem/input.yaml')
@@ -205,15 +205,17 @@ for time in np.arange(0, N_DAYS, TIME_STEP):
             # save figures
             f = plt.figure()
             plot_coast(spacing, z - sea_level)
-            plt.plot(river_y,river_x, LineWidth=2.0)
+            plt.plot(river_x, river_y, LineWidth=2.5)
             plt.title('time = '+str("%i" % time)+' days')
             plt.savefig('output_data_waves/elev_figs/elev_fig_'+str(int(time))+'.png')
             plt.close(f)
 
             p = plt.figure()
-            plt.plot(prof)
-            plt.axis([0, 200, -10, 20])
-            plt.title('time = '+str("%.i" % time)+' days')
+            plt.plot(prof, LineWidth=2.0)
+            plt.axis([0, 150, -10, 20])
+            plt.title('time = '+str("%i" % time)+' days')
+            plt.xlabel('cross-shore (km)')
+            plt.ylabel('elevation (m)')
             plt.savefig('output_data_waves/prof_figs/prof_fig_'+str(int(time))+'.png')
             plt.close(p)
         ##########################################################################################
