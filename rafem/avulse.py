@@ -199,4 +199,4 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
             # NEED TO INCLUDE DOWNCUTTING & RECORDING AVULSION TYPE FOR 
             # NOT USING STEEPEST DESCENT
 
-    return new, avulsion_type, a, avulse_length, (new_length - old_length)
+    return new, avulsion_type, a, avulse_length, (old_length - new_length)
