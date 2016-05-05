@@ -4,10 +4,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import inspect, os
-import pdb
+import pudb
 #from rafem.riverbmi import BmiRiverModule
 
-N_DAYS = 5 * 365
+N_DAYS = 20 * 365
 Save_Daily_Timesteps = 1
 Save_Yearly_Timesteps = 0
 Save_Fluxes = 1
@@ -28,7 +28,7 @@ def plot_coast(spacing, z):
     plt.pcolormesh(y * 1e-3, x * 1e-3, z, cmap=m, vmin=-50, vmax=50)
     
     plt.gca().set_aspect(1.) 
-    plt.axis([0, 20, 0, 15])
+    plt.axis([0, 20, 0, 12])
     # plt.colorbar(orientation='horizontal').ax.set_xlabel('Elevation (m)')
     plt.xlabel('alongshore (km)')
     plt.ylabel('cross-shore (km)')
@@ -39,8 +39,8 @@ cem = Cem()
 raf = Rafem()
 waves = Waves()
 
-cem.setup('_run_cem', number_of_cols=200, number_of_rows=150, grid_spacing=100.)
-raf.setup('_run_rafem', number_of_columns=200, number_of_rows=150, row_spacing=0.1,
+cem.setup('_run_cem', number_of_cols=200, number_of_rows=120, grid_spacing=100.)
+raf.setup('_run_rafem', number_of_columns=200, number_of_rows=120, row_spacing=0.1,
           column_spacing=0.1, rate_of_sea_level_rise=0.00, channel_discharge=10.,
           upstream_elevation=5.)
 
@@ -56,7 +56,7 @@ cem.set_value('land_surface__elevation', z)
 
 waves.set_value('sea_shoreline_wave~incoming~deepwater__ashton_et_al_approach_angle_asymmetry_parameter', .5)
 waves.set_value('sea_shoreline_wave~incoming~deepwater__ashton_et_al_approach_angle_highness_parameter', .3)
-cem.set_value("sea_surface_water_wave__height", 0.2)
+cem.set_value("sea_surface_water_wave__height", 0.3)
 cem.set_value("sea_surface_water_wave__period", 9.)
 #cem.set_value("sea_surface_water_wave__azimuth_angle_of_opposite_of_phase_velocity", 0. * np.pi / 180.)
 
@@ -92,16 +92,16 @@ if Save_Daily_Timesteps or Save_Yearly_Timesteps:
         os.mkdir("output_data_waves")
     # if not os.path.exists("output_data_waves/elev_grid"):
     #     os.mkdir("output_data_waves/elev_grid")
-    if not os.path.exists("output_data_waves/riv_course"):
-        os.mkdir("output_data_waves/riv_course")
-    if not os.path.exists("output_data_waves/riv_profile"):
-        os.mkdir("output_data_waves/riv_profile")
+    # if not os.path.exists("output_data_waves/riv_course"):
+        # os.mkdir("output_data_waves/riv_course")
+    # if not os.path.exists("output_data_waves/riv_profile"):
+        # os.mkdir("output_data_waves/riv_profile")
     if not os.path.exists("output_data_waves/elev_figs"):
         os.mkdir("output_data_waves/elev_figs")
     if not os.path.exists("output_data_waves/prof_figs"):
         os.mkdir("output_data_waves/prof_figs")
-    if not os.path.exists("output_data_waves/rel_elev"):
-        os.mkdir("output_data_waves/rel_elev")
+    # if not os.path.exists("output_data_waves/rel_elev"):
+        # os.mkdir("output_data_waves/rel_elev")
     # if not os.path.exists("output_data_waves/cem_elev"):
     #     os.mkdir("output_data_waves/cem_elev")
 
@@ -191,16 +191,19 @@ for time in np.arange(0, N_DAYS, TIME_STEP):
         real_prof = rel_z[(y/dx).astype(int), (x/dx).astype(int)]
         river_x = x/1000
         river_y = y/1000
-
+        riv_left = z[y.astype(int)/100, (x.astype(int)/100) + 1]
+        riv_left[riv_left < 0] = 0
+        riv_right = z[y.astype(int)/100, (x.astype(int)/100) - 1]
+        riv_right[riv_right < 0] = 0
 
         ### SAVE DAILY TIMESTEPS ###
         ##########################################################################################
         if Save_Daily_Timesteps == 1:
 
             # np.savetxt('output_data_waves/elev_grid/elev_'+str("%.3f" % nyears)+'.out',z,fmt='%.5f')
-            np.savetxt('output_data_waves/rel_elev/rel_elev_'+str("%i" % time)+'.out',rel_z,fmt='%.5f')
-            np.savetxt('output_data_waves/riv_course/riv_'+str("%i" % time)+'.out',zip(x,y),fmt='%i')
-            np.savetxt('output_data_waves/riv_profile/prof_'+str("%i" % time)+'.out',real_prof,fmt='%.5f')
+            # np.savetxt('output_data_waves/rel_elev/rel_elev_'+str("%i" % time)+'.out',rel_z,fmt='%.5f')
+            # np.savetxt('output_data_waves/riv_course/riv_'+str("%i" % time)+'.out',zip(x,y),fmt='%i')
+            # np.savetxt('output_data_waves/riv_profile/prof_'+str("%i" % time)+'.out',real_prof,fmt='%.5f')
 
             # save figures
             f = plt.figure()
@@ -211,10 +214,16 @@ for time in np.arange(0, N_DAYS, TIME_STEP):
             plt.close(f)
 
             p = plt.figure()
-            plt.plot(prof, LineWidth=2.0)
+            PL, = plt.plot(riv_left, color=[0, 0.2, 0], linewidth=8)
+            SL = plt.hlines(sea_level, 0, 300, color='c', linewidth=4)
+            PP, = plt.plot(prof, color='b', linewidth=6)
+            PR, = plt.plot(riv_right, color=[0, 0.8, 0], linewidth=4, linestyle='dashed')
+            plt.legend((PL, PR, PP, SL),('adjacent floodplain left side',
+                        'adjacent floodplain right side', 'river bed', 
+                        'sea level'), fontsize=14, loc=('upper right'))
             plt.axis([0, 150, -10, 20])
             plt.title('time = '+str("%i" % time)+' days')
-            plt.xlabel('cross-shore (km)')
+            plt.xlabel('river cells (streamwise)')
             plt.ylabel('elevation (m)')
             plt.savefig('output_data_waves/prof_figs/prof_fig_'+str(int(time))+'.png')
             plt.close(p)
