@@ -122,7 +122,8 @@ def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
 
 # determines if there is an avulsion along river course
 def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
-                  short_path, splay_type, splay_dep, slope, dx=1., dy=1.):
+                  short_path, splay_type, splay_dep, slope, splay_depth, 
+                  dx=1., dy=1.):
     new = riv_i, riv_j
     old = riv_i, riv_j
     avulsion_type = 0
@@ -185,9 +186,11 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
 
                     avulsion_type = 3
                     # below should just be a??? not a-1???
+                    n_before_splay = np.copy(n)
                     FP.dep_splay(n, (new[0][a], new[1][a]), (riv_i, riv_j),
                                  splay_dep, splay_type=splay_type)
-
+                    n_splay = n - n_before_splay
+                    splay_depth += n_splay
                     # river doesn't actually change course
                     new = riv_i, riv_j
 
@@ -199,4 +202,4 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
             # NEED TO INCLUDE DOWNCUTTING & RECORDING AVULSION TYPE FOR 
             # NOT USING STEEPEST DESCENT
 
-    return new, avulsion_type, a, avulse_length, (old_length - new_length)
+    return new, avulsion_type, a, avulse_length, (old_length - new_length), splay_depth

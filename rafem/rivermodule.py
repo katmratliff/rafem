@@ -159,6 +159,7 @@ class RiverModule(object):
         self._splay_type = params['splay_type']
 
         self._sed_flux = 0.
+        self._splay_deposit = np.zeros_like(self._n)
 
         # Saving information
         self._saveavulsions = params['saveavulsions']
@@ -202,15 +203,18 @@ class RiverModule(object):
 
         # determine if there is an avulsion & find new path if so
         (self._riv_i, self._riv_j), self._avulsion_type, self._loc, self._avulse_length, \
-         self._path_diff = avulse.find_avulsion(self._riv_i, self._riv_j, self._n,
-             self._super_ratio, self._SL, self._ch_depth,
-             self._short_path, self._splay_type, self._splay_dep, self._slope,
-             dx=self._dx, dy=self._dy)
+         self._path_diff, self._splay_deposit = avulse.find_avulsion(self._riv_i,
+            self._riv_j, self._n, self._super_ratio, self._SL, self._ch_depth,
+            self._short_path, self._splay_type, self._splay_dep, self._slope,
+            self._splay_deposit, dx=self._dx, dy=self._dy)
 
         if self._saveavulsions and self._avulsion_type > 0:
             with open('river_info.txt','a') as file:
                 file.write("%.5f %i %i %.5f %.5f\n" % ((self._time / _SECONDS_PER_YEAR * 365),
                     self._avulsion_type, self._loc, self._avulse_length, self._path_diff))
+        
+        if self._saveavulsions and self._avulsion_type == 3:
+            np.savetxt('splay_deposit.out', self._splay_deposit, '%.8f')
 
         # need to fill old river channels if coupled to CEM
         if (self._avulsion_type == 1) or (self._avulsion_type == 2):
