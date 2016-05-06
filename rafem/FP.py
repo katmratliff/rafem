@@ -82,7 +82,7 @@ def wetlands(current_SL, WL_Z, wetland_width, n, riv_i, riv_j, y, x):
         depo_wetland[row, cols] == 1
 
 
-def dep_splay(n, ij_fail, old_path, splay_dep, splay_type=1):
+def dep_splay(n, ij_fail, splay_dep, splay_type=1):
     """Deposit around a failed river cell.
 
     Parameters
@@ -110,7 +110,6 @@ def dep_splay(n, ij_fail, old_path, splay_dep, splay_type=1):
     This could possibly be improved by comparing to find nearest beach routine (CEM)
     or using some sort of search radius 
     """
-    river_elevations = n[old_path]
 
     if splay_type == 1:  # splay deposition just at first failed river cell
         n[ij_fail] += splay_dep
@@ -118,4 +117,3 @@ def dep_splay(n, ij_fail, old_path, splay_dep, splay_type=1):
                             # and the adjacent cells
         add_to_neighboring_cells(n, ij_fail, splay_dep)
 
-    n[old_path] = river_elevations
