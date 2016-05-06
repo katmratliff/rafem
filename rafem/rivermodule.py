@@ -189,10 +189,6 @@ class RiverModule(object):
             self._n, self._riv_i, self._riv_j, self._ch_depth, self._slope,
             sea_level=self._SL, dx=self._dx, dy=self._dy)
 
-        # if self._course_update > 0:
-        #     diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt, self._ch_depth,
-        #                       self._riv_i, self._riv_j, self._n, self._SL, self._slope)
-
         self._n = avulsion_utils.fix_elevations(self._n, self._riv_i, self._riv_j,
             self._ch_depth, self._SL, self._slope, self._dx, self._max_rand, self._SLRR)
 
@@ -213,7 +209,7 @@ class RiverModule(object):
                 file.write("%.5f %i %i %.5f %.5f\n" % ((self._time / _SECONDS_PER_YEAR * 365),
                     self._avulsion_type, self._loc, self._avulse_length, self._path_diff))
         
-        if self._saveavulsions and self._avulsion_type == 3:
+        if self._saveavulsions and (self._splay_deposit.sum() > 0):
             np.savetxt('splay_deposit.out', self._splay_deposit, '%.8f')
 
         # need to fill old river channels if coupled to CEM
