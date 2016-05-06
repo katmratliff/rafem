@@ -170,7 +170,7 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
                 avul_locs = np.append(avul_locs, a)
                 path_slopes = np.append(path_slopes, slope)
 
-            crevasse_locs = np.vstack((crevasse_locs, [new[0][a], new[0][a]]))
+            crevasse_locs = np.vstack((crevasse_locs, [new[0][a], new[1][a]]))
 
 
     if len(crevasse_locs.shape) > 1:
