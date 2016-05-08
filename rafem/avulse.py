@@ -142,7 +142,6 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
         if channel_is_superelevated(n, (riv_i[a], riv_j[a]),
                                     (riv_i[a-1], riv_j[a-1]),
                                     ch_depth, super_ratio, current_SL):
-            pu.db
 
             # if superelevation greater than trigger ratio, determine
             # new steepest descent path
@@ -150,33 +149,30 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
                                          sea_level=current_SL)
 
             if n[new[0][-1], new[1][-1]] < current_SL:
-                new_length = find_riv_path_length(n, (new[0][a:], new[1][a:]),
-                                                  current_SL, ch_depth,
+                new_length = find_riv_path_length(n, new, current_SL, ch_depth,
                                                   slope, dx=dx, dy=dy)
             else:
-                new_length = find_path_length(n, (new[0][a:], new[1][a:]),
-                                              current_SL, ch_depth,
+                new_length = find_path_length(n, new, current_SL, ch_depth,
                                               slope, dx=dx, dy=dy)
 
-            old_length = find_riv_path_length(n, (old[0][a:], old[1][a:]),
-                                              current_SL, ch_depth,
+            old_length = find_riv_path_length(n, old, current_SL, ch_depth,
                                               slope, dx=dx, dy=dy)
 
             if new_length < old_length:
                 # calculate slope of new path
-                slope = ((n[new[0][a], new[1][a]] - n[new[0][-1], new[1][-1]])
+                slope_new_path = ((n[new[0][a], new[1][a]] - n[new[0][-1], new[1][-1]])
                          / new_length)
 
                 avul_locs = np.append(avul_locs, a)
-                path_slopes = np.append(path_slopes, slope)
+                path_slopes = np.append(path_slopes, slope_new_path)
 
             crevasse_locs = np.vstack((crevasse_locs, [new[0][a], new[1][a]]))
 
 
-    if len(crevasse_locs.shape) > 1:
+    if (crevasse_locs.sum() > 0):
         crevasse_locs = np.delete(crevasse_locs, 0, 0)
 
-    if avul_locs:
+    if avul_locs.size > 0:
 
         max_slope = np.argmax(path_slopes)
         a = avul_locs[max_slope]
