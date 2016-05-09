@@ -41,7 +41,7 @@ waves = Waves()
 
 cem.setup('_run_cem', number_of_cols=200, number_of_rows=120, grid_spacing=100.)
 raf.setup('_run_rafem', number_of_columns=200, number_of_rows=120, row_spacing=0.1,
-          column_spacing=0.1, rate_of_sea_level_rise=0.03, channel_discharge=10.,
+          column_spacing=0.1, rate_of_sea_level_rise=0.00, channel_discharge=10.,
           upstream_elevation=5.)
 
 cem.initialize('_run_cem/cem.txt')
@@ -191,8 +191,8 @@ for time in np.arange(0, N_DAYS, TIME_STEP):
         river_y = y/1000
         riv_left = z[y.astype(int)/100, (x.astype(int)/100) + 1]
         riv_right = z[y.astype(int)/100, (x.astype(int)/100) - 1]
-        riv_left[riv_left < 0] = 0
-        riv_right[riv_right < 0] = 0
+        riv_left[riv_left < sea_level] = sea_level
+        riv_right[riv_right < sea_level] = sea_level
 
 
         ### SAVE DAILY TIMESTEPS ###
