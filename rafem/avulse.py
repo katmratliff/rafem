@@ -128,15 +128,16 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
     old = riv_i, riv_j
     avulsion_type = 0
     a = 0
+    loc = 0
     avulse_length = 0
     new_length = 0
-    old_length = 0
     new_course_length = 0
-    old_course_length = 0
     avul_locs = np.zeros(0, dtype=np.int)
     path_slopes = np.zeros(0)
     crevasse_locs = np.zeros(2, dtype=np.int)
 
+    old_length = find_riv_path_length(n, old, current_SL, ch_depth,
+                                      slope, dx=dx, dy=dy)
 
     for a in xrange(1, len(riv_i)-1):
         if channel_is_superelevated(n, (riv_i[a], riv_j[a]),
@@ -153,9 +154,6 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
                                                   slope, dx=dx, dy=dy)
             else:
                 new_length = find_path_length(n, new, current_SL, ch_depth,
-                                              slope, dx=dx, dy=dy)
-
-            old_length = find_riv_path_length(n, old, current_SL, ch_depth,
                                               slope, dx=dx, dy=dy)
 
             if new_length < old_length:
@@ -175,35 +173,33 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
     if avul_locs.size > 0:
 
         max_slope = np.argmax(path_slopes)
-        a = avul_locs[max_slope]
+        loc = avul_locs[max_slope]
 
-        new = steep_desc.find_course(n, riv_i, riv_j, a, ch_depth,
+        new = steep_desc.find_course(n, riv_i, riv_j, loc, ch_depth,
                                      sea_level=current_SL)
 
         avulsion_type = 1
 
         new, avulsion_type = avulse_to_new_path(n,
-                                 (riv_i[a - 1:], riv_j[a - 1:]),
-                                 (new[0][a - 1:], new[1][a - 1:]),
+                                 (riv_i[loc - 1:], riv_j[loc - 1:]),
+                                 (new[0][loc - 1:], new[1][loc - 1:]),
                                  current_SL, ch_depth, avulsion_type,
                                  slope, dx=dx, dy=dy)
 
-        new = (np.append(riv_i[:a - 1], new[0]),
-               np.append(riv_j[:a - 1], new[1]))
+        new = (np.append(riv_i[:loc - 1], new[0]),
+               np.append(riv_j[:loc - 1], new[1]))
 
-        # fill up old channel... could be some fraction in the future
-        # (determines whether channels are repellors or attractors)
-        fill_abandoned_channel(a, n, new, riv_i, riv_j, current_SL,
-                               ch_depth, slope, dx)
-        
-        avulse_length = find_riv_path_length(n, (riv_i[a:], riv_j[a:]),
+        avulse_length = find_riv_path_length(n, (riv_i[loc:], riv_j[loc:]),
                                              current_SL, ch_depth,
                                              slope, dx=dx, dy=dy)
 
-        old_course_length = find_riv_path_length(n, old, current_SL, ch_depth,
-                                      slope, dx=dx, dy=dy)
         new_course_length = find_riv_path_length(n, new, current_SL, ch_depth,
-                                      slope, dx=dx, dy=dy)
+                                                 slope, dx=dx, dy=dy)
+
+        # fill up old channel... could be some fraction in the future
+        # (determines whether channels are repellors or attractors)
+        fill_abandoned_channel(loc, n, new, riv_i, riv_j, current_SL,
+                               ch_depth, slope, dx)
 
         crevasse_locs = np.delete(crevasse_locs, max_slope, 0)
 
@@ -226,4 +222,4 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
         n_splay = n - n_before_splay
         splay_depth += n_splay
 
-    return (new, avulsion_type, a, avulse_length, (old_course_length - new_course_length), splay_depth)
+    return (new, avulsion_type, loc, avulse_length, (old_length - new_course_length), splay_depth)
