@@ -7,7 +7,7 @@ import inspect, os
 import pudb
 #from rafem.riverbmi import BmiRiverModule
 
-N_DAYS = 10 * 365
+N_DAYS = 5 * 365
 Save_Daily_Timesteps = 1
 Save_Yearly_Timesteps = 0
 Save_Fluxes = 1
@@ -30,8 +30,8 @@ def plot_coast(spacing, z):
     plt.gca().set_aspect(1.) 
     plt.axis([0, 20, 0, 12])
     # plt.colorbar(orientation='horizontal').ax.set_xlabel('Elevation (m)')
-    plt.xlabel('alongshore (km)')
-    plt.ylabel('cross-shore (km)')
+    plt.xlabel('backwater lengths')
+    plt.ylabel('backwater lengths')
 
 
 from cmt.components import Cem, Rafem, Waves
@@ -79,6 +79,7 @@ flux_array = np.zeros(2, dtype=np.float)
 RIVER_WIDTH = dict(raf.parameters)['channel_width'] # Convert unit-width flux to flux
 RHO_SED = 2650. # Used to convert volume flux to mass flux
 TIME_STEP = raf.get_time_step()
+Tcf = 1000000/86400
 
 dx = (dict(raf.parameters)['row_spacing'])*1000.
 slope = dict(raf.parameters)['delta_slope']
@@ -193,6 +194,8 @@ for time in np.arange(0, N_DAYS, TIME_STEP):
         riv_right = z[y.astype(int)/100, (x.astype(int)/100) - 1]
         riv_left[riv_left < sea_level] = sea_level
         riv_right[riv_right < sea_level] = sea_level
+        Tcf_time = time/Tcf
+
 
 
         ### SAVE DAILY TIMESTEPS ###
@@ -208,22 +211,22 @@ for time in np.arange(0, N_DAYS, TIME_STEP):
             f = plt.figure()
             plot_coast(spacing, z - sea_level)
             plt.plot(river_x, river_y, LineWidth=2.5)
-            plt.title('time = '+str("%i" % time)+' days')
+            plt.title('time = '+str("%.3f" % Tcf_time)+' Tcf')
             plt.savefig('output_data_waves/elev_figs/elev_fig_'+str(int(time))+'.png')
             plt.close(f)
 
             p = plt.figure()
             PL, = plt.plot(riv_left, color=[0, 0.2, 0], linewidth=2)
-            SL = plt.hlines(sea_level, 0, 300, color='c', linewidth=1)
+            SL = plt.hlines(sea_level, 0, 120, color='c', linewidth=1)
             PP, = plt.plot(prof, color='b', linewidth=2)
             PR, = plt.plot(riv_right, color=[0, 0.8, 0], linewidth=2, linestyle='dashed')
             plt.legend((PL, PR, PP, SL),('adjacent floodplain left side',
                         'adjacent floodplain right side', 'river bed', 
                         'sea level'), fontsize=14, loc=('upper right'))
             plt.axis([0, 120, -10, 20])
-            plt.title('time = '+str("%i" % time)+' days')
-            plt.xlabel('river cells (streamwise)')
-            plt.ylabel('elevation (m)')
+            plt.title('time = '+str("%.3f" % Tcf_time)+' Tcf')
+            plt.xlabel('river cells')
+            plt.ylabel('channel depths')
             plt.savefig('output_data_waves/prof_figs/prof_fig_'+str(int(time))+'.png')
             plt.close(p)
         ##########################################################################################
