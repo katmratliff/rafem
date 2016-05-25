@@ -5,7 +5,6 @@ import downcut
 import FP
 import numpy as np
 import math
-import pudb
 
 from avulsion_utils import (find_point_in_path, channel_is_superelevated,
                             find_path_length, find_riv_path_length,

@@ -12,8 +12,6 @@ import downcut
 import flux
 import avulsion_utils
 from avulsion_utils import read_params_from_file
-import pdb
-import pudb
 
 
 _SECONDS_PER_YEAR = 31536000.

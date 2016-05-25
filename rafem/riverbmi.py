@@ -2,7 +2,6 @@
 """Basic Model Interface implementation for River Module"""
 
 import numpy as np
-import pdb
 
 from rivermodule import RiverModule
 
@@ -104,7 +103,6 @@ class BmiRiverModule(object):
 
     def update_until(self, then):
         """Update model until a particular time."""
-        # pdb.set_trace()
         n_steps = (then - self.get_current_time()) / self.get_time_step()
 
         for _ in xrange(int(n_steps)):

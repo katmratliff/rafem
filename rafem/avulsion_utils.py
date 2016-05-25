@@ -1,9 +1,7 @@
 #! /usr/local/bin/python
 import yaml
 import numpy as np
-import pdb
 from scipy.ndimage import measurements
-import pudb
 
 def read_params_from_file(fname):
     """Read model parameters from a file.
@@ -396,8 +394,6 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand, SL
     # make mask for depressions
     ocean_mask = test_elev < max_cell_h
     labeled_ponds, ocean = measurements.label(ocean_mask)
-    # if ocean > 1:
-    #     pu.db
 
     # # fill in underwater spots that are below SL (?)
     # below_SL = [z <= sea_level]

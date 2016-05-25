@@ -1,6 +1,6 @@
 #! /usr/local/bin/python
+
 import numpy as np
-import pudb
 
 from avulsion_utils import is_diagonal_neighbor
 from avulsion_utils import get_channel_distance

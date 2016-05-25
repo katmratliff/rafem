@@ -3,7 +3,6 @@ import warnings
 
 import numpy as np
 import downcut
-import pudb
 
 from avulsion_utils import lowest_cell_elev, sort_lowest_neighbors
 
