@@ -153,7 +153,6 @@ class RiverModule(object):
         self._WL_Z = params['WL_Z']
         self._WL_dist = params['WL_dist']
         self._blanket_rate = (params['blanket_rate_m'] / _SECONDS_PER_YEAR) * self._dt    # blanket deposition in m
-        self._splay_dep = (params['splay_dep_m'] / _SECONDS_PER_YEAR) * self._dt       # splay deposition in m
         self._splay_type = params['splay_type']
 
         self._sed_flux = 0.
@@ -199,8 +198,8 @@ class RiverModule(object):
         (self._riv_i, self._riv_j), self._avulsion_type, self._loc, self._avulse_length, \
          self._path_diff, self._splay_deposit = avulse.find_avulsion(self._riv_i,
             self._riv_j, self._n, self._super_ratio, self._SL, self._ch_depth,
-            self._short_path, self._splay_type, self._splay_dep, self._slope,
-            self._splay_deposit, dx=self._dx, dy=self._dy)
+            self._short_path, self._splay_type, self._slope,
+            self._splay_deposit, self._nu, self._dt, dx=self._dx, dy=self._dy)
 
         if self._saveavulsions and self._avulsion_type > 0:
             with open('river_info.txt','a') as file:

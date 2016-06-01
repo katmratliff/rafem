@@ -6,6 +6,7 @@ import FP
 import numpy as np
 import math
 
+from diffuse import calc_crevasse_dep
 from avulsion_utils import (find_point_in_path, channel_is_superelevated,
                             find_path_length, find_riv_path_length,
                             set_linear_slope, fill_abandoned_channel)
@@ -121,8 +122,8 @@ def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
 
 # determines if there is an avulsion along river course
 def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
-                  short_path, splay_type, splay_dep, slope, splay_depth, 
-                  dx=1., dy=1.):
+                  short_path, splay_type, slope, splay_depth, 
+                  nu, dt, dx=1., dy=1.):
     new = riv_i, riv_j
     old = riv_i, riv_j
     avulsion_type = 0
@@ -133,7 +134,7 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
     new_course_length = 0
     avul_locs = np.zeros(0, dtype=np.int)
     path_slopes = np.zeros(0)
-    crevasse_locs = np.zeros(2, dtype=np.int)
+    crevasse_locs = np.zeros(3, dtype=np.int)
 
     old_length = find_riv_path_length(n, old, current_SL, ch_depth,
                                       slope, dx=dx, dy=dy)
@@ -163,7 +164,7 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
                 avul_locs = np.append(avul_locs, a)
                 path_slopes = np.append(path_slopes, slope_new_path)
 
-            crevasse_locs = np.vstack((crevasse_locs, [new[0][a], new[1][a]]))
+            crevasse_locs = np.vstack((crevasse_locs, [new[0][a], new[1][a], a]))
 
 
     if (crevasse_locs.sum() > 0):
@@ -209,14 +210,20 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
 
         n_before_splay = np.copy(n)
 
-        old_river_elevations = n[riv_i, riv_j]
+        # Don' think we need to worry about preserving old river elevations??
+        # old_river_elevations = n[riv_i, riv_j]
         new_river_elevations = n[new[0], new[1]]
 
         for i in xrange(crevasse_locs.shape[0]):
-            FP.dep_splay(n, (crevasse_locs[i][0], crevasse_locs[i][1]),
-                         splay_dep, splay_type=splay_type)
 
-        n[riv_i, riv_j] = old_river_elevations
+            splay_dep = calc_crevasse_dep(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n,
+                                          current_SL, slope, crevasse_locs[i][2])
+
+            if splay_dep > 0:
+                FP.dep_splay(n, (crevasse_locs[i][0], crevasse_locs[i][1]),
+                             splay_dep, splay_type=splay_type)
+
+        # n[riv_i, riv_j] = old_river_elevations
         n[new[0], new[1]] = new_river_elevations
         n_splay = n - n_before_splay
         splay_depth += n_splay

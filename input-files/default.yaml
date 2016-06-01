@@ -36,7 +36,6 @@ short_path: 1        # flag for using shortest path to complete avulsion
 WL_Z: 0.0              # elevation that wetlands maintain above SL
 WL_dist: 2             # cell distance beyond channel that wetlands exist
 blanket_rate_m: 0.005  # "blanket" deposition (frac. of IRR)
-splay_dep_m: 0.005     # splay deposition
 splay_type: 2          # size/type of splay
 ### Splay types: ###
     # splay_type = 0: no splay deposition
