@@ -91,7 +91,12 @@ def calc_crevasse_dep(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n,
 
     dn_rc = (nu * dt) * solve_second_derivative(s_river, n_river)
 
-    splay_dep = dn_rc[loc-1]
+    # average deposition in 3 cells above 'breach' to find
+    # crevasse splay deposition rate
+    if len(dn_rc[:loc]) >= 3:
+        splay_dep = np.average(dn_rc[loc-3:loc])
+    else: splay_dep = dn_rc[loc-1]
+
     if splay_dep < 0:
         splay_dep = 0
 

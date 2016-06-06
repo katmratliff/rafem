@@ -5,6 +5,7 @@ import downcut
 import FP
 import numpy as np
 import math
+import pudb
 
 from diffuse import calc_crevasse_dep
 from avulsion_utils import (find_point_in_path, channel_is_superelevated,
@@ -207,6 +208,8 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
         new = riv_i, riv_j
 
     if (crevasse_locs.sum() > 0) and (splay_type > 0):
+
+        pu.db
 
         n_before_splay = np.copy(n)
 
