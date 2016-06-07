@@ -16,6 +16,7 @@ from avulsion_utils import read_params_from_file
 
 _SECONDS_PER_YEAR = 31536000.
 _SECONDS_PER_DAY = 86400.
+np.random.seed(100)
 
 
 class RiverModule(object):
