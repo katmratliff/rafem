@@ -145,6 +145,8 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
                                     (riv_i[a-1], riv_j[a-1]),
                                     ch_depth, super_ratio, current_SL):
 
+            pu.db
+
             # if superelevation greater than trigger ratio, determine
             # new steepest descent path
             new = steep_desc.find_course(n, riv_i, riv_j, a, ch_depth,
@@ -159,8 +161,11 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
 
             if new_length < old_length:
                 # calculate slope of new path
+                avulsed_length = find_path_length(n, zip(new[0][a:],new[1][a:]),
+                                                  current_SL, ch_depth, slope,
+                                                  dx=dx, dy=dy)
                 slope_new_path = ((n[new[0][a], new[1][a]] - n[new[0][-1], new[1][-1]])
-                         / new_length)
+                                  / avulsed_length)
 
                 avul_locs = np.append(avul_locs, a)
                 path_slopes = np.append(path_slopes, slope_new_path)
@@ -208,8 +213,6 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
         new = riv_i, riv_j
 
     if (crevasse_locs.sum() > 0) and (splay_type > 0):
-
-        pu.db
 
         n_before_splay = np.copy(n)
 
