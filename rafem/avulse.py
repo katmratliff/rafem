@@ -137,6 +137,7 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
     path_slopes = np.zeros(0)
     crevasse_locs = np.zeros(3, dtype=np.int)
     path_diff = np.zeros(0)
+    path_difference = 0
 
     old_length = find_riv_path_length(n, old, current_SL, ch_depth,
                                       slope, dx=dx, dy=dy)
@@ -175,7 +176,7 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
 
                 avul_locs = np.append(avul_locs, a)
                 path_slopes = np.append(path_slopes, slope_new_path)
-                path_diff = np.append(path_diff, (new_length - old_length))
+                path_diff = np.append(path_diff, (old_length - new_length))
 
             crevasse_locs = np.vstack((crevasse_locs, [new[0][a], new[1][a], a]))
 
