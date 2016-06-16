@@ -5,7 +5,6 @@ import downcut
 import FP
 import numpy as np
 import math
-import pudb
 
 from diffuse import calc_crevasse_dep
 from avulsion_utils import (find_point_in_path, channel_is_superelevated,
@@ -146,8 +145,6 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
         if channel_is_superelevated(n, (riv_i[a], riv_j[a]),
                                     (riv_i[a-1], riv_j[a-1]),
                                     ch_depth, super_ratio, current_SL):
-
-            pu.db
 
             # if superelevation greater than trigger ratio, determine
             # new steepest descent path
