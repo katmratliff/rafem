@@ -4,7 +4,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import inspect, os
-import pudb
 #from rafem.riverbmi import BmiRiverModule
 
 N_DAYS = 5 * 365
