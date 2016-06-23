@@ -40,8 +40,8 @@ waves = Waves()
 
 cem.setup('_run_cem', number_of_cols=200, number_of_rows=120, grid_spacing=100.)
 raf.setup('_run_rafem', number_of_columns=200, number_of_rows=120, row_spacing=0.1,
-          column_spacing=0.1, rate_of_sea_level_rise=0.00, channel_discharge=10.,
-          upstream_elevation=5.)
+          column_spacing=0.1, random_seed=623, rate_of_sea_level_rise=0.00,
+          channel_discharge=10., upstream_elevation=5.)
 
 cem.initialize('_run_cem/cem.txt')
 raf.initialize('_run_rafem/input.yaml')
