@@ -7,9 +7,8 @@ import numpy as np
 import inspect, os
 #from rafem.riverbmi import BmiRiverModule
 
-### if using beach, use python path below: ##
+### if using qsub on beach, use python path below:
 ###!/home/kara5380/py-csdms/conda/bin/python 
-#############################################
 
 N_DAYS = 100
 Save_Daily_Timesteps = 1
