@@ -117,7 +117,7 @@ for time in np.arange(0, N_DAYS, TIME_STEP):
     qs[int(y[0] / spacing[0]), int(x[0] / spacing[1])] = raf_qs[0] * RIVER_WIDTH * RHO_SED
 
     if Save_Fluxes:
-        with open('fluxes.out','a') as file:
+        with open('output_data_waves/fluxes.out','a') as file:
             file.write("%.2f %.5f \n" % (time, raf_qs[0] * RIVER_WIDTH * RHO_SED))
     
     cem.set_value('land_surface_water_sediment~bedload__mass_flow_rate', qs)

@@ -205,7 +205,7 @@ class RiverModule(object):
             self._splay_deposit, self._nu, self._dt, dx=self._dx, dy=self._dy)
 
         if self._saveavulsions and self._avulsion_type > 0:
-            with open('river_info.txt','a') as file:
+            with open('output_data_waves/river_info.out','a') as file:
                 file.write("%.5f %i %i %.5f %.5f\n" % ((self._time / _SECONDS_PER_YEAR * 365),
                     self._avulsion_type, self._loc, self._avulse_length, self._path_diff))
         
