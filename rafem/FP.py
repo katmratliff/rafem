@@ -117,3 +117,43 @@ def dep_splay(n, ij_fail, splay_dep, splay_type=1):
                             # and the adjacent cells
         add_to_neighboring_cells(n, ij_fail, splay_dep)
 
+
+def dep_fines(n, riv_i, riv_j, dn_rc, frac_fines, SL):
+
+    fine_dep = np.zeros_like(n)
+    dn_rc = np.insert(dn_rc, [0], 0)
+    dn_rc = np.append(dn_rc, dn_rc[-1])
+
+    for k in xrange(1, len(riv_i)):
+
+        dep_rate = frac_fines * dn_rc[k]
+
+        if dep_rate > 0:
+            if riv_j[k] == 0 and riv_i[k] == 0:
+                di, dj = np.array([1, 1, 0]), np.array([0, 1, 1])
+            elif riv_j[k] == 0 and riv_i[k] == n.shape[0] - 1:
+                di, dj = np.array([-1, -1, 0]), np.array([0, 1, 1])
+            elif riv_j[k] == n.shape[1] - 1 and riv_i[k] == 0:
+                di, dj = np.array([0, 1, 1]), np.array([-1, -1, 0])
+            elif riv_j[k] == n.shape[1] - 1 and riv_i[k] == n.shape[0] - 1:
+                di, dj = np.array([0, -1, -1]), np.array([-1, -1, 0])
+            elif riv_j[k] == n.shape[1] - 1:
+                di, dj  = np.array([-1, -1, 0, 1, 1]), np.array([0, -1, -1, -1, 0])
+            elif riv_j[k] == 0:
+                di, dj  = np.array([-1, -1, 0, 1, 1]), np.array([0, 1, 1, 1, 0])
+            elif riv_i[k] == n.shape[0] - 1:
+                di, dj = np.array([0, -1, -1, -1, 0]), np.array([-1, -1, 0, 1, 1])
+            elif riv_i[k] == 0:
+                di, dj = np.array([0, 1, 1, 1, 0]), np.array([-1, -1, 0, 1, 1])
+            else:
+                di, dj = np.array([0, -1, -1, -1, 0, 1, 1, 1]),  np.array([-1, -1, 0, 1, 1, 1, 0, -1])
+
+            for m in xrange(len(di)):
+                if ((fine_dep[riv_i[k]+di[m], riv_j[k]+dj[m]] < dep_rate)
+                    and (n[riv_i[k]+di[m], riv_j[k]+dj[m]] > SL)):
+                    fine_dep[riv_i[k]+di[m], riv_j[k]+dj[m]] = dep_rate
+
+    fine_dep[riv_i,riv_j] = 0
+    n += fine_dep
+
+    return

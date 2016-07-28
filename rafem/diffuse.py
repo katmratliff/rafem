@@ -74,7 +74,7 @@ def smooth_rc(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n, sea_level, slope):
 
     n[riv_i[1:-1], riv_j[1:-1]] += dn_rc
 
-    return
+    return dn_rc
 
 def calc_crevasse_dep(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n,
                       sea_level, slope, loc):

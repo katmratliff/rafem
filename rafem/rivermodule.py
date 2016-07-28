@@ -126,8 +126,8 @@ class RiverModule(object):
                         np.random.rand(n_rows, n_cols) * self._max_rand)
         self._n -= 0.05
 
-        #self._dn_rc = np.zeros((self._imax))       # change in elevation along river course
-        #self._dn_fp = np.zeros_like(self._n)     # change in elevation due to floodplain dep
+        # self._dn_rc = np.zeros((self._imax))       # change in elevation along river course
+        # self._dn_fp = np.zeros_like(self._n)     # change in elevation due to floodplain dep
 
         self._riv_i = np.zeros(1, dtype=np.int) # defines first x river locations
         self._riv_j = np.zeros(1, dtype=np.int) # defines first y river locations
@@ -157,6 +157,7 @@ class RiverModule(object):
         self._WL_dist = params['WL_dist']
         self._blanket_rate = (params['blanket_rate_m'] / _SECONDS_PER_YEAR) * self._dt    # blanket deposition in m
         self._splay_type = params['splay_type']
+        self._frac_fines = 0.2 #params['fine_deposition_frac']
 
         self._sed_flux = 0.
         self._splay_deposit = np.zeros_like(self._n)
@@ -228,17 +229,24 @@ class RiverModule(object):
         #                 self._riv_j, self._ch_depth, self._SLRR)
 
         # smooth river course elevations using linear diffusion equation
-        diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt, self._ch_depth,
+        self._dn_rc = diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt, self._ch_depth,
                           self._riv_i, self._riv_j, self._n, self._SL, self._slope)
 
-        # Floodplain sedimentation
-        FP.dep_blanket(self._SL, self._blanket_rate, self._n,
-                       self._riv_i, self._riv_j, self._ch_depth)
+        # Floodplain sedimentation (use one or the other)
+        #-------------------------------------------------------
+        ### Deposit blanket across entire subaerial domain: ###
+        # FP.dep_blanket(self._SL, self._blanket_rate, self._n,
+        #                self._riv_i, self._riv_j, self._ch_depth)
+
+        ### Deposit fines adjacent to river channel: ###
+        FP.dep_fines(self._n, self._riv_i, self._riv_j, self._dn_rc, self._frac_fines,
+                     self._SL)
+        #-------------------------------------------------------
 
         # Wetland sedimentation
         ### no wetlands in first version of coupling to CEM ###
-        FP.wetlands(self._SL, self._WL_Z, self._WL_dist * self._dy,
-                    self._n, self._riv_i, self._riv_j, self._x, self._y)
+        # FP.wetlands(self._SL, self._WL_Z, self._WL_dist * self._dy,
+        #             self._n, self._riv_i, self._riv_j, self._x, self._y)
 
         # calculate sediment flux
         self._sed_flux = flux.calc_qs(self._nu, self._riv_i, self._riv_j,
