@@ -4,8 +4,8 @@
 shape: [120, 200] # Length x Width (km)
 spacing: [0.1, 0.1]    # dy, dx (km)
 n0: 5.0 # upstream elevation
-max_rand: 0.0001    # max height of a random perturbation
 nslope: 0.001 # initial landscape slope
+max_rand: 0.1    # multiply by slope for max height of a random perturbation
 
 # Time
 time_max: 100.0       # length of model run (years)
@@ -15,10 +15,11 @@ dt_day: 0.01           # timestep (days)
 # Random seed
 rand_seed: 623     # seed for random number generator
 
-# Sea level & subsidence parameters
+# Sea level and subsidence parameters
 Initial_SL: 0.0  # initial sea level
 SLRR_m: 0.0 # sea level rise rate (m/yr)
-IRR_m: 0.0      # rate that inlet cell rises (subsidence)
+SubRate_m: 0.0  # subsidence rate (m/yr)
+Sub_Start: 0    # row where subsidence starts
 
 # River characteristics
 ch_width: 10.0  # characteristic channel width (m)
@@ -31,13 +32,14 @@ sed_sg: 2.65         # sediment specific gravity
 init_cut_frac: 1   # initial cut of the channel into land surface
 
 # Avulsion parameters
-super_ratio: 1.  # normalized SE ratio to trigger avulsion
+super_ratio: 1.0  # normalized SE ratio to trigger avulsion
 short_path: 1        # flag for using shortest path to complete avulsion
 
 # Floodplain and Wetland parameters
 WL_Z: 0.0              # elevation that wetlands maintain above SL
 WL_dist: 0             # cell distance beyond channel that wetlands exist
-blanket_rate_m: 0.0    # "blanket" deposition (frac. of IRR)
+blanket_rate_m: 0.0    # "blanket" deposition rate (m)
+fine_dep_frac: 0.0     # fraction of channel deposit for adjacent fine deposition
 splay_type: 2          # size/type of splay
 ### Splay types: ###
     # splay_type = 0: no splay deposition
@@ -46,5 +48,4 @@ splay_type: 2          # size/type of splay
 
 # Saving information
 saveavulsions: 1     # flag for saving avulsion info
-savefiles: 0         # flag for saving files
-savespacing: 1       # save files at every "x" timesteps
+savecourseupdates: 1 # flag for saving course updates
