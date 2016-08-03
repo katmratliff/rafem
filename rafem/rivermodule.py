@@ -140,7 +140,6 @@ class RiverModule(object):
         # Sea level and subsidence parameters
         self._SL = params['Initial_SL'] # starting sea level
         self._SLRR = params['SLRR_m'] / _SECONDS_PER_YEAR * self._dt # sea level rise rate in m (per timestep)
-        self._IRR = params['IRR_m'] / _SECONDS_PER_YEAR * self._dt # inlet rise rate in m
 
         # River parameters
         self._nu = ((8. * (params['ch_discharge'] / params['ch_width']) * params['A']
@@ -205,6 +204,7 @@ class RiverModule(object):
             self._short_path, self._splay_type, self._slope,
             self._splay_deposit, self._nu, self._dt, dx=self._dx, dy=self._dy)
 
+        """ Save avulsion record. """
         if self._saveavulsions and self._avulsion_type > 0:
             with open('output_data_waves/river_info.out','a') as file:
                 file.write("%.5f %i %i %.5f %.5f\n" % ((self._time / _SECONDS_PER_YEAR * 365),
@@ -219,9 +219,6 @@ class RiverModule(object):
                 self._ch_depth, self._SL, self._slope, self._dx, self._max_rand, self._SLRR)
 
         #assert(self._riv_i[-1] != 0)
-        
-        # raise first two rows by inlet rise rate (subsidence)
-        self._n[:2, :] += self._IRR
 
         # change elevations according to sea level rise (SLRR)
         ### if not coupled (this occurs in coupling script otherwise) ###
@@ -247,6 +244,8 @@ class RiverModule(object):
         ### no wetlands in first version of coupling to CEM ###
         # FP.wetlands(self._SL, self._WL_Z, self._WL_dist * self._dy,
         #             self._n, self._riv_i, self._riv_j, self._x, self._y)
+
+        # subsidence
 
         # calculate sediment flux
         self._sed_flux = flux.calc_qs(self._nu, self._riv_i, self._riv_j,
