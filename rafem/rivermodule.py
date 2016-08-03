@@ -10,6 +10,7 @@ import SLR
 import FP
 import downcut
 import flux
+import subside
 import avulsion_utils
 from avulsion_utils import read_params_from_file
 
@@ -111,8 +112,6 @@ class RiverModule(object):
 
         n_rows = int(params['shape'][0])
         n_cols = int(params['shape'][1])
-        #n_rows = int(length * 1000 / self._dy + 1)
-        #n_cols = int(width * 1000 / self._dx + 1)
 
         # Initialize elevation grid
         # transverse and longitudinal space
@@ -120,8 +119,8 @@ class RiverModule(object):
                                        np.arange(n_rows) * self._dy)
         # eta, elevation
         n0 = params['n0']
-        self._max_rand = params['max_rand']
         self._slope = params['nslope']
+        self._max_rand = params['max_rand'] * params['nslope']
         self._n = n0 - (self._slope * self._y +
                         np.random.rand(n_rows, n_cols) * self._max_rand)
         self._n -= 0.05
@@ -140,12 +139,13 @@ class RiverModule(object):
         # Sea level and subsidence parameters
         self._SL = params['Initial_SL'] # starting sea level
         self._SLRR = params['SLRR_m'] / _SECONDS_PER_YEAR * self._dt # sea level rise rate in m (per timestep)
+        self._SubRate = params['SubRate_m'] / _SECONDS_PER_YEAR * self._dt # subsidence rate in m (per timestep)
+        self._SubStart = params['Sub_Start'] # row where subsidence begins
 
         # River parameters
         self._nu = ((8. * (params['ch_discharge'] / params['ch_width']) * params['A']
                     * np.sqrt(params['c_f'])) / (params['C_0'] * (params['sed_sg'] - 1)))
         ### NEED TO REDO DIFFUSE.PY TO HAVE SIGN OF NU CORRECT (NEG) ABOVE ###
-        #self._nu = params['nu'] / _SECONDS_PER_DAY
         init_cut = params['init_cut_frac'] * params['ch_depth']
         self._super_ratio = params['super_ratio']
         self._short_path = params['short_path']
@@ -156,15 +156,14 @@ class RiverModule(object):
         self._WL_dist = params['WL_dist']
         self._blanket_rate = (params['blanket_rate_m'] / _SECONDS_PER_YEAR) * self._dt    # blanket deposition in m
         self._splay_type = params['splay_type']
-        self._frac_fines = 0.2 #params['fine_deposition_frac']
+        self._frac_fines = params['fine_dep_frac']
 
         self._sed_flux = 0.
         self._splay_deposit = np.zeros_like(self._n)
 
         # Saving information
         self._saveavulsions = params['saveavulsions']
-        #self._savefiles = params['savefiles']
-        #self._savespacing = params['savespacing']
+        self._saveupdates = params['savecourseupdates']
 
         self._riv_i, self._riv_j = steep_desc.find_course(self._n, self._riv_i, self._riv_j,
                                                           len(self._riv_i), self._ch_depth,
@@ -193,12 +192,12 @@ class RiverModule(object):
             self._ch_depth, self._SL, self._slope, self._dx, self._max_rand, self._SLRR)
 
         """ Save every time the course changes? """
-        # if self._saveavulsions and self._course_update > 0:
-        #     with open('output_data_waves/river_info.out','a') as file:
-        #         file.write("%.5f %i \n" % ((self._time / _SECONDS_PER_YEAR * 365),
-        #             self._course_update))
+        if self._saveupdates and self._course_update > 0:
+            with open('output_data_waves/river_info.out','a') as file:
+                file.write("%.5f %i \n" % ((self._time / _SECONDS_PER_YEAR * 365),
+                    self._course_update))
 
-        # determine if there is an avulsion & find new path if so
+        """ determine if there is an avulsion & find new path if so """
         (self._riv_i, self._riv_j), self._avulsion_type, self._loc, self._avulse_length, \
          self._path_diff, self._splay_deposit = avulse.find_avulsion(self._riv_i,
             self._riv_j, self._n, self._super_ratio, self._SL, self._ch_depth,
@@ -210,7 +209,8 @@ class RiverModule(object):
             with open('output_data_waves/river_info.out','a') as file:
                 file.write("%.5f %i %i %.5f %.5f\n" % ((self._time / _SECONDS_PER_YEAR * 365),
                     self._avulsion_type, self._loc, self._avulse_length, self._path_diff))
-        
+
+        """ Save crevasse splay deposits. """        
         if self._saveavulsions and (self._splay_deposit.sum() > 0):
             np.savetxt('splay_deposit.out', self._splay_deposit, '%.8f')
 
@@ -221,16 +221,16 @@ class RiverModule(object):
 
         #assert(self._riv_i[-1] != 0)
 
-        # change elevations according to sea level rise (SLRR)
-        ### if not coupled (this occurs in coupling script otherwise) ###
+        """ change elevations according to sea level rise (SLRR)
+        (if not coupled -- this occurs in coupling script otherwise) """
         # SLR.elev_change(self._SL, self._n, self._riv_i,
         #                 self._riv_j, self._ch_depth, self._SLRR)
 
-        # smooth river course elevations using linear diffusion equation
+        """ smooth river course elevations using linear diffusion equation """
         self._dn_rc = diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt, self._ch_depth,
                           self._riv_i, self._riv_j, self._n, self._SL, self._slope)
 
-        # Floodplain sedimentation (use one or the other)
+        """ Floodplain sedimentation (use one or the other) """
         #-------------------------------------------------------
         ### Deposit blanket across entire subaerial domain: ###
         # FP.dep_blanket(self._SL, self._blanket_rate, self._n,
@@ -241,14 +241,16 @@ class RiverModule(object):
                      self._SL)
         #-------------------------------------------------------
 
-        # Wetland sedimentation
+        """ Wetland sedimentation """
         ### no wetlands in first version of coupling to CEM ###
         # FP.wetlands(self._SL, self._WL_Z, self._WL_dist * self._dy,
         #             self._n, self._riv_i, self._riv_j, self._x, self._y)
 
-        # subsidence
+        """ Subsidence """
+        subside.linear_subsidence(self._n, self._riv_i, self._riv_j, self._ch_depth,
+                                  self._SubRate, self._SubStart, self._SL)
 
-        # calculate sediment flux
+        """ calculate sediment flux at the river mouth """
         self._sed_flux = flux.calc_qs(self._nu, self._riv_i, self._riv_j,
                                       self._n, self._SL, self._ch_depth,
                                       self._dx, self._dy, self._dt, self._slope)
