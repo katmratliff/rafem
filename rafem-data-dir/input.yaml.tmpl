@@ -1,0 +1,51 @@
+# Avulsion module parameters
+
+# Space
+shape: [{number_of_rows}, {number_of_columns}] # Length x Width (km)
+spacing: [{row_spacing}, {column_spacing}]    # dy, dx (km)
+n0: {upstream_elevation} # upstream elevation
+nslope: {delta_slope} # initial landscape slope
+max_rand: 0.1    # multiply by slope for max height of a random perturbation
+
+# Time
+time_max: {run_duration}       # length of model run (years)
+spinup: 0            # spin up time of model run (years)
+dt_day: 0.01           # timestep (days)
+
+# Random seed
+rand_seed: {random_seed}     # seed for random number generator
+
+# Sea level and subsidence parameters
+Initial_SL: {initial_sea_level}  # initial sea level
+SLRR_m: {rate_of_sea_level_rise} # sea level rise rate (m/yr)
+SubRate_m: {rate_of_subsidence}  # subsidence rate (m/yr)
+Sub_Start: {begin_subsidence}    # row where subsidence starts
+
+# River characteristics
+ch_width: {channel_width}  # characteristic channel width (m)
+ch_depth: {channel_depth}  # characteristic channel depth (m)
+ch_discharge: {channel_discharge} # long-term averaged discharge (m^3/s)
+A: 1.                # river-dependent const. (1 for meandering; 1.4 for braided)
+c_f: 0.01            # drag coefficient
+C_0: 1.              # sediment concentration on bed
+sed_sg: 2.65         # sediment specific gravity
+init_cut_frac: 1   # initial cut of the channel into land surface
+
+# Avulsion parameters
+super_ratio: {superelevation_ratio}  # normalized SE ratio to trigger avulsion
+short_path: 1        # flag for using shortest path to complete avulsion
+
+# Floodplain and Wetland parameters
+WL_Z: 0.0              # elevation that wetlands maintain above SL
+WL_dist: 0             # cell distance beyond channel that wetlands exist
+blanket_rate_m: 0.0    # "blanket" deposition rate (m)
+fine_dep_frac: 0.0     # fraction of channel deposit for adjacent fine deposition
+splay_type: 2          # size/type of splay
+### Splay types: ###
+    # splay_type = 0: no splay deposition
+    # splay_type = 1: just the first failed avulsion river cell
+    # splay_type = 2: first failed cell and adjacent cells
+
+# Saving information
+saveavulsions: 1     # flag for saving avulsion info
+savecourseupdates: 1 # flag for saving course updates
