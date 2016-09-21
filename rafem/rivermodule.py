@@ -13,7 +13,6 @@ import flux
 import subside
 import avulsion_utils
 from avulsion_utils import read_params_from_file
-import pudb
 
 
 _SECONDS_PER_YEAR = 31536000.
@@ -184,8 +183,6 @@ class RiverModule(object):
         """ Update avulsion model one time step. """
         # if (self._time / _SECONDS_PER_YEAR) > 2000:
         #     self._SLRR = 0.01 / _SECONDS_PER_YEAR * self._dt
-
-        pu.db
 
         self._riv_i, self._riv_j, self._course_update = steep_desc.update_course(
             self._n, self._riv_i, self._riv_j, self._ch_depth, self._slope,
