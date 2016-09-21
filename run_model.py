@@ -86,10 +86,11 @@ max_cell_h = dx*slope
 channel_depth = dict(raf.parameters)['channel_depth']
 max_rand = 0.0001
 
+if not os.path.exists("output_data_waves"):
+    os.mkdir("output_data_waves")
+
 if Save_Daily_Timesteps or Save_Yearly_Timesteps:
 # make directories to save run data
-    if not os.path.exists("output_data_waves"):
-        os.mkdir("output_data_waves")
     # if not os.path.exists("output_data_waves/elev_grid"):
     #     os.mkdir("output_data_waves/elev_grid")
     if not os.path.exists("output_data_waves/riv_course"):
@@ -172,23 +173,25 @@ for time in np.arange(0, N_DAYS, TIME_STEP):
     
     qs.fill(0)
 
-    if time % save_int == 0:
+    if (time % save_int == 0):
 
         print('time = %.3f days' % time)
-        # save outputs
-        z = raf.get_value('land_surface__elevation').reshape(shape)
-        rel_z = z - sea_level
-        x = raf.get_value('channel_centerline__x_coordinate')
-        y = raf.get_value('channel_centerline__y_coordinate')
-        prof = raf.get_value('channel_centerline__elevation')
-        real_prof = rel_z[(y/dx).astype(int), (x/dx).astype(int)]
-        river_x = x/1000
-        river_y = y/1000
-        riv_left = z[y.astype(int)/100, (x.astype(int)/100) + 1]
-        riv_right = z[y.astype(int)/100, (x.astype(int)/100) - 1]
-        riv_left[riv_left < sea_level] = sea_level
-        riv_right[riv_right < sea_level] = sea_level
-        Tcf_time = time/Tcf
+
+        if (Save_Daily_Timesteps or Save_Yearly_Timesteps):
+            # save outputs
+            z = raf.get_value('land_surface__elevation').reshape(shape)
+            rel_z = z - sea_level
+            x = raf.get_value('channel_centerline__x_coordinate')
+            y = raf.get_value('channel_centerline__y_coordinate')
+            prof = raf.get_value('channel_centerline__elevation')
+            real_prof = rel_z[(y/dx).astype(int), (x/dx).astype(int)]
+            river_x = x/1000
+            river_y = y/1000
+            riv_left = z[y.astype(int)/100, (x.astype(int)/100) + 1]
+            riv_right = z[y.astype(int)/100, (x.astype(int)/100) - 1]
+            riv_left[riv_left < sea_level] = sea_level
+            riv_right[riv_right < sea_level] = sea_level
+            Tcf_time = time/Tcf
 
         ### SAVE DAILY TIMESTEPS ###
         ##########################################################################################
