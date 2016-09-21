@@ -13,6 +13,7 @@ def linear_subsidence(n, riv_i, riv_j, ch_depth, sub_rate, sub_start, SL):
     subaerial_elev = np.copy(n)
     subaerial_elev[riv_i, riv_j] += ch_depth
 
-    subside_cells[subaerial_cells <= SL] = 0
+    subside_cells[subaerial_elev <= SL] = 0
 
     n[subside_cells == 1] -= sub_rate
+    
