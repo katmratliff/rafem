@@ -193,8 +193,8 @@ class RiverModule(object):
 
         """ Save every time the course changes? """
         if self._saveupdates and self._course_update > 0:
-            with open('output_data_waves/river_info.out','a') as file:
-                file.write("%.5f %i \n" % ((self._time / _SECONDS_PER_YEAR * 365),
+            with open('output_data/river_info.out','a') as file:
+                file.write("%.5f %i \n" % ((self._time / _SECONDS_PER_YEAR),
                     self._course_update))
 
         """ determine if there is an avulsion & find new path if so """
@@ -206,13 +206,13 @@ class RiverModule(object):
 
         """ Save avulsion record. """
         if self._saveavulsions and self._avulsion_type > 0:
-            with open('output_data_waves/river_info.out','a') as file:
-                file.write("%.5f %i %i %.5f %.5f\n" % ((self._time / _SECONDS_PER_YEAR * 365),
+            with open('output_data/river_info.out','a') as file:
+                file.write("%.5f %i %i %.5f %.5f\n" % ((self._time / _SECONDS_PER_YEAR),
                     self._avulsion_type, self._loc, self._avulse_length, self._path_diff))
 
         """ Save crevasse splay deposits. """        
         if self._saveavulsions and (self._splay_deposit.sum() > 0):
-            np.savetxt('splay_deposit.out', self._splay_deposit, '%.8f')
+            np.savetxt('output_data/splay_deposit.out', self._splay_deposit, '%.8f')
 
         # need to fill old river channels if coupled to CEM
         if (self._avulsion_type == 1) or (self._avulsion_type == 2):

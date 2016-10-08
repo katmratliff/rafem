@@ -6,11 +6,11 @@ import numpy as np
 import inspect, os
 #from rafem.riverbmi import BmiRiverModule
 
-N_DAYS = 100
+N_DAYS = 1000
 Save_Daily_Timesteps = 1
 Save_Yearly_Timesteps = 0
 Save_Fluxes = 1
-save_int = 1  # (in days)
+save_int = 100  # (in days)
 
 def plot_coast(spacing, z):
     import matplotlib.pyplot as plt
@@ -86,23 +86,23 @@ max_cell_h = dx*slope
 channel_depth = dict(raf.parameters)['channel_depth']
 max_rand = 0.0001
 
-if not os.path.exists("output_data_waves"):
-    os.mkdir("output_data_waves")
+if not os.path.exists("output_data"):
+    os.mkdir("output_data")
 
 if Save_Daily_Timesteps or Save_Yearly_Timesteps:
 # make directories to save run data
-    # if not os.path.exists("output_data_waves/elev_grid"):
-    #     os.mkdir("output_data_waves/elev_grid")
-    if not os.path.exists("output_data_waves/riv_course"):
-        os.mkdir("output_data_waves/riv_course")
-    # if not os.path.exists("output_data_waves/riv_profile"):
-        # os.mkdir("output_data_waves/riv_profile")
-    if not os.path.exists("output_data_waves/elev_figs"):
-        os.mkdir("output_data_waves/elev_figs")
-    if not os.path.exists("output_data_waves/prof_figs"):
-        os.mkdir("output_data_waves/prof_figs")
-    if not os.path.exists("output_data_waves/rel_elev"):
-        os.mkdir("output_data_waves/rel_elev")
+    # if not os.path.exists("output_data/elev_grid"):
+    #     os.mkdir("output_data/elev_grid")
+    if not os.path.exists("output_data/riv_course"):
+        os.mkdir("output_data/riv_course")
+    # if not os.path.exists("output_data/riv_profile"):
+        # os.mkdir("output_data/riv_profile")
+    if not os.path.exists("output_data/elev_figs"):
+        os.mkdir("output_data/elev_figs")
+    if not os.path.exists("output_data/prof_figs"):
+        os.mkdir("output_data/prof_figs")
+    if not os.path.exists("output_data/rel_elev"):
+        os.mkdir("output_data/rel_elev")
 
 for time in np.arange(0, N_DAYS, TIME_STEP):
 
@@ -118,7 +118,7 @@ for time in np.arange(0, N_DAYS, TIME_STEP):
     qs[int(y[0] / spacing[0]), int(x[0] / spacing[1])] = raf_qs[0] * RIVER_WIDTH * RHO_SED
 
     if Save_Fluxes:
-        with open('output_data_waves/fluxes.out','a') as file:
+        with open('output_data/fluxes.out','a') as file:
             file.write("%.2f %.5f \n" % (time, raf_qs[0] * RIVER_WIDTH * RHO_SED))
     
     cem.set_value('land_surface_water_sediment~bedload__mass_flow_rate', qs)
@@ -197,17 +197,17 @@ for time in np.arange(0, N_DAYS, TIME_STEP):
         ##########################################################################################
         if Save_Daily_Timesteps == 1:
 
-            # np.savetxt('output_data_waves/elev_grid/elev_'+str("%.3f" % nyears)+'.out',z,fmt='%.5f')
-            np.savetxt('output_data_waves/rel_elev/rel_elev_'+str("%i" % time)+'.out',rel_z,fmt='%.5f')
-            np.savetxt('output_data_waves/riv_course/riv_'+str("%i" % time)+'.out',zip(x,y),fmt='%i')
-            # np.savetxt('output_data_waves/riv_profile/prof_'+str("%i" % time)+'.out',real_prof,fmt='%.5f')
+            # np.savetxt('output_data/elev_grid/elev_'+str("%.3f" % nyears)+'.out',z,fmt='%.5f')
+            np.savetxt('output_data/rel_elev/rel_elev_'+str("%i" % time)+'.out',rel_z,fmt='%.5f')
+            np.savetxt('output_data/riv_course/riv_'+str("%i" % time)+'.out',zip(x,y),fmt='%i')
+            # np.savetxt('output_data/riv_profile/prof_'+str("%i" % time)+'.out',real_prof,fmt='%.5f')
 
             # save figures
             f = plt.figure()
             plot_coast(spacing, z - sea_level)
             plt.plot(river_x, river_y, LineWidth=2.5)
             plt.title('time = '+str("%.3f" % Tcf_time)+' Tcf')
-            plt.savefig('output_data_waves/elev_figs/elev_fig_'+str(int(time/save_int))+'.png')
+            plt.savefig('output_data/elev_figs/elev_fig_'+str(int(time/save_int))+'.png')
             plt.close(f)
 
             p = plt.figure()
@@ -222,7 +222,7 @@ for time in np.arange(0, N_DAYS, TIME_STEP):
             plt.title('time = '+str("%.3f" % Tcf_time)+' Tcf')
             plt.xlabel('river cells')
             plt.ylabel('channel depths')
-            plt.savefig('output_data_waves/prof_figs/prof_fig_'+str(int(time/save_int))+'.png')
+            plt.savefig('output_data/prof_figs/prof_fig_'+str(int(time/save_int))+'.png')
             plt.close(p)
         ##########################################################################################
         
@@ -230,23 +230,23 @@ for time in np.arange(0, N_DAYS, TIME_STEP):
         ### SAVE YEARLY TIMESTEPS ###
         ##########################################################################################
         if Save_Yearly_Timesteps == 1:
-            # np.savetxt('output_data_waves/elev_grid/elev_'+str(time/save_int)+'.out',z,fmt='%.5f')
-            np.savetxt('output_data_waves/rel_elev/rel_elev_'+str(time/save_int)+'.out',rel_z,fmt='%.5f')
-            np.savetxt('output_data_waves/riv_course/riv_'+str(time/save_int)+'.out',zip(x,y),fmt='%i')
-            np.savetxt('output_data_waves/riv_profile/prof_'+str(time/save_int)+'.out',real_prof,fmt='%.5f')
+            # np.savetxt('output_data/elev_grid/elev_'+str(time/save_int)+'.out',z,fmt='%.5f')
+            np.savetxt('output_data/rel_elev/rel_elev_'+str(time/save_int)+'.out',rel_z,fmt='%.5f')
+            np.savetxt('output_data/riv_course/riv_'+str(time/save_int)+'.out',zip(x,y),fmt='%i')
+            np.savetxt('output_data/riv_profile/prof_'+str(time/save_int)+'.out',real_prof,fmt='%.5f')
 
             # save figures
             f = plt.figure()
             plot_coast(spacing, z - sea_level)
             plt.plot(river_y,river_x, linewidth=2)
             plt.title('time = '+str(time/save_int)+' years, sea level = '+str("%.3f" % sea_level)+' m')
-            plt.savefig('output_data_waves/elev_figs/elev_fig_'+str(time/save_int)+'.png')
+            plt.savefig('output_data/elev_figs/elev_fig_'+str(time/save_int)+'.png')
             plt.close(f)
 
             p = plt.figure()
             plt.plot(prof)
             plt.axis([0, 200, -20, 120])
             plt.title('time = '+str(time/save_int)+' years')
-            plt.savefig('output_data_waves/prof_figs/prof_fig_'+str(time/save_int)+'.png')
+            plt.savefig('output_data/prof_figs/prof_fig_'+str(time/save_int)+'.png')
             plt.close(p)
         ##########################################################################################
