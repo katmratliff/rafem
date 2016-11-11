@@ -211,8 +211,8 @@ class RiverModule(object):
                     self._avulsion_type, self._loc, self._avulse_length, self._path_diff))
 
         """ Save crevasse splay deposits. """        
-        # if self._saveavulsions and (self._splay_deposit.sum() > 0):
-        #     np.savetxt('output_data/splay_deposit.out', self._splay_deposit, '%.8f')
+        if self._saveavulsions and (self._splay_deposit.sum() > 0):
+            np.savetxt('output_data/splay_deposit.out', self._splay_deposit, '%.8f')
 
         # need to fill old river channels if coupled to CEM
         if (self._avulsion_type == 1) or (self._avulsion_type == 2):
