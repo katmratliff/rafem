@@ -149,15 +149,21 @@ class BmiRiverModule(object):
         else:
             raise KeyError(grid_id)
 
-    def get_grid_shape(self, grid_id):
+    def get_grid_shape(self, grid_id, out=None):
         if grid_id == 0:
-            return self._model.grid_shape
+            shape = self._model.grid_shape
         elif grid_id == 1:
-            return self._model.river_x_coordinates.shape
+            shape = self._model.river_x_coordinates.shape
         elif grid_id == 2:
-            return (1, )
+            shape = (1, )
         else:
             raise KeyError(grid_id)
+
+        if out is None:
+            return shape
+        else:
+            out[:] = shape
+            return out
 
     def get_grid_spacing(self, grid_id, out=None):
         if grid_id == 0:
@@ -167,9 +173,14 @@ class BmiRiverModule(object):
                 out[:] = self._model.grid_spacing
                 return out
 
-    def get_grid_origin(self, grid_id):
+    def get_grid_origin(self, grid_id, out=None):
         if grid_id == 0:
-            return (0., 0.)
+            origin = (0., 0.)
+            if out is None:
+                return origin
+            else:
+                out[:] = origin
+                return out
 
     def get_grid_type(self, grid_id):
         if grid_id == 0:
