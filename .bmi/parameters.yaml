@@ -20,7 +20,7 @@ number_of_rows:
     range:
       min: 0
       max: 10000
-    units: "-"
+    units: ""
 
 number_of_columns:
   description: Number of grid columns.
@@ -30,7 +30,7 @@ number_of_columns:
     range:
       min: 0
       max: 10000
-    units: "-"
+    units: ""
 
 row_spacing:
   description: Spacing between grid rows
