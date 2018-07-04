@@ -73,11 +73,13 @@ class RiverModule(object):
     @property 
     def elevation(self):
         return self._n
+        # return self._n + self.sea_level
 
     @elevation.setter
     def elevation(self, new_elev):
         """Set the land surface elevation."""
         self._elevation[:] = new_elev
+        # self._elevation[:] = new_elev - self.sea_level
 
     @property 
     def sediment_flux(self):
@@ -176,6 +178,8 @@ class RiverModule(object):
         # smooth initial river course elevations using linear diffusion equation
         diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt,
                           self._riv_i, self._riv_j, self._n)
+
+        self._profile = self._n[self._riv_i, self._riv_j]
 
     def advance_in_time(self):
         """ Update avulsion model one time step. """
