@@ -9,6 +9,16 @@ run_duration:
     range:
       min: 0
       max: 1000000
+
+random_seed:
+  description: Seed for random number generator.
+  value:
+    type: int
+    default: 1988
+    units: "-"
+    range:
+      min: 0
+      max: 1e6
 ---
 _name: Grid
 
@@ -20,7 +30,7 @@ number_of_rows:
     range:
       min: 0
       max: 10000
-    units: ""
+    units: "-"
 
 number_of_columns:
   description: Number of grid columns.
@@ -30,7 +40,7 @@ number_of_columns:
     range:
       min: 0
       max: 10000
-    units: ""
+    units: "-"
 
 row_spacing:
   description: Spacing between grid rows
@@ -67,20 +77,29 @@ rate_of_sea_level_rise:
   description: Rate of sea-level rise
   value:
     type: float
-    default: 0.025
-    range:
-      min: -10.
-      max: 10.
-    units: m/yr
-rate_of_inlet_rise:
-  description: Rate that the inlet cell rises (subsidence)
-  value:
-    type: float
     default: 0.005
     range:
       min: -10.
       max: 10.
     units: m/yr
+rate_of_subsidence:
+  description: Rate of subsidence
+  value:
+    type: float
+    default: 0.00
+    range:
+      min: -10.
+      max: 10.
+    units: m/yr
+begin_subsidence:
+  description: Row where subsidence begins
+  value:
+    type: int
+    default: 0
+    range:
+      min: 0
+      max: 10000
+    units: "-"
 ---
 _name: Delta
 
@@ -88,7 +107,7 @@ upstream_elevation:
   description: Elevation at the most upstream part of the delta
   value:
     type: float
-    default: 100.
+    default: 10.
     range:
       min: 0.
       max: 10000.
@@ -97,7 +116,7 @@ delta_slope:
   description: Initial slope of the delta
   value:
     type: float
-    default: 0.0001
+    default: 0.001
     range:
       min: 0.
       max: .01
@@ -109,7 +128,7 @@ channel_width:
   description: Characteristic channel width
   value:
     type: float
-    default: 2000.
+    default: 10.
     range:
       min: 0.
       max: 10000.
@@ -118,7 +137,7 @@ channel_depth:
   description: Characteristic channel depth
   value:
     type: float
-    default: 5.
+    default: 1.
     range:
       min: 0.
       max: 100.
@@ -127,8 +146,17 @@ channel_discharge:
   description: Long-term averaged discharge
   value:
     type: float
-    default: 16791.
+    default: 10.
     range:
       min: 0.
       max: 1e6
     units: "m^3 / s"
+superelevation_ratio:
+  description: Threshold superelvation for avulsion
+  value:
+    type: float
+    default: 1.
+    range:
+      min: 0.
+      max: 50.
+    units: "-"
