@@ -142,7 +142,7 @@ class BmiRiverModule(object):
 
     def get_grid_size(self, grid_id):
         if grid_id == 0:
-            return np.prod(self._model.grid_shape)
+            return int(np.prod(self._model.grid_shape))
         elif grid_id == 1:
             return len(self._model.river_x_coordinates)
         elif grid_id == 2:
