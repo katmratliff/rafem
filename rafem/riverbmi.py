@@ -2,6 +2,7 @@
 """Basic Model Interface implementation for River Module"""
 
 import numpy as np
+from six.moves import range
 
 from .rivermodule import RiverModule
 
@@ -106,7 +107,7 @@ class BmiRiverModule(object):
         """Update model until a particular time."""
         n_steps = (then - self.get_current_time()) / self.get_time_step()
 
-        for _ in xrange(int(n_steps)):
+        for _ in range(int(n_steps)):
             self.update()
         # self.update_frac(n_steps - int(n_steps))
 

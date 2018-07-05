@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+from six.moves import range
 
 
 def add_to_neighboring_cells(z, sub, inc, win=1):
@@ -124,7 +125,7 @@ def dep_fines(n, riv_i, riv_j, dn_rc, frac_fines, SL):
     dn_rc = np.insert(dn_rc, [0], 0)
     dn_rc = np.append(dn_rc, dn_rc[-1])
 
-    for k in xrange(1, len(riv_i)):
+    for k in range(1, len(riv_i)):
 
         dep_rate = frac_fines * dn_rc[k]
 
@@ -148,7 +149,7 @@ def dep_fines(n, riv_i, riv_j, dn_rc, frac_fines, SL):
             else:
                 di, dj = np.array([0, -1, -1, -1, 0, 1, 1, 1]),  np.array([-1, -1, 0, 1, 1, 1, 0, -1])
 
-            for m in xrange(len(di)):
+            for m in range(len(di)):
                 if ((fine_dep[riv_i[k]+di[m], riv_j[k]+dj[m]] < dep_rate)
                     and (n[riv_i[k]+di[m], riv_j[k]+dj[m]] > SL)):
                     fine_dep[riv_i[k]+di[m], riv_j[k]+dj[m]] = dep_rate
