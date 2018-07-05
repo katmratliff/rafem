@@ -3,7 +3,7 @@
 
 import numpy as np
 
-from rivermodule import RiverModule
+from .rivermodule import RiverModule
 
 
 class BmiRiverModule(object):

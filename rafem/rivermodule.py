@@ -2,17 +2,19 @@
 
 import os
 import numpy as np
-import steep_desc
-import avulse
-import diffuse
-import prof
-import SLR
-import FP
-import downcut
-import flux
-import subside
-import avulsion_utils
-from avulsion_utils import read_params_from_file
+from . import (
+    steep_desc,
+    avulse,
+    diffuse,
+    prof,
+    SLR,
+    FP,
+    downcut,
+    flux,
+    subside,
+    avulsion_utils,
+)
+from .avulsion_utils import read_params_from_file
 
 
 _SECONDS_PER_YEAR = 31536000.

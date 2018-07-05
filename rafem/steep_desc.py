@@ -2,9 +2,10 @@
 import warnings
 
 import numpy as np
-import downcut
 
-from avulsion_utils import lowest_cell_elev, sort_lowest_neighbors
+from . import downcut
+from .avulsion_utils import lowest_cell_elev, sort_lowest_neighbors
+
 
 def lowest_neighbor(n, sub):
     """Find lowest neighbor value around a point.

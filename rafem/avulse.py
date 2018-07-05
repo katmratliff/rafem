@@ -1,15 +1,19 @@
 #! /usr/local/bin/python
 
-import steep_desc
-import downcut
-import FP
 import numpy as np
 import math
 
-from diffuse import calc_crevasse_dep
-from avulsion_utils import (find_point_in_path, channel_is_superelevated,
-                            find_path_length, find_riv_path_length,
-                            set_linear_slope, fill_abandoned_channel)
+from . import steep_desc, downcut, FP
+
+from .diffuse import calc_crevasse_dep
+from .avulsion_utils import (
+    find_point_in_path,
+    channel_is_superelevated,
+    find_path_length,
+    find_riv_path_length,
+    set_linear_slope,
+    fill_abandoned_channel,
+)
 
 
 def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,

@@ -2,8 +2,7 @@
 
 import numpy as np
 
-from avulsion_utils import get_link_lengths
-from avulsion_utils import find_beach_length_riv_cell
+from .avulsion_utils import get_link_lengths, find_beach_length_riv_cell
 
 
 def calc_qs(nu, riv_i, riv_j, n, sea_level, ch_depth, dx, dy, dt, slope):

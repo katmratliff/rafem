@@ -27,7 +27,7 @@ def plot_profile(avulsion):
 
 def main():
     import argparse
-    from riverbmi import BmiRiverModule
+    from .riverbmi import BmiRiverModule
 
     parser = argparse.ArgumentParser('Run the avulsion model')
     parser.add_argument('file', help='YAML-formatted parameters file')
