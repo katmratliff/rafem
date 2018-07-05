@@ -26,7 +26,7 @@ number_of_rows:
   description: Number of grid rows.
   value:
     type: int
-    default: 1000
+    default: 100
     range:
       min: 0
       max: 10000
@@ -36,7 +36,7 @@ number_of_columns:
   description: Number of grid columns.
   value:
     type: int
-    default: 500
+    default: 120
     range:
       min: 0
       max: 10000
@@ -46,7 +46,7 @@ row_spacing:
   description: Spacing between grid rows
   value:
     type: float
-    default: 10
+    default: 0.1
     range:
       min: 0
       max: 1000
@@ -56,7 +56,7 @@ column_spacing:
   description: Spacing between grid columns.
   value:
     type: float
-    default: 10
+    default: 0.1
     range:
       min: 0
       max: 1000
@@ -77,7 +77,7 @@ rate_of_sea_level_rise:
   description: Rate of sea-level rise
   value:
     type: float
-    default: 0.005
+    default: 0.0
     range:
       min: -10.
       max: 10.
@@ -107,7 +107,7 @@ upstream_elevation:
   description: Elevation at the most upstream part of the delta
   value:
     type: float
-    default: 10.
+    default: 5.
     range:
       min: 0.
       max: 10000.
