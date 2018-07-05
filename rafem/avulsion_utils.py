@@ -93,13 +93,13 @@ def channel_is_superelevated(z, riv, behind, channel_depth,
 
 
 def get_link_lengths(path, dx=1., dy=1.):
-    from itertools import izip
+    from six.moves import zip
 
     DIAGONAL_LENGTH = np.sqrt(dx ** 2. + dy ** 2.)
 
     lengths = np.empty(len(path[0]) - 1, dtype=np.float)
     ij_last = path[0][0], path[1][0]
-    for n, ij in enumerate(izip(path[0][1:], path[1][1:])):
+    for n, ij in enumerate(zip(path[0][1:], path[1][1:])):
         if is_diagonal_neighbor(ij, ij_last):
             lengths[n] = DIAGONAL_LENGTH
         elif is_same_row(ij, ij_last):
