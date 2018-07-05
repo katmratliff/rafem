@@ -1,8 +1,10 @@
 #! /usr/local/bin/python
+
 import numpy as np
 
 from avulsion_utils import is_diagonal_neighbor
 from avulsion_utils import get_channel_distance
+from avulsion_utils import find_beach_length_riv_cell
 
 
 def solve_second_derivative(x, y):
@@ -37,7 +39,7 @@ def solve_second_derivative(x, y):
                 y[2:] / (x3_minus_x2 * x3_minus_x1))
 
 
-def smooth_rc(dx, dy, nu, dt, riv_i, riv_j, n):
+def smooth_rc(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n, sea_level, slope):
     """Smooth river channel elevations using the diffusion equation.
 
     Parameters
@@ -57,49 +59,46 @@ def smooth_rc(dx, dy, nu, dt, riv_i, riv_j, n):
     n : ndarray
         2D array of grid elevations.
     """
-    # NOTE: Divide by dx to match the old way, but I don't think this is
-    # correct.
-    # nu /= dx
-    # KMR 8/24/15: don't need to divide by dx anymore, diffusion coeff
-    # should be fixed with new calculation
+
+    beach_len = find_beach_length_riv_cell(n, (riv_i[-2], riv_j[-2]),
+                                  (riv_i[-1], riv_j[-1]), sea_level,
+                                  ch_depth, slope, dx=dx, dy=dy)
+
 
     n_river = n[riv_i, riv_j]
+    n_river[-1] = sea_level - ch_depth
     s_river = get_channel_distance((riv_i, riv_j), dx=dx, dy=dy)
+    s_river[-1] += beach_len
 
     dn_rc = (nu * dt) * solve_second_derivative(s_river, n_river)
 
     n[riv_i[1:-1], riv_j[1:-1]] += dn_rc
 
-    return
+    return dn_rc
 
+def calc_crevasse_dep(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n,
+                      sea_level, slope, loc):
+    """Calculate crevasse splay deposition rate."""
 
-# this function uses a linear diffusion equation (e.g. Paola 2000, Jerolmack
-# and Paola 2007) to compute elevation change along the river course
-def smooth_rc_old(dx, dy, nu, dt, riv_i, riv_j, n):
-    # elevation change along river course due to diffusional smoothing
-    for c in xrange(1, len(riv_i) - 1):
-        n_prev = n[riv_i[c - 1], riv_j[c - 1]]
-        n_cur = n[riv_i[c], riv_j[c]]
-        n_next = n[riv_i[c + 1], riv_j[c + 1]]
+    beach_len = find_beach_length_riv_cell(n, (riv_i[-2], riv_j[-2]),
+                                  (riv_i[-1], riv_j[-1]), sea_level,
+                                  ch_depth, slope, dx=dx, dy=dy)
 
-        dwnst_dx, upst_dx = dx, dx
-        if is_diagonal_neighbor((riv_i[c], riv_j[c]), (riv_i[c + 1], riv_j[c + 1])):
-            dwnst_dx *= np.sqrt(2.)
+    n_river = n[riv_i, riv_j]
+    n_river[-1] = sea_level - ch_depth
+    s_river = get_channel_distance((riv_i, riv_j), dx=dx, dy=dy)
+    s_river[-1] += beach_len
 
-        if is_diagonal_neighbor((riv_i[c], riv_j[c]), (riv_i[c - 1], riv_j[c - 1])):
-            upst_dx *= np.sqrt(2.)
+    dn_rc = (nu * dt) * solve_second_derivative(s_river, n_river)
 
-        dwnst_dn = (n_next - n_cur) / dwnst_dx
-        upst_dn = (n_cur - n_prev) / upst_dx
-        mean_dx = (dwnst_dx + upst_dx) * .5
+    # average deposition in 3 cells above 'breach' to find
+    # crevasse splay deposition rate
+    if len(dn_rc[:loc]) >= 3:
+        splay_dep = np.average(dn_rc[loc-3:loc])
+    else: splay_dep = dn_rc[loc-1]
 
-        # NOTE: This is the old way but, I think, is incorrect. For
-        # non-uniform spacing of points you need to divide by the mean spacing.
-        #dn_rc = (nu * dt) / (dx ** 2.) * (dwnst_dn - upst_dn)
+    if splay_dep < 0:
+        splay_dep = 0
 
-        # This properly solves the second derivative with unequal spacing in x.
-        dn_rc = (nu / dx * dt) * (dwnst_dn - upst_dn) / mean_dx
+    return splay_dep
 
-        n[riv_i[c], riv_j[c]] += dn_rc
-
-    return n

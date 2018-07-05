@@ -1,13 +1,10 @@
+#! /usr/local/bin/python
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Dec  2 20:19:37 2014
 
-@author: kmratliff
-"""
 import numpy as np
 
 
-def elev_change(current_SL, n, riv_i, riv_j, ch_depth):
+def elev_change(current_SL, n, riv_i, riv_j, ch_depth, SLRR):
     """Raise elevations to sea level if below sea level.
 
     Set elevations of cells below sea level to sea level unless they are
@@ -27,7 +24,9 @@ def elev_change(current_SL, n, riv_i, riv_j, ch_depth):
         Channel depth.
     """
     # changes elevation of last river course cell according to sea level change
-    n[riv_i[-1], riv_j[-1]] = current_SL - ch_depth
+    #n[riv_i[-1], riv_j[-1]] = current_SL - ch_depth
+
+    n[riv_i[-1], riv_j[-1]] += SLRR
 
     channel_elevations = n[riv_i, riv_j].copy()
 

@@ -1,10 +1,5 @@
 #! /usr/local/bin/python
-"""
-Created on Wed Nov 12 09:28:51 2014
 
-@author: kmratliff
-"""
-# from pylab import *
 import os
 import numpy as np
 import steep_desc
@@ -15,6 +10,8 @@ import SLR
 import FP
 import downcut
 import flux
+import subside
+import avulsion_utils
 from avulsion_utils import read_params_from_file
 
 
@@ -91,6 +88,7 @@ class RiverModule(object):
 
     @property
     def profile(self):
+        self._profile[-1] = self._SL - self._ch_depth
         return self._profile
 
 #    @shoreline.setter
@@ -107,14 +105,15 @@ class RiverModule(object):
         return avulsion
 
     def _init_from_dict(self, params):
+        # seed random number generator
+        np.random.seed(params['rand_seed'])
+
         # Spatial parameters
         self._dy = params['spacing'][0] * 1000.
         self._dx = params['spacing'][1] * 1000.
 
         n_rows = int(params['shape'][0])
         n_cols = int(params['shape'][1])
-        #n_rows = int(length * 1000 / self._dy + 1)
-        #n_cols = int(width * 1000 / self._dx + 1)
 
         # Initialize elevation grid
         # transverse and longitudinal space
@@ -122,13 +121,14 @@ class RiverModule(object):
                                        np.arange(n_rows) * self._dy)
         # eta, elevation
         n0 = params['n0']
-        max_rand = params['max_rand']
-        slope = params['nslope']
-        self._n = n0 - (slope * self._y +
-                        np.random.rand(n_rows, n_cols) * max_rand)
+        self._slope = params['nslope']
+        self._max_rand = params['max_rand'] * params['nslope']
+        self._n = n0 - (self._slope * self._y +
+                        np.random.rand(n_rows, n_cols) * self._max_rand)
+        self._n -= 0.05
 
-        #self._dn_rc = np.zeros((self._imax))       # change in elevation along river course
-        #self._dn_fp = np.zeros_like(self._n)     # change in elevation due to floodplain dep
+        # self._dn_rc = np.zeros((self._imax))       # change in elevation along river course
+        # self._dn_fp = np.zeros_like(self._n)     # change in elevation due to floodplain dep
 
         self._riv_i = np.zeros(1, dtype=np.int) # defines first x river locations
         self._riv_j = np.zeros(1, dtype=np.int) # defines first y river locations
@@ -141,13 +141,13 @@ class RiverModule(object):
         # Sea level and subsidence parameters
         self._SL = params['Initial_SL'] # starting sea level
         self._SLRR = params['SLRR_m'] / _SECONDS_PER_YEAR * self._dt # sea level rise rate in m (per timestep)
-        self._IRR = params['IRR_m'] / _SECONDS_PER_YEAR * self._dt # inlet rise rate in m
+        self._SubRate = params['SubRate_m'] / _SECONDS_PER_YEAR * self._dt # subsidence rate in m (per timestep)
+        self._SubStart = params['Sub_Start'] # row where subsidence begins
 
         # River parameters
         self._nu = ((8. * (params['ch_discharge'] / params['ch_width']) * params['A']
                     * np.sqrt(params['c_f'])) / (params['C_0'] * (params['sed_sg'] - 1)))
         ### NEED TO REDO DIFFUSE.PY TO HAVE SIGN OF NU CORRECT (NEG) ABOVE ###
-        #self._nu = params['nu'] / _SECONDS_PER_DAY
         init_cut = params['init_cut_frac'] * params['ch_depth']
         self._super_ratio = params['super_ratio']
         self._short_path = params['short_path']
@@ -157,88 +157,111 @@ class RiverModule(object):
         self._WL_Z = params['WL_Z']
         self._WL_dist = params['WL_dist']
         self._blanket_rate = (params['blanket_rate_m'] / _SECONDS_PER_YEAR) * self._dt    # blanket deposition in m
-        self._splay_dep = (params['splay_dep_m'] / _SECONDS_PER_YEAR) * self._dt       # splay deposition in m
         self._splay_type = params['splay_type']
+        self._frac_fines = params['fine_dep_frac']
 
         self._sed_flux = 0.
-        self._avulsion_info = np.zeros(3, dtype=np.float)
+        self._splay_deposit = np.zeros_like(self._n)
 
         # Saving information
         self._saveavulsions = params['saveavulsions']
-        #self._savefiles = params['savefiles']
-        #self._savespacing = params['savespacing']
+        self._saveupdates = params['savecourseupdates']
 
-        self._riv_i, self._riv_j = steep_desc.find_course(self._n, self._riv_i,
-                                                          self._riv_j,
+        self._riv_i, self._riv_j = steep_desc.find_course(self._n, self._riv_i, self._riv_j,
+                                                          len(self._riv_i), self._ch_depth,
                                                           sea_level=self._SL)
 
         # downcut into new river course by amount determined by init_cut
         downcut.cut_init(self._riv_i, self._riv_j, self._n, init_cut)
 
         # smooth initial river course elevations using linear diffusion equation
-        diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt,
-                          self._riv_i, self._riv_j, self._n)
+        diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt, self._ch_depth,
+                          self._riv_i, self._riv_j, self._n, self._SL, self._slope)
+
+        # initial profile
+        self._profile = self._n[self._riv_i, self._riv_j]
 
         self._profile = self._n[self._riv_i, self._riv_j]
 
     def advance_in_time(self):
         """ Update avulsion model one time step. """
+        # if (self._time / _SECONDS_PER_YEAR) > 2000:
+        #     self._SLRR = 0.01 / _SECONDS_PER_YEAR * self._dt
 
-        ### future work: SLRR can be a vector to change rates ###
+        self._riv_i, self._riv_j, self._course_update = steep_desc.update_course(
+            self._n, self._riv_i, self._riv_j, self._ch_depth, self._slope,
+            sea_level=self._SL, dx=self._dx, dy=self._dy)
 
-        old_len = len(self._riv_i)
-        self._riv_i, self._riv_j = steep_desc.find_course(
-            self._n, self._riv_i, self._riv_j, sea_level=self._SL)
+        self._n = avulsion_utils.fix_elevations(self._n, self._riv_i, self._riv_j,
+            self._ch_depth, self._SL, self._slope, self._dx, self._max_rand, self._SLRR)
 
-        # determine if there is an avulsion & find new path if so
-        ### need to change this to look for shoreline after coupling ###
-        ### (instead of looking for sea level)
-        (self._riv_i, self._riv_j), self._avulsion_type, self._loc = avulse.find_avulsion(
-             self._riv_i, self._riv_j, self._n,
-             self._super_ratio, self._SL, self._ch_depth,
-             self._short_path, self._splay_type, self._splay_dep, dx=self._dx,
-             dy=self._dy)
+        """ Save every time the course changes? """
+        if self._saveupdates and self._course_update > 0:
+            with open('output_data/river_info.out','a') as file:
+                file.write("%.5f %i \n" % ((self._time / _SECONDS_PER_YEAR),
+                    self._course_update))
 
-        if self._saveavulsions & self._avulsion_type > 0:
-            new_info = (self._avulsion_type, self._time / _SECONDS_PER_YEAR, self._loc)
-            self._avulsion_info = np.vstack([self._avulsion_info, new_info])
+        """ determine if there is an avulsion & find new path if so """
+        (self._riv_i, self._riv_j), self._avulsion_type, self._loc, self._avulse_length, \
+         self._path_diff, self._splay_deposit = avulse.find_avulsion(self._riv_i,
+            self._riv_j, self._n, self._super_ratio, self._SL, self._ch_depth,
+            self._short_path, self._splay_type, self._slope,
+            self._splay_deposit, self._nu, self._dt, dx=self._dx, dy=self._dy)
+
+        """ Save avulsion record. """
+        if self._saveavulsions and self._avulsion_type > 0:
+            with open('output_data/river_info.out','a') as file:
+                file.write("%.5f %i %i %.5f %.5f\n" % ((self._time / _SECONDS_PER_YEAR),
+                    self._avulsion_type, self._loc, self._avulse_length, self._path_diff))
+
+        """ Save crevasse splay deposits. """        
+        if self._saveavulsions and (self._splay_deposit.sum() > 0):
+            np.savetxt('output_data/splay_deposit.out', self._splay_deposit, '%.8f')
+
+        # need to fill old river channels if coupled to CEM
+        if (self._avulsion_type == 1) or (self._avulsion_type == 2):
+            self._n = avulsion_utils.fix_elevations(self._n, self._riv_i, self._riv_j,
+                self._ch_depth, self._SL, self._slope, self._dx, self._max_rand, self._SLRR)
 
         #assert(self._riv_i[-1] != 0)
 
-        # save timestep and avulsion location if there was one
-        #if len(loc) != 0:
-        #    self._avulsions = self._avulsions + [(self._time/_SECONDS_PER_DAY),
-        #                loc[-1], avulsion_type, length_old,
-        #                length_new_sum, self._SL)]
-        
-        # raise first two rows by inlet rise rate (subsidence)
-        self._n[:2, :] += self._IRR
+        """ change elevations according to sea level rise (SLRR)
+        (if not coupled -- this occurs in coupling script otherwise) """
+        # SLR.elev_change(self._SL, self._n, self._riv_i,
+        #                 self._riv_j, self._ch_depth, self._SLRR)
 
-        # change elevations according to sea level rise (SLRR)
-        ### needs to be changed to subtracting elevation once coupled ###
-        SLR.elev_change(self._SL, self._n, self._riv_i,
-                        self._riv_j, self._ch_depth)
+        """ smooth river course elevations using linear diffusion equation """
+        self._dn_rc = diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt, self._ch_depth,
+                          self._riv_i, self._riv_j, self._n, self._SL, self._slope)
 
-        # smooth river course elevations using linear diffusion equation
-        diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt,
-                          self._riv_i, self._riv_j, self._n)
+        """ Floodplain sedimentation (use one or the other) """
+        #-------------------------------------------------------
+        ### Deposit blanket across entire subaerial domain: ###
+        # FP.dep_blanket(self._SL, self._blanket_rate, self._n,
+        #                self._riv_i, self._riv_j, self._ch_depth)
 
-        # Floodplain sedimentation
-        FP.dep_blanket(self._SL, self._blanket_rate, self._n,
-                       self._riv_i, self._riv_j, self._ch_depth)
+        ### Deposit fines adjacent to river channel: ###
+        FP.dep_fines(self._n, self._riv_i, self._riv_j, self._dn_rc, self._frac_fines,
+                     self._SL)
+        #-------------------------------------------------------
 
-        # Wetland sedimentation
+        """ Wetland sedimentation """
         ### no wetlands in first version of coupling to CEM ###
-        FP.wetlands(self._SL, self._WL_Z, self._WL_dist * self._dy,
-                    self._n, self._riv_i, self._riv_j, self._x, self._y)
+        # FP.wetlands(self._SL, self._WL_Z, self._WL_dist * self._dy,
+        #             self._n, self._riv_i, self._riv_j, self._x, self._y)
 
-        # calculate sediment flux
-        self._sed_flux = flux.calc_qs(self._nu, self._riv_i,
-                                      self._riv_j, self._n,
-                                      self._dx, self._dy, self._dt)
+        """ Subsidence """
+        subside.linear_subsidence(self._n, self._riv_i, self._riv_j, self._ch_depth,
+                                  self._SubRate, self._SubStart, self._SL)
+
+        """ calculate sediment flux at the river mouth """
+        self._sed_flux = flux.calc_qs(self._nu, self._riv_i, self._riv_j,
+                                      self._n, self._SL, self._ch_depth,
+                                      self._dx, self._dy, self._dt, self._slope)
 
         self._profile = self._n[self._riv_i, self._riv_j]
 
-        # Update sea level
-        self._SL += self._SLRR
+        # Update time
         self._time += self._dt
+        # update sea level
+        self._SL += self._SLRR

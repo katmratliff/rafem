@@ -108,7 +108,7 @@ class BmiRiverModule(object):
 
         for _ in xrange(int(n_steps)):
             self.update()
-        self.update_frac(n_steps - int(n_steps))
+        # self.update_frac(n_steps - int(n_steps))
 
     def finalize(self):
         """Clean up & save avulsion file"""
