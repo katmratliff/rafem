@@ -169,6 +169,12 @@ class RiverModule(object):
         self._saveavulsions = params['saveavulsions']
         self._saveupdates = params['savecourseupdates']
 
+        if self._saveupdates or self._saveavulsions:
+            if not os.path.exists("output_data"):
+                os.mkdir("output_data")
+            with open("output_data/river_info.out", "w"):
+                pass
+
         self._riv_i, self._riv_j = steep_desc.find_course(self._n, self._riv_i, self._riv_j,
                                                           len(self._riv_i), self._ch_depth,
                                                           sea_level=self._SL)
