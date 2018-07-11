@@ -170,3 +170,21 @@ superelevation_ratio:
       min: 0.
       max: 50.
     units: "-"
+
+save_avulsions:
+  description: File to save avulsion info into (or False)
+  value:
+    type: str
+    default: False
+
+save_course_updates:
+  description: File to save course updates into (or False)
+  value:
+    type: str
+    default: False
+
+save_splay_deposit:
+  description: File to save splay deposit info into (or False)
+  value:
+    type: str
+    default: False
