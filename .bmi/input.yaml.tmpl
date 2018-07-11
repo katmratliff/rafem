@@ -10,7 +10,7 @@ max_rand: 0.1    # multiply by slope for max height of a random perturbation
 # Time
 time_max: {run_duration}       # length of model run (years)
 spinup: 0            # spin up time of model run (years)
-dt_day: 0.1           # timestep (days)
+dt_day: {time_step}  # timestep (days)
 
 # Random seed
 rand_seed: {random_seed}     # seed for random number generator

@@ -19,6 +19,16 @@ random_seed:
     range:
       min: 0
       max: 1e6
+
+time_step:
+  description: Model time step.
+  value:
+    type: float
+    default: 0.1
+    units: "d"
+    range:
+      min: 0.
+      max: 1.
 ---
 _name: Grid
 
