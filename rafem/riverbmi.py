@@ -2,8 +2,9 @@
 """Basic Model Interface implementation for River Module"""
 
 import numpy as np
+from six.moves import range
 
-from rivermodule import RiverModule
+from .rivermodule import RiverModule
 
 
 class BmiRiverModule(object):
@@ -25,7 +26,8 @@ class BmiRiverModule(object):
         'channel_exit__y_coordinate',
         'land_surface__elevation',
         'sea_water_surface__elevation',
-        'avulsion_record')
+        # 'avulsion_record',
+    )
 
     def __init__(self):
         """Create a BmiRiver module that is ready for initialization."""
@@ -43,14 +45,14 @@ class BmiRiverModule(object):
             'channel_centerline__y_coordinate':
                 lambda: self._model.river_y_coordinates,
             'channel_exit_water_sediment~bedload__volume_flow_rate':
-                lambda: self._model.sediment_flux,
+                lambda: np.array(self._model.sediment_flux),
             'channel_exit__x_coordinate':
-                lambda: self._model.river_x_coordinates[-1],
+                lambda: np.array(self._model.river_x_coordinates[-1]),
             'channel_exit__y_coordinate':
-                lambda: self._model.river_y_coordinates[-1],
-            'land_surface__elevation': lambda: self._model.elevation,
+                lambda: np.array(self._model.river_y_coordinates[-1]),
+            'land_surface__elevation': lambda: np.array(self._model.elevation),
             'channel_centerline__elevation': lambda: self._model.profile,
-            'sea_water_surface__elevation': lambda: self._model.sea_level,
+            'sea_water_surface__elevation': lambda: np.array(self._model.sea_level),
             'avulsion_record': lambda: self._model.avulsions,
         }
 
@@ -105,7 +107,7 @@ class BmiRiverModule(object):
         """Update model until a particular time."""
         n_steps = (then - self.get_current_time()) / self.get_time_step()
 
-        for _ in xrange(int(n_steps)):
+        for _ in range(int(n_steps)):
             self.update()
         # self.update_frac(n_steps - int(n_steps))
 
@@ -126,6 +128,12 @@ class BmiRiverModule(object):
         """Get units of variable."""
         return self.get_value(var_name).nbytes
 
+    def get_var_itemsize(self, var_name):
+        return np.dtype('float').itemsize
+
+    def get_var_location(self, var_name):
+        return 'node'
+
     def get_var_grid(self, var_name):
         return self._var_grid[var_name]
 
@@ -134,7 +142,7 @@ class BmiRiverModule(object):
 
     def get_grid_size(self, grid_id):
         if grid_id == 0:
-            return np.prod(self._model.grid_shape)
+            return int(np.prod(self._model.grid_shape))
         elif grid_id == 1:
             return len(self._model.river_x_coordinates)
         elif grid_id == 2:
@@ -142,27 +150,42 @@ class BmiRiverModule(object):
         else:
             raise KeyError(grid_id)
 
-    def get_grid_shape(self, grid_id):
+    def get_grid_shape(self, grid_id, out=None):
         if grid_id == 0:
-            return self._model.grid_shape
+            shape = self._model.grid_shape
         elif grid_id == 1:
-            return self._model.river_x_coordinates.shape
+            shape = self._model.river_x_coordinates.shape
         elif grid_id == 2:
-            return (1, )
+            shape = (1, )
         else:
             raise KeyError(grid_id)
 
-    def get_grid_spacing(self, grid_id):
-        if grid_id == 0:
-            return self._model.grid_spacing
+        if out is None:
+            return shape
+        else:
+            out[:] = shape
+            return out
 
-    def get_grid_origin(self, grid_id):
+    def get_grid_spacing(self, grid_id, out=None):
         if grid_id == 0:
-            return (0., 0.)
+            if out is None:
+                return self._model.grid_spacing
+            else:
+                out[:] = self._model.grid_spacing
+                return out
+
+    def get_grid_origin(self, grid_id, out=None):
+        if grid_id == 0:
+            origin = (0., 0.)
+            if out is None:
+                return origin
+            else:
+                out[:] = origin
+                return out
 
     def get_grid_type(self, grid_id):
         if grid_id == 0:
-            return 'uniform_rectilinear_grid'
+            return 'uniform_rectilinear'
         elif grid_id == 1:
             return 'vector'
         elif grid_id == 2:
@@ -170,9 +193,13 @@ class BmiRiverModule(object):
         else:
             raise KeyError(grid_id)
 
-    def get_value(self, var_name):
+    def get_value(self, var_name, out=None):
         """Copy of values."""
-        return self._values[var_name]()
+        if out is None:
+            return self._values[var_name]()
+        else:
+            out[:] = self._values[var_name]().flat
+            return out
 
     def set_value(self, var_name, new_vals):
         """Set model values."""

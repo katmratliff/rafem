@@ -4,6 +4,7 @@ import os
 import shutil
 
 import numpy as np
+from six.moves import range
 
 
 def plot_elevation(avulsion):
@@ -27,7 +28,7 @@ def plot_profile(avulsion):
 
 def main():
     import argparse
-    from riverbmi import BmiRiverModule
+    from .riverbmi import BmiRiverModule
 
     parser = argparse.ArgumentParser('Run the avulsion model')
     parser.add_argument('file', help='YAML-formatted parameters file')
@@ -62,7 +63,7 @@ def main():
         #os.mkdir("run" + str(args.runID) + "/profile")
 
     n_steps = int((args.days + args.years * 365.) / avulsion.get_time_step())
-    for k in xrange(n_steps):
+    for k in range(n_steps):
         avulsion.update()
 
         if args.save & (k % args.spacing == 0):

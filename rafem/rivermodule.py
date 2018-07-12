@@ -2,21 +2,50 @@
 
 import os
 import numpy as np
-import steep_desc
-import avulse
-import diffuse
-import prof
-import SLR
-import FP
-import downcut
-import flux
-import subside
-import avulsion_utils
-from avulsion_utils import read_params_from_file
+import errno
+
+from . import (
+    steep_desc,
+    avulse,
+    diffuse,
+    prof,
+    SLR,
+    FP,
+    downcut,
+    flux,
+    subside,
+    avulsion_utils,
+)
+from .avulsion_utils import read_params_from_file
 
 
 _SECONDS_PER_YEAR = 31536000.
 _SECONDS_PER_DAY = 86400.
+
+
+def make_empty_file(path):
+    """Create an empty file.
+
+    Create an empty file along with all of its parent folders,
+    if necessary. Note that if the file already exists, it
+    will be clobbered.
+
+    Parameters
+    ----------
+    path : str
+        Path to the file to create.
+    """
+    dirname = os.path.dirname(path)
+    try:
+        os.makedirs(dirname)
+    except OSError as err:
+        if err.errno == errno.EEXIST and os.path.isdir(dirname):
+            pass
+        else:
+            raise
+
+    with open(path, "w"):
+        pass
 
 
 class RiverModule(object):
@@ -70,11 +99,13 @@ class RiverModule(object):
     @property 
     def elevation(self):
         return self._n
+        # return self._n + self.sea_level
 
     @elevation.setter
     def elevation(self, new_elev):
         """Set the land surface elevation."""
         self._elevation[:] = new_elev
+        # self._elevation[:] = new_elev - self.sea_level
 
     @property 
     def sediment_flux(self):
@@ -162,8 +193,16 @@ class RiverModule(object):
         self._splay_deposit = np.zeros_like(self._n)
 
         # Saving information
-        self._saveavulsions = params['saveavulsions']
-        self._saveupdates = params['savecourseupdates']
+        self._saveavulsions = params.get('saveavulsions', False)
+        self._saveupdates = params.get('savecourseupdates', False)
+        self._save_splay_deposit = params.get('save_splay_deposit', False)
+
+        if self._saveupdates:
+            make_empty_file(self._saveupdates)
+        if self._saveavulsions:
+            make_empty_file(self._saveavulsions)
+        if self._save_splay_deposit:
+            make_empty_file(self._savesplay_deposit)
 
         self._riv_i, self._riv_j = steep_desc.find_course(self._n, self._riv_i, self._riv_j,
                                                           len(self._riv_i), self._ch_depth,
@@ -177,6 +216,8 @@ class RiverModule(object):
                           self._riv_i, self._riv_j, self._n, self._SL, self._slope)
 
         # initial profile
+        self._profile = self._n[self._riv_i, self._riv_j]
+
         self._profile = self._n[self._riv_i, self._riv_j]
 
     def advance_in_time(self):
@@ -193,7 +234,7 @@ class RiverModule(object):
 
         """ Save every time the course changes? """
         if self._saveupdates and self._course_update > 0:
-            with open('output_data/river_info.out','a') as file:
+            with open(self._saveupdates,'a') as file:
                 file.write("%.5f %i \n" % ((self._time / _SECONDS_PER_YEAR),
                     self._course_update))
 
@@ -206,13 +247,13 @@ class RiverModule(object):
 
         """ Save avulsion record. """
         if self._saveavulsions and self._avulsion_type > 0:
-            with open('output_data/river_info.out','a') as file:
+            with open(self._saveavulsions,'a') as file:
                 file.write("%.5f %i %i %.5f %.5f\n" % ((self._time / _SECONDS_PER_YEAR),
                     self._avulsion_type, self._loc, self._avulse_length, self._path_diff))
 
         """ Save crevasse splay deposits. """        
-        if self._saveavulsions and (self._splay_deposit.sum() > 0):
-            np.savetxt('output_data/splay_deposit.out', self._splay_deposit, '%.8f')
+        if self._save_splay_deposit and (self._splay_deposit.sum() > 0):
+            np.savetxt(self._save_splay_deposit, self._splay_deposit, '%.8f')
 
         # need to fill old river channels if coupled to CEM
         if (self._avulsion_type == 1) or (self._avulsion_type == 2):

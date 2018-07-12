@@ -2,6 +2,8 @@
 import yaml
 import numpy as np
 from scipy.ndimage import measurements
+from six.moves import range
+
 
 def read_params_from_file(fname):
     """Read model parameters from a file.
@@ -91,13 +93,13 @@ def channel_is_superelevated(z, riv, behind, channel_depth,
 
 
 def get_link_lengths(path, dx=1., dy=1.):
-    from itertools import izip
+    from six.moves import zip
 
     DIAGONAL_LENGTH = np.sqrt(dx ** 2. + dy ** 2.)
 
     lengths = np.empty(len(path[0]) - 1, dtype=np.float)
     ij_last = path[0][0], path[1][0]
-    for n, ij in enumerate(izip(path[0][1:], path[1][1:])):
+    for n, ij in enumerate(zip(path[0][1:], path[1][1:])):
         if is_diagonal_neighbor(ij, ij_last):
             lengths[n] = DIAGONAL_LENGTH
         elif is_same_row(ij, ij_last):
@@ -241,7 +243,7 @@ def fill_upstream(z, riv_ij, dx=1., dy=1.):
     """
     fill_to = z[riv_ij[-1]]
 
-    for n in xrange(len(riv_ij) - 2, -1, -1):
+    for n in range(len(riv_ij) - 2, -1, -1):
         if z[riv_ij[n]] > fill_to:
             break
         # z[riv_ij[n]] = z[riv_ij[n + 1]] + 1e-6
@@ -427,8 +429,8 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand, SL
     riv_buffer[riv_i, riv_j] = 1
     riv_buffer[riv_i[1:]-1, riv_j[1:]] = 1
 
-    for i in xrange(1, test_elev.shape[0]-1):
-        for j in xrange(test_elev.shape[1]):
+    for i in range(1, test_elev.shape[0]-1):
+        for j in range(test_elev.shape[1]):
             if (not ocean_and_shore[i, j]
                 and not ocean_and_shore[i-1, j]
                 and not ocean_and_shore[i+1, j]
@@ -456,7 +458,7 @@ def fill_abandoned_channel(breach_loc, n, new, riv_i, riv_j, current_SL,
     n[riv_i[-1],riv_j[-1]] += ch_depth
 
     if len(riv_i) - breach_loc > 1:
-        for k in xrange(breach_loc, len(riv_i)-1):
+        for k in range(breach_loc, len(riv_i)-1):
             if (riv_j[k] == n.shape[1] - 1) or (riv_j[k] == 0):
                 n[riv_i[k], riv_j[k]] = max_shorecell_h + (np.random.rand() * slope)
             elif (riv_cells[riv_i[k], riv_j[k]+1] and riv_cells[riv_i[k], riv_j[k]-1]):

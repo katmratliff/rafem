@@ -2,9 +2,11 @@
 
 import numpy as np
 
-from avulsion_utils import is_diagonal_neighbor
-from avulsion_utils import get_channel_distance
-from avulsion_utils import find_beach_length_riv_cell
+from .avulsion_utils import (
+    is_diagonal_neighbor,
+    get_channel_distance,
+    find_beach_length_riv_cell,
+)
 
 
 def solve_second_derivative(x, y):

@@ -3,19 +3,23 @@
 # Space
 shape: [{number_of_rows}, {number_of_columns}] # Length x Width (km)
 spacing: [{row_spacing}, {column_spacing}]    # dy, dx (km)
-n0: {upstream_elevation} # upstream elevation (not needed after coupling)
-max_rand: 0.00001    # max height of a random perturbation
+n0: {upstream_elevation} # upstream elevation
 nslope: {delta_slope} # initial landscape slope
+max_rand: 0.1    # multiply by slope for max height of a random perturbation
 
 # Time
 time_max: {run_duration}       # length of model run (years)
 spinup: 0            # spin up time of model run (years)
-dt_day: 5           # timestep (days)
+dt_day: {time_step}  # timestep (days)
 
-# Sea level & subsidence parameters
+# Random seed
+rand_seed: {random_seed}     # seed for random number generator
+
+# Sea level and subsidence parameters
 Initial_SL: {initial_sea_level}  # initial sea level
 SLRR_m: {rate_of_sea_level_rise} # sea level rise rate (m/yr)
-IRR_m: {rate_of_inlet_rise}      # rate that inlet cell rises (subsidence)
+SubRate_m: {rate_of_subsidence}  # subsidence rate (m/yr)
+Sub_Start: {begin_subsidence}    # row where subsidence starts
 
 # River characteristics
 ch_width: {channel_width}  # characteristic channel width (m)
@@ -25,18 +29,17 @@ A: 1.                # river-dependent const. (1 for meandering; 1.4 for braided
 c_f: 0.01            # drag coefficient
 C_0: 1.              # sediment concentration on bed
 sed_sg: 2.65         # sediment specific gravity
-init_cut_frac: 1     # fraction of channel depth initially cut into landscape
-#nu: 50000            # diffusion coefficent, m^3/day (7533 for MS Riv.)
+init_cut_frac: 1   # initial cut of the channel into land surface
 
 # Avulsion parameters
-super_ratio: 1       # normalized superelevation ratio to trigger avulsion
+super_ratio: {superelevation_ratio}  # normalized SE ratio to trigger avulsion
 short_path: 1        # flag for using shortest path to complete avulsion
 
 # Floodplain and Wetland parameters
 WL_Z: 0.0              # elevation that wetlands maintain above SL
-WL_dist: 2             # cell distance beyond channel that wetlands exist
-blanket_rate_m: 0.005  # "blanket" deposition (frac. of IRR)
-splay_dep_m: 0.005     # splay deposition
+WL_dist: 0             # cell distance beyond channel that wetlands exist
+blanket_rate_m: 0.0    # "blanket" deposition rate (m)
+fine_dep_frac: 0.0     # fraction of channel deposit for adjacent fine deposition
 splay_type: 2          # size/type of splay
 ### Splay types: ###
     # splay_type = 0: no splay deposition
@@ -44,6 +47,6 @@ splay_type: 2          # size/type of splay
     # splay_type = 2: first failed cell and adjacent cells
 
 # Saving information
-saveavulsions: 1     # flag for saving avulsion info
-savefiles: 0         # flag for saving files
-savespacing: 1       # save files at every "x" timesteps
+saveavulsions: {save_avulsions} # flag for saving avulsion info
+savecourseupdates: {save_course_updates} # flag for saving course updates
+save_splay_deposit: {save_splay_deposit}

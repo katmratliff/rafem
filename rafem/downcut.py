@@ -4,7 +4,7 @@
 import numpy as np
 import math
 
-from avulsion_utils import get_link_lengths, find_new_beach_length
+from .avulsion_utils import get_link_lengths, find_new_beach_length
 
 
 def cut_init(riv_i, riv_j, n, init_cut):

@@ -1,15 +1,20 @@
 #! /usr/local/bin/python
 
-import steep_desc
-import downcut
-import FP
 import numpy as np
 import math
+from six.moves import range
 
-from diffuse import calc_crevasse_dep
-from avulsion_utils import (find_point_in_path, channel_is_superelevated,
-                            find_path_length, find_riv_path_length,
-                            set_linear_slope, fill_abandoned_channel)
+from . import steep_desc, downcut, FP
+
+from .diffuse import calc_crevasse_dep
+from .avulsion_utils import (
+    find_point_in_path,
+    channel_is_superelevated,
+    find_path_length,
+    find_riv_path_length,
+    set_linear_slope,
+    fill_abandoned_channel,
+)
 
 
 def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
@@ -141,7 +146,7 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
     old_length = find_riv_path_length(n, old, current_SL, ch_depth,
                                       slope, dx=dx, dy=dy)
 
-    for a in xrange(1, len(riv_i)-1):
+    for a in range(1, len(riv_i)-1):
         if channel_is_superelevated(n, (riv_i[a], riv_j[a]),
                                     (riv_i[a-1], riv_j[a-1]),
                                     ch_depth, super_ratio, current_SL):
@@ -234,7 +239,7 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
         # old_river_elevations = n[riv_i, riv_j]
         new_river_elevations = n[new[0], new[1]]
 
-        for i in xrange(crevasse_locs.shape[0]):
+        for i in range(crevasse_locs.shape[0]):
 
             splay_dep = calc_crevasse_dep(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n,
                                           current_SL, slope, crevasse_locs[i][2])
