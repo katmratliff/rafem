@@ -7,10 +7,17 @@ import numpy as np
 from six.moves import range
 
 
+def empty_bmi_var_array(bmi, name):
+    return np.empty(bmi.get_var_nbytes(name), dtype=np.uint8).view(
+        dtype=bmi.get_var_type(name)
+    )
+
+
 def plot_elevation(avulsion):
     import matplotlib.pyplot as plt
 
-    z = avulsion.get_value('land_surface__elevation')
+    z = empty_bmi_var_array(avulsion, 'land_surface__elevation')
+    avulsion.value('land_surface__elevation', z)
 
     plt.imshow(z, origin='lower', cmap='terrain')
     plt.colorbar().ax.set_label('Elevation (m)')
@@ -20,7 +27,8 @@ def plot_elevation(avulsion):
 def plot_profile(avulsion):
     import matplotlib.pyplot as plt
 
-    prof = avulsion.get_value('channel_profile')
+    prof = empty_bmi_var_array(avulsion, 'channel_centerline__elevation')
+    avulsion.value('channel_centerline__elevation', prof)
 
     plt.plot(prof)
     plt.show()
@@ -62,15 +70,20 @@ def main():
         shutil.copy(args.file, "run" + str(args.runID))
         #os.mkdir("run" + str(args.runID) + "/profile")
 
+    z = empty_bmi_var_array(avulsion, 'land_surface__elevation')
+    x = empty_bmi_var_array(avulsion, 'channel_centerline__x_coordinate')
+    y = empty_bmi_var_array(avulsion, 'channel_centerline__y_coordinate')
+    prof = empty_bmi_var_array(avulsion, 'channel_centerline__elevation')
+
     n_steps = int((args.days + args.years * 365.) / avulsion.get_time_step())
     for k in range(n_steps):
         avulsion.update()
 
         if args.save & (k % args.spacing == 0):
-            z = avulsion.get_value('land_surface__elevation')
-            x = avulsion.get_value('channel_centerline__x_coordinate')
-            y = avulsion.get_value('channel_centerline__y_coordinate')
-            prof = avulsion.get_value('channel_profile')
+            avulsion.get_value('land_surface__elevation', z)
+            avulsion.get_value('channel_centerline__x_coordinate', x)
+            avulsion.get_value('channel_centerline__y_coordinate', y)
+            avulsion.get_value('channel_centerline__elevation', prof)
 
             np.savetxt('run' + str(args.runID) + '/elev_grid' + str(args.runID) + '/elev_'
                        + str(k*avulsion.get_time_step()/365) + '.out', z, fmt='%.5f')
@@ -79,11 +92,11 @@ def main():
             np.savetxt('run' + str(args.runID) + '/riv_profile' + str(args.runID) + '/prof_'
                        + str(k*avulsion.get_time_step()/365) + '.out', prof, fmt='%.5f')
 
-    if args.save:
-        avul_info = avulsion.get_value('avulsion_record')
-        if np.sum(avul_info) > 0:
-            np.savetxt('run' + str(args.runID) + '/avulsions' + str(args.runID), avul_info,
-                       fmt='%i %.2f %i')
+    # if args.save:
+    #     avul_info = avulsion.get_value('avulsion_record')
+    #     if np.sum(avul_info) > 0:
+    #         np.savetxt('run' + str(args.runID) + '/avulsions' + str(args.runID), avul_info,
+    #                    fmt='%i %.2f %i')
 
     if args.plot_elev:
         plot_elevation(avulsion)
