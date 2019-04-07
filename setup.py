@@ -12,6 +12,7 @@ setup(
     url="https://github.com/katmratliff/avulsion-bmi",
     license="MIT",
     install_requires=[
+        "bmipy",
         "numpy",
         "pyyaml",
         "scipy",
