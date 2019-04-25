@@ -56,6 +56,9 @@ class RafemOutputWriter:
         self._make_dirs()
         self._make_buffers()
 
+        with open(os.path.join(self.prefix, "input.yaml"), "w") as fp:
+            print(bmi._model.to_yaml(), file=fp)
+
     def _make_dirs(self):
         os.mkdir(self.prefix)
         for dir_ in self._outputs.values():
@@ -154,7 +157,6 @@ def main(
     else:
         if save:
             output = RafemOutputWriter(avulsion, run_id=run_id, output_interval=spacing)
-            shutil.copy(file, output.prefix)
 
         with click.progressbar(
             range(n_steps),
