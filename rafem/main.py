@@ -113,9 +113,17 @@ class RafemOutputWriter:
 
 @click.command()
 @click.version_option()
-# @click.option(
-#     "-v", "--verbose", is_flag=True, help="also emit status messages to stderr."
-# )
+@click.option(
+    "-q",
+    "--quiet",
+    is_flag=True,
+    help="don't emit messages to stderr unless they are errors",
+)
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="print input parameters that would be used but don't actually do anything.",
+)
 @click.option("--days", type=int, default=0, help="number of days to run model")
 @click.option("--years", type=int, default=0, help="number of years to run model")
 @click.option("--plot-elev/--no-plot-elev", default=False, help="plot final elevations")
@@ -128,39 +136,44 @@ class RafemOutputWriter:
 @click.argument(
     "file", type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True)
 )
-def main(file, days, years, plot_elev, plot_prof, save, spacing, run_id):
-# def main(file, plot_elev, plot_prof, save, spacing, run_id):
+def main(
+    file, quiet, dry_run, days, years, plot_elev, plot_prof, save, spacing, run_id
+):
     from .riverbmi import BmiRiverModule
 
     avulsion = BmiRiverModule()
     avulsion.initialize(file)
 
-    click.secho(avulsion._model.to_yaml())
+    n_days = days + years * 365
+    n_steps = int(n_days / avulsion.get_time_step())
 
-    if save:
-        output = RafemOutputWriter(avulsion, run_id=run_id, output_interval=spacing)
-        shutil.copy(file, output.prefix)
+    if dry_run:
+        click.secho(avulsion._model.to_yaml(), err=False)
+    elif n_steps == 0:
+        click.secho("Nothing to do (years == 0). 😴", err=True, fg="green")
+    else:
+        if save:
+            output = RafemOutputWriter(avulsion, run_id=run_id, output_interval=spacing)
+            shutil.copy(file, output.prefix)
 
-    n_steps = int((days + years * 365.0) / avulsion.get_time_step())
-    with click.progressbar(
-        range(n_steps), label=" ".join(["🚀", os.path.basename(file)])
-    ) as bar:
-        for step in bar:
-            avulsion.update()
-            save and output.update(1)
+        with click.progressbar(
+            range(n_steps),
+            label=" ".join(["🚀", os.path.basename(file)]),
+            item_show_func=lambda step: "day {0} of {1}".format(
+                int(0 if step is None else step * avulsion.get_time_step()), n_days
+            ),
+        ) as bar:
+            for step in bar:
+                avulsion.update()
+                save and output.update(1)
 
-    click.secho("💥 Finished! 💥", err=True, fg="green")
-    if save:
-        click.secho("Output written to {0}".format(output.prefix), err=True, fg="green")
+        not quiet and click.secho("💥 Finished! 💥", err=True, fg="green")
+        if save and not quiet:
+            click.secho(
+                "Output written to {0}".format(output.prefix), err=True, fg="green"
+            )
 
-    if plot_elev:
-        plot_elevation(avulsion)
-
-    if plot_prof:
-        plot_profile(avulsion)
+        plot_elev and plot_elevation(avulsion)
+        plot_prof and plot_profile(avulsion)
 
     avulsion.finalize()
-
-
-if __name__ == "__main__":
-    main()
