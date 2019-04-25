@@ -39,7 +39,7 @@ before_install:
 - conda create -n test_env python=$CONDA_ENV
 - source activate test_env
 install:
-- pip install . -r requirements.txt
+- pip install .
 script:
 - rafem --version
 - rafem --help
