@@ -4,7 +4,7 @@
 import numpy as np
 from six.moves import range
 
-from bmi import Bmi
+from bmipy import Bmi
 
 from .rivermodule import RiverModule
 
