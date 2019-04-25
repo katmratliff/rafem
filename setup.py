@@ -13,7 +13,9 @@ setup(
     license="MIT",
     install_requires=[
         "bmipy",
+        "click",
         "numpy",
+        "matplotlib",
         "pyyaml",
         "scipy",
         "six",
