@@ -1,10 +1,12 @@
 #! /usr/bin/env python
 from setuptools import find_packages, setup
 
+import versioneer
+
 
 setup(
     name="rafem",
-    version="0.1.0",
+    version=versioneer.get_version(),
     author="Katherine Ratliff",
     author_email="k.ratliff@duke.edu",
     description="River Avulsion Flooplain Evolution Model",
@@ -22,4 +24,5 @@ setup(
     ],
     packages=find_packages(),
     entry_points={"console_scripts": ["rafem=rafem.main:main"]},
+    cmdclass=versioneer.get_cmdclass(),
 )
