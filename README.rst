@@ -1,13 +1,10 @@
 RAFEM
 =====
 
-Morphodynamic river avulsion module designed to be coupled with
-the Coastline Evolution Model (CEM) and Sedflux 3D.
+The River Avulsion and Floodplain Evolution Model (RAFEM) is a morphodynamic model designed to be coupled with
+the Coastline Evolution Model (CEM).
 
-The most current development version available from our git
-repository:
-
-http://github.com/katmratliff/avulsion-bmi
+Documentation is currently being updated (5/9/19). Please see our paper, `Exploring Wave and Sea‐Level Rise Effects on Delta Morphodynamics With a Coupled River‐Ocean Model <https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2018JF004757>`_ for a detailed model description. 
 
 
 Install
