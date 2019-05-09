@@ -19,7 +19,7 @@ def read_params_from_file(fname):
         A dict of parameters for the heat model.
     """
     with open(fname, 'r') as fp:
-        params = yaml.load(fp)
+        params = yaml.safe_load(fp)
 
     return params
 

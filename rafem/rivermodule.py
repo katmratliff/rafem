@@ -4,6 +4,8 @@ import os
 import numpy as np
 import errno
 
+import yaml
+
 from . import (
     steep_desc,
     avulse,
@@ -50,8 +52,190 @@ def make_empty_file(path):
 
 class RiverModule(object):
 
-    def __init__(self):
-        pass
+    def __init__(
+        self,
+        rand_seed=1945,
+        spacing=(0.1, 0.1),
+        shape=(100, 120),
+        n0=5.0,
+        nslope=0.001,
+        max_rand=0.1,
+        dt_day=0.05,
+        Initial_SL=0.0,
+        SLRR_m=0.0,
+        SubRate_m=0.0,
+        Sub_Start=0,
+        ch_width=10.0,
+        ch_depth=1.0,
+        ch_discharge=10.0,
+        A=1.,
+        c_f=0.01,
+        C_0=1.,
+        sed_sg=2.65,
+        init_cut_frac=1.0,
+        super_ratio=1.0,
+        short_path=1,
+        WL_Z=0.0,
+        WL_dist=0,
+        blanket_rate_m=0.0,
+        fine_dep_frac=0.0,
+        splay_type=2,
+        saveavulsions=False,
+        savecourseupdates=False,
+    ):
+        """The RAFEM.
+
+        Parameters
+        ----------
+        rand_seed : int
+            Seed for random number generator.
+        spacing : tuple of float
+            Row (dy) and column (dx) spacing [m].
+        shape : tuple of float
+            Size of grid as *(n_rows, n_columns)*.
+        n0 : float
+            Upstream elevation [m].
+        nslope : float
+            Initial landscape slope [-].
+        max_rand : float
+            Multiply by slope for max height of a random perturbation.
+        dt_day : float
+            Time step [days].
+        Initial_SL : float
+            Initial sea level [m].
+        SLRR_m : float
+            Sea level rise rate [m / yr].
+        SubRate_m: float
+            Subsidence rate [m / yr].
+        Sub_Start : int
+            Row where subsidence starts
+        ch_width : float
+            Characteristic channel width [m].
+        ch_depth : float
+            Characteristic channel depth [m].
+        ch_discharge : float
+            Long-term averaged discharge [m^3 / s].
+        A : float
+            River-dependent const (1 for meandering; 1.4 for braided).
+        c_f : float
+            Drag coefficient.
+        C_0 : float
+            Sediment concentration on bed.
+        sed_sg : float
+            Sediment specific gravity
+        init_cut_frac : float
+            Initial cut of the channel into land surface.
+        super_ratio : float
+            Normalized SE ratio to trigger avulsion.
+        short_path : int
+            Flag for using shortest path to complete avulsion.
+        WL_Z : float
+            Elevation that wetlands maintain above SL [m].
+        WL_dist : float
+            Cell distance beyond channel that wetlands exist.
+        blanket_rate_m : float
+            "Blanket" deposition rate [m].
+        fine_dep_frac : float
+            Fraction of channel deposit for adjacent fine deposition.
+        splay_type : {0, 1, 2}
+            Size/type of splay. Values of *splay_type* correspond to:
+            *  0: no splay deposition
+            *  1: just the first failed avulsion river cell
+            *  2: first failed cell and adjacent cells
+        saveavulsions : bool
+            Flag for saving avulsion info.
+        savecourseupdates : bool
+            Flag for saving course updates
+        """
+        self._params = locals().copy()
+        self._params.pop("self")
+
+        np.random.seed(rand_seed)
+
+        # Spatial parameters
+        self._dy = spacing[0] * 1000.
+        self._dx = spacing[1] * 1000.
+
+        n_rows = int(shape[0])
+        n_cols = int(shape[1])
+
+        # Initialize elevation grid
+        # transverse and longitudinal space
+        self._x, self._y = np.meshgrid(np.arange(n_cols) * self._dx,
+                                       np.arange(n_rows) * self._dy)
+        # eta, elevation
+        self._slope = nslope
+        self._max_rand = max_rand * nslope
+        self._n = n0 - (self._slope * self._y +
+                        np.random.rand(n_rows, n_cols) * self._max_rand)
+        self._n -= 0.05
+
+        # self._dn_rc = np.zeros((self._imax))       # change in elevation along river course
+        # self._dn_fp = np.zeros_like(self._n)     # change in elevation due to floodplain dep
+
+        self._riv_i = np.zeros(1, dtype=np.int) # defines first x river locations
+        self._riv_j = np.zeros(1, dtype=np.int) # defines first y river locations
+        self._riv_j[0] = self._n.shape[1] / 2
+
+        # Time parameters
+        self._dt = dt_day * _SECONDS_PER_DAY # convert timestep to seconds
+        self._time = 0.
+
+        # Sea level and subsidence parameters
+        self._SL = Initial_SL  # starting sea level
+        self._SLRR = SLRR_m / _SECONDS_PER_YEAR * self._dt  # sea level rise rate in m (per timestep)
+        self._SubRate = SubRate_m / _SECONDS_PER_YEAR * self._dt  # subsidence rate in m (per timestep)
+        self._SubStart = Sub_Start  # row where subsidence begins
+
+        # River parameters
+        self._nu = ((8. * (ch_discharge / ch_width) * A
+                    * np.sqrt(c_f)) / (C_0 * (sed_sg - 1)))
+        ### NEED TO REDO DIFFUSE.PY TO HAVE SIGN OF NU CORRECT (NEG) ABOVE ###
+        init_cut = init_cut_frac * ch_depth
+        self._super_ratio = super_ratio
+        self._short_path = short_path
+        self._ch_depth = ch_depth
+
+        # Floodplain and wetland characteristics
+        self._WL_Z = WL_Z
+        self._WL_dist = WL_dist
+        self._blanket_rate = (blanket_rate_m / _SECONDS_PER_YEAR) * self._dt    # blanket deposition in m
+        self._splay_type = splay_type
+        self._frac_fines = fine_dep_frac
+
+        self._sed_flux = 0.
+        self._splay_deposit = np.zeros_like(self._n)
+
+        # Saving information
+        self._saveavulsions = saveavulsions
+        self._saveupdates = savecourseupdates
+        self._save_splay_deposit = False
+
+        if self._saveupdates:
+            make_empty_file(self._saveupdates)
+        if self._saveavulsions:
+            make_empty_file(self._saveavulsions)
+        if self._save_splay_deposit:
+            make_empty_file(self._savesplay_deposit)
+
+        self._riv_i, self._riv_j = steep_desc.find_course(self._n, self._riv_i, self._riv_j,
+                                                          len(self._riv_i), self._ch_depth,
+                                                          sea_level=self._SL)
+
+        # downcut into new river course by amount determined by init_cut
+        downcut.cut_init(self._riv_i, self._riv_j, self._n, init_cut)
+
+        # smooth initial river course elevations using linear diffusion equation
+        diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt, self._ch_depth,
+                          self._riv_i, self._riv_j, self._n, self._SL, self._slope)
+
+        # initial profile
+        self._profile = self._n[self._riv_i, self._riv_j]
+
+        self._profile = self._n[self._riv_i, self._riv_j]
+
+    def to_yaml(self):
+        return yaml.dump(self._params)
 
     @property
     def time(self):
@@ -127,98 +311,11 @@ class RiverModule(object):
     @classmethod
     def from_path(cls, fname):
         """Create a RiverModule object from a file-like object."""
-
-        avulsion = cls()
-        avulsion._init_from_dict(read_params_from_file(fname))
-
-        return avulsion
-
-    def _init_from_dict(self, params):
-        # seed random number generator
-        np.random.seed(params['rand_seed'])
-
-        # Spatial parameters
-        self._dy = params['spacing'][0] * 1000.
-        self._dx = params['spacing'][1] * 1000.
-
-        n_rows = int(params['shape'][0])
-        n_cols = int(params['shape'][1])
-
-        # Initialize elevation grid
-        # transverse and longitudinal space
-        self._x, self._y = np.meshgrid(np.arange(n_cols) * self._dx,
-                                       np.arange(n_rows) * self._dy)
-        # eta, elevation
-        n0 = params['n0']
-        self._slope = params['nslope']
-        self._max_rand = params['max_rand'] * params['nslope']
-        self._n = n0 - (self._slope * self._y +
-                        np.random.rand(n_rows, n_cols) * self._max_rand)
-        self._n -= 0.05
-
-        # self._dn_rc = np.zeros((self._imax))       # change in elevation along river course
-        # self._dn_fp = np.zeros_like(self._n)     # change in elevation due to floodplain dep
-
-        self._riv_i = np.zeros(1, dtype=np.int) # defines first x river locations
-        self._riv_j = np.zeros(1, dtype=np.int) # defines first y river locations
-        self._riv_j[0] = self._n.shape[1] / 2
-
-        # Time parameters
-        self._dt = params['dt_day'] * _SECONDS_PER_DAY # convert timestep to seconds
-        self._time = 0.
-
-        # Sea level and subsidence parameters
-        self._SL = params['Initial_SL'] # starting sea level
-        self._SLRR = params['SLRR_m'] / _SECONDS_PER_YEAR * self._dt # sea level rise rate in m (per timestep)
-        self._SubRate = params['SubRate_m'] / _SECONDS_PER_YEAR * self._dt # subsidence rate in m (per timestep)
-        self._SubStart = params['Sub_Start'] # row where subsidence begins
-
-        # River parameters
-        self._nu = ((8. * (params['ch_discharge'] / params['ch_width']) * params['A']
-                    * np.sqrt(params['c_f'])) / (params['C_0'] * (params['sed_sg'] - 1)))
-        ### NEED TO REDO DIFFUSE.PY TO HAVE SIGN OF NU CORRECT (NEG) ABOVE ###
-        init_cut = params['init_cut_frac'] * params['ch_depth']
-        self._super_ratio = params['super_ratio']
-        self._short_path = params['short_path']
-        self._ch_depth = params['ch_depth']
-
-        # Floodplain and wetland characteristics
-        self._WL_Z = params['WL_Z']
-        self._WL_dist = params['WL_dist']
-        self._blanket_rate = (params['blanket_rate_m'] / _SECONDS_PER_YEAR) * self._dt    # blanket deposition in m
-        self._splay_type = params['splay_type']
-        self._frac_fines = params['fine_dep_frac']
-
-        self._sed_flux = 0.
-        self._splay_deposit = np.zeros_like(self._n)
-
-        # Saving information
-        self._saveavulsions = params.get('saveavulsions', False)
-        self._saveupdates = params.get('savecourseupdates', False)
-        self._save_splay_deposit = params.get('save_splay_deposit', False)
-
-        if self._saveupdates:
-            make_empty_file(self._saveupdates)
-        if self._saveavulsions:
-            make_empty_file(self._saveavulsions)
-        if self._save_splay_deposit:
-            make_empty_file(self._savesplay_deposit)
-
-        self._riv_i, self._riv_j = steep_desc.find_course(self._n, self._riv_i, self._riv_j,
-                                                          len(self._riv_i), self._ch_depth,
-                                                          sea_level=self._SL)
-
-        # downcut into new river course by amount determined by init_cut
-        downcut.cut_init(self._riv_i, self._riv_j, self._n, init_cut)
-
-        # smooth initial river course elevations using linear diffusion equation
-        diffuse.smooth_rc(self._dx, self._dy, self._nu, self._dt, self._ch_depth,
-                          self._riv_i, self._riv_j, self._n, self._SL, self._slope)
-
-        # initial profile
-        self._profile = self._n[self._riv_i, self._riv_j]
-
-        self._profile = self._n[self._riv_i, self._riv_j]
+        if fname:
+            params = read_params_from_file(fname)
+        else:
+            params = dict()
+        return cls(**params)
 
     def advance_in_time(self):
         """ Update avulsion model one time step. """
