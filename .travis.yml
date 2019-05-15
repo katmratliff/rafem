@@ -19,6 +19,7 @@ jobs:
       provider: pypi
       user: mcflugen
       password:
+        secure: jMgyzEirqv0zFAW5ETWMkSsbO7Ei26Hx3QCiNKwKZJqotujuEoXcErEhOkD4kGChpYgK9qXtQ3+HmPqOPr6D26amGLIWBB1l1upVdf1ijPX/a/tUwSmFrdVO31527VtVjqc4f/rVIyVJ6HtdP76XoCBNPjHRTemyqKM9FrUa0LTNR+SENQdKhUAbtr5MW5jfNlDIVUoWkPDuNTd/Pp1UWzSHCr9WY2pxNNM3HHXFgLDUbf5WMIMsjHUw2TWs2JqGQvs/30W40LsSyYNO/KKqJYLH5T0qiHebalUcs3ExRnlxPys1BnE6WSdILv+Rw5xrOK/1xD9VPqXzs/bP0KxPQMxbHwr7/9hZF2XjYSXxg0enLwgFZ7FwkyTJBXo+lp07GJ/7TtleLx2VCUcKlOdgfxqWvX7PJvyIf6DSUidGk33AW5+25T3bddj7KP/OmSSidA10Bsai/amHhRqkP37giw9oKCmKvVhv1oH1xOi5ymEsyaoGYnNvUz+MqLySSVESTC8zUlM29vftpKse2a63QigP+22W4VMLfQp+qA5p7ou6YeR+i04SkqfM+XJyEJMqV9FPFBGx9pNT2SmCPUDyOh7kNRXcrRxz4qpIGxl7pFh2X/+8G7Ou1Jv3iMchg7zzMIX7eJ35p7RkAMRIaaPN0R8HPxAXpf9GYciGmcvlGr0=
 before_install:
 - |
   if [[ $TRAVIS_OS_NAME == "osx" ]]; then
