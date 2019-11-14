@@ -162,7 +162,7 @@ def find_point_in_path(path, sub):
     True
     """
     try:
-        return zip(*path).index(sub)
+        return list(zip(*path)).index(sub)
     except ValueError:
         return None
 
