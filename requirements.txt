@@ -1,0 +1,6 @@
+bmipy
+click
+numpy
+matplotlib
+pyyaml
+scipy
