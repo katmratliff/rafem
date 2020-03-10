@@ -2,7 +2,6 @@
 import warnings
 
 import numpy as np
-from six.moves import range
 
 from . import downcut
 from .avulsion_utils import lowest_cell_elev, sort_lowest_neighbors

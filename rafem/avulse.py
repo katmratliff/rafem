@@ -2,7 +2,6 @@
 
 import numpy as np
 import math
-from six.moves import range
 
 from . import steep_desc, downcut, FP
 

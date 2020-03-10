@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from six.moves import range
 
 
 def add_to_neighboring_cells(z, sub, inc, win=1):

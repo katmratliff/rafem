@@ -2,7 +2,6 @@
 import yaml
 import numpy as np
 from scipy.ndimage import measurements
-from six.moves import range
 
 
 def read_params_from_file(fname):
@@ -93,8 +92,6 @@ def channel_is_superelevated(z, riv, behind, channel_depth,
 
 
 def get_link_lengths(path, dx=1., dy=1.):
-    from six.moves import zip
-
     DIAGONAL_LENGTH = np.sqrt(dx ** 2. + dy ** 2.)
 
     lengths = np.empty(len(path[0]) - 1, dtype=np.float)
