@@ -1,7 +1,4 @@
 #! /usr/local/bin/python
-
-import numpy as np
-
 from .avulsion_utils import find_beach_length_riv_cell, get_link_lengths
 
 

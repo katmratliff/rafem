@@ -1,5 +1,4 @@
 #! /usr/local/bin/python
-import numpy as np
 
 
 def make_profile(n, riv_i, riv_j):

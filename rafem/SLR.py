@@ -1,8 +1,6 @@
 #! /usr/local/bin/python
 # -*- coding: utf-8 -*-
 
-import numpy as np
-
 
 def elev_change(current_SL, n, riv_i, riv_j, ch_depth, SLRR):
     """Raise elevations to sea level if below sea level.

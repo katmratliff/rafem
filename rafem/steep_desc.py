@@ -1,6 +1,4 @@
 #! /usr/local/bin/python
-import warnings
-
 import numpy as np
 
 from . import downcut
@@ -43,8 +41,6 @@ def lowest_neighbor_prograde(n, sub):
         di, dj = np.array([1, 1, 0]), np.array([0, 1, 1])
     else:
         di, dj = np.array([0, 1, 1, 1, 0]), np.array([-1, -1, 0, 1, 1])
-
-    subaerial_cells = np.where(n[i + di, j + dj] > 0)
 
     subaerial_low = min(x for x in (n[i + di, j + dj]) if x > 0)
     lowest = np.where((n[i + di, j + dj]) == subaerial_low)[0][0]
@@ -270,10 +266,11 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1.0, dy=1
 
     # check for coastal avulsion (happens if river is prograding too far alongshore)
     if (
-        (riv_i[-1] == riv_i[-2] == riv_i[-3] == riv_i[-4] == riv_i[-5])
-        and  # if last 5 river cells flowing alongshore
+        (
+            riv_i[-1] == riv_i[-2] == riv_i[-3] == riv_i[-4] == riv_i[-5]
+        )  # if last 5 river cells flowing alongshore
+        and (z[riv_i[-2] + 1, riv_j[-2]] > sea_level)
         # (z[riv_i[-1+1],riv_j[-1]] > sea_level) and  # if land between river and ocean for last 3 cells
-        (z[riv_i[-2] + 1, riv_j[-2]] > sea_level)
         and (z[riv_i[-3] + 1, riv_j[-3]] > sea_level)
         and (z[riv_i[-4] + 1, riv_j[-4]] > sea_level)
         and (z[riv_i[-5] + 1, riv_j[-5]] > sea_level)
@@ -351,7 +348,7 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1.0, dy=1
                 if (z[riv_i[-1], riv_j[-1]] - sea_level) < (0.001 * max_cell_h):
                     z[riv_i[-1], riv_j[-1]] = (0.001 * max_cell_h) + sea_level
 
-                ### line below not needed if downcutting ###
+                # line below not needed if downcutting
                 # z[riv_i[-1], riv_j[-1]] -= ch_depth
 
                 downcut.cut_new(

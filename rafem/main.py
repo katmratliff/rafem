@@ -3,7 +3,6 @@
 import os
 import pathlib
 import re
-import shutil
 import sys
 from collections import OrderedDict
 from functools import partial
@@ -303,7 +302,7 @@ def _contents_of_input_file(infile: str) -> str:
                 0.0,
             ),  # fraction of channel deposit for adjacent fine deposition
             ("splay_type", 2),  # size/type of splay
-            ### Splay types: ###
+            # Splay types:
             # splay_type = 0: no splay deposition
             # splay_type = 1: just the first failed avulsion river cell
             # splay_type = 2: first failed cell and adjacent cells
@@ -328,9 +327,16 @@ def plot(value: str, time: int) -> None:
     basepath = pathlib.Path("output") / value
 
     if time == -1:
-        convert = lambda text: int(text) if text.isdigit() else text
-        alphanum_key = lambda key: [convert(c) for c in re.split("([0-9]+)", key)]
-        files = sorted([name.name for name in basepath.glob("*.out")], key=alphanum_key)
+
+        def _alphanum_key(key):
+            def _convert(text):
+                return int(text) if text.isdigit() else text
+
+            return [_convert(c) for c in re.split("([0-9]+)", key)]
+
+        files = sorted(
+            [name.name for name in basepath.glob("*.out")], key=_alphanum_key
+        )
         filepath = basepath / files[-1]
     else:
         filepath = list(basepath.glob("*_{0}.out".format(time)))[0]

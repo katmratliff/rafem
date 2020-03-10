@@ -201,13 +201,6 @@ def set_linear_profile(z, riv_ij, dx=1.0, dy=1.0):
            [ 3.,  3.,  3.,  3.,  3.]])
 
     """
-
-    z0 = z[riv_ij[0]]
-    dz = z[riv_ij[-1]] - z[riv_ij[0]]
-
-    lengths = get_link_lengths(zip(*riv_ij), dx=dx, dy=dy)
-    ds = lengths.sum()
-
     z[zip(*riv_ij[:-1])] = z[riv_ij[-1]] + np.arange(len(riv_ij) - 1, 0, -1) * 1e-6
 
     return z
@@ -373,8 +366,6 @@ def lowest_cell_elev(n, sub):
 
 def lowest_face(n, sub):
     i, j = sub
-
-    shore_cell = 0
 
     if j == 0 and i == 0:
         di, dj = np.array([1, 0]), np.array([0, 1])

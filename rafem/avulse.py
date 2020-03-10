@@ -1,7 +1,4 @@
 #! /usr/local/bin/python
-
-import math
-
 import numpy as np
 
 from . import FP, downcut, steep_desc
@@ -11,7 +8,6 @@ from .avulsion_utils import (
     find_path_length,
     find_point_in_path,
     find_riv_path_length,
-    set_linear_slope,
 )
 from .diffuse import calc_crevasse_dep
 
@@ -61,7 +57,7 @@ def avulse_to_new_path(
         *  *  +  *
         *  *  o  *
         *  o  *  *
-    
+
     The old path is marked by `o`, the new path but `+`. The paths overlap
     (2, 2).
 
@@ -148,7 +144,6 @@ def find_avulsion(
     loc = 0
     avulse_length = 0
     new_length = 0
-    new_course_length = 0
     avul_locs = np.zeros(0, dtype=np.int)
     path_slopes = np.zeros(0)
     crevasse_locs = np.zeros(3, dtype=np.int)

@@ -77,9 +77,7 @@ def wetlands(current_SL, WL_Z, wetland_width, n, riv_i, riv_j, y, x):
 
         cols = dist & elev & (depo_wetland[row] == 0)
 
-        before = n[row, cols].copy()
         n[row, cols] = current_SL + WL_Z
-        wetland_dep = n[row, cols] - before
 
         depo_wetland[row, cols] == 1
 
@@ -110,7 +108,7 @@ def dep_splay(n, ij_fail, splay_dep, splay_type=1):
     (could be first two failed river cells + surrounding)
 
     This could possibly be improved by comparing to find nearest beach routine (CEM)
-    or using some sort of search radius 
+    or using some sort of search radius
     """
 
     if splay_type == 1:  # splay deposition just at first failed river cell

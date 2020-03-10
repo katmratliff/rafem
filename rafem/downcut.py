@@ -1,10 +1,5 @@
 #! /usr/local/bin/python
 # -*- coding: utf-8 -*-
-
-import math
-
-import numpy as np
-
 from .avulsion_utils import find_new_beach_length, get_link_lengths
 
 

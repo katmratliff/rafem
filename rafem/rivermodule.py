@@ -6,18 +6,7 @@ import os
 import numpy as np
 import yaml
 
-from . import (
-    FP,
-    SLR,
-    avulse,
-    avulsion_utils,
-    diffuse,
-    downcut,
-    flux,
-    prof,
-    steep_desc,
-    subside,
-)
+from . import FP, avulse, avulsion_utils, diffuse, downcut, flux, steep_desc, subside
 from .avulsion_utils import read_params_from_file
 
 _SECONDS_PER_YEAR = 31536000.0
@@ -195,7 +184,7 @@ class RiverModule(object):
         self._nu = (8.0 * (ch_discharge / ch_width) * A * np.sqrt(c_f)) / (
             C_0 * (sed_sg - 1)
         )
-        ### NEED TO REDO DIFFUSE.PY TO HAVE SIGN OF NU CORRECT (NEG) ABOVE ###
+        # NEED TO REDO DIFFUSE.PY TO HAVE SIGN OF NU CORRECT (NEG) ABOVE ###
         init_cut = init_cut_frac * ch_depth
         self._super_ratio = super_ratio
         self._short_path = short_path
@@ -455,18 +444,18 @@ class RiverModule(object):
 
         """ Floodplain sedimentation (use one or the other) """
         # -------------------------------------------------------
-        ### Deposit blanket across entire subaerial domain: ###
+        # Deposit blanket across entire subaerial domain: ###
         # FP.dep_blanket(self._SL, self._blanket_rate, self._n,
         #                self._riv_i, self._riv_j, self._ch_depth)
 
-        ### Deposit fines adjacent to river channel: ###
+        # Deposit fines adjacent to river channel: ###
         FP.dep_fines(
             self._n, self._riv_i, self._riv_j, self._dn_rc, self._frac_fines, self._SL
         )
         # -------------------------------------------------------
 
         """ Wetland sedimentation """
-        ### no wetlands in first version of coupling to CEM ###
+        # no wetlands in first version of coupling to CEM ###
         # FP.wetlands(self._SL, self._WL_Z, self._WL_dist * self._dy,
         #             self._n, self._riv_i, self._riv_j, self._x, self._y)
 
