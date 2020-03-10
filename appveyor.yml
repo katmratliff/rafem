@@ -1,0 +1,41 @@
+environment:
+
+  global:
+    WITH_COMPILER: "cmd /E:ON /V:ON /C .\\.ci\\appveyor\\run_with_env.cmd"
+
+  matrix:
+
+    - TARGET_ARCH: x64
+      PYTHON: "C:\\Python38-x64"
+
+    - TARGET_ARCH: x64
+      PYTHON: "C:\\Python37-x64"
+
+    - TARGET_ARCH: x64
+      PYTHON: "C:\\Python36-x64"
+
+platform:
+  - x64
+
+init:
+  - "ECHO %PYTHON% %HOME% %PLATFORM%"
+  - "ECHO %APPVEYOR_REPO_BRANCH%"
+
+install:
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  - "pip install . -r requirements-testing.txt"
+  - "python -VV"
+
+build: false
+
+test_script:
+  - cmd: pip install -e .
+  - cmd: rafem --version
+  - cmd: rafem --help
+  - cmd: rafem show --help
+  - cmd: rafem setup --help
+  - cmd: rafem run --help
+  - cmd: rafem plot --help
+  - cmd: rafem show rafem
+  - cmd: rafem ./input-files/default.yaml --save --days=7
+  - cmd: rafem setup run
