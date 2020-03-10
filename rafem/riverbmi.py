@@ -40,6 +40,8 @@ class BmiRiverModule(Bmi):
         with open(config_file, "r") as fp:
             params = yaml.safe_load(fp)
 
+        params.pop("_version", None)
+
         self._n_days = params.pop("days", np.finfo("d").max)
         self._model = RiverModule(**params)
 

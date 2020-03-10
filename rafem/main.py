@@ -262,6 +262,7 @@ def _contents_of_input_file(infile: str) -> str:
     # Avulsion module parameters
     conf = OrderedDict(
         (
+            ("_version", __version__),
             # Space
             ("shape", [120, 200]),  # Length x Width (km)
             ("spacing", [0.1, 0.1]),  # dy, dx (km)
