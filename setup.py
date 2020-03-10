@@ -10,7 +10,7 @@ setup(
     author="Katherine Ratliff",
     author_email="k.ratliff@duke.edu",
     description="River Avulsion Flooplain Evolution Model",
-    long_description=open("README.rst").read(),
+    long_description=open("README.rst", encoding="utf-8").read(),
     classifiers=[
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",

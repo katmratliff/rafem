@@ -20,7 +20,7 @@ init:
 
 install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-  - "pip install . -r requirements-testing.txt"
+  - "pip install -r requirements-testing.txt"
   - "python -VV"
 
 build: false
