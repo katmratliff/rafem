@@ -1,10 +1,10 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys
 import os
 import pathlib
 import re
 import shutil
+import sys
 from collections import OrderedDict
 from functools import partial
 
@@ -16,8 +16,7 @@ import yaml
 from ._version import get_versions
 from .riverbmi import BmiRiverModule
 
-
-__version__ = get_versions()['version']
+__version__ = get_versions()["version"]
 
 out = partial(click.secho, bold=True, err=True)
 err = partial(click.secho, fg="red", err=True)
@@ -59,7 +58,7 @@ def setup_yaml_with_canonical_dict():
     yaml.add_representer(tuple, repr_tuple, Dumper=yaml.SafeDumper)
 
     yaml.add_implicit_resolver(
-        u"tag:yaml.org,2002:float",
+        "tag:yaml.org,2002:float",
         re.compile(
             r"""^(?:
          [-+]?(?:[0-9][0-9_]*)\.[0-9_]*(?:[eE][-+]?[0-9]+)?
@@ -269,46 +268,45 @@ def _contents_of_input_file(infile: str) -> str:
             ("spacing", [0.1, 0.1]),  # dy, dx (km)
             ("n0", 5.0),  # upstream elevation
             ("nslope", 0.001),  # initial landscape slope
-            ("max_rand", 0.1),  # multiply by slope for max height of a random perturbation
-
+            (
+                "max_rand",
+                0.1,
+            ),  # multiply by slope for max height of a random perturbation
             # Time
             ("days", 7),  # number of days to run for
             ("dt_day", 0.01),  # timestep (days)
-
             # Random seed
             ("rand_seed", 623),  # seed for random number generator
-
             # Sea level and subsidence parameters
             ("Initial_SL", 0.0),  # initial sea level
             ("SLRR_m", 0.0),  # sea level rise rate (m/yr)
             ("SubRate_m", 0.0),  # subsidence rate (m/yr)
             ("Sub_Start", 0),  # row where subsidence starts
-
             # River characteristics
             ("ch_width", 10.0),  # characteristic channel width (m)
             ("ch_depth", 1.0),  # characteristic channel depth (m)
             ("ch_discharge", 10.0),  # long-term averaged discharge (m^3/s)
-            ("A", 1.),  # river-dependent const. (1 for meandering; 1.4 for braided)
+            ("A", 1.0),  # river-dependent const. (1 for meandering; 1.4 for braided)
             ("c_f", 0.01),  # drag coefficient
-            ("C_0", 1.),  # sediment concentration on bed
+            ("C_0", 1.0),  # sediment concentration on bed
             ("sed_sg", 2.65),  # sediment specific gravity
             ("init_cut_frac", 1),  # initial cut of the channel into land surface
-
             # Avulsion parameters
             ("super_ratio", 1.0),  # normalized SE ratio to trigger avulsion
             ("short_path", 1),  # flag for using shortest path to complete avulsion
-
             # Floodplain and Wetland parameters
             ("WL_Z", 0.0),  # elevation that wetlands maintain above SL
             ("WL_dist", 0),  # cell distance beyond channel that wetlands exist
             ("blanket_rate_m", 0.0),  # "blanket" deposition rate (m)
-            ("fine_dep_frac", 0.0),  # fraction of channel deposit for adjacent fine deposition
+            (
+                "fine_dep_frac",
+                0.0,
+            ),  # fraction of channel deposit for adjacent fine deposition
             ("splay_type", 2),  # size/type of splay
             ### Splay types: ###
             # splay_type = 0: no splay deposition
             # splay_type = 1: just the first failed avulsion river cell
             # splay_type = 2: first failed cell and adjacent cells
-
             # Saving information
             ("saveavulsions", False),  # flag for saving avulsion info
             ("savecourseupdates", False),  # flag for saving course updates
@@ -331,7 +329,7 @@ def plot(value: str, time: int) -> None:
 
     if time == -1:
         convert = lambda text: int(text) if text.isdigit() else text
-        alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key) ]
+        alphanum_key = lambda key: [convert(c) for c in re.split("([0-9]+)", key)]
         files = sorted([name.name for name in basepath.glob("*.out")], key=alphanum_key)
         filepath = basepath / files[-1]
     else:

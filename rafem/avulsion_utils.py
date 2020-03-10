@@ -1,6 +1,6 @@
 #! /usr/local/bin/python
-import yaml
 import numpy as np
+import yaml
 from scipy.ndimage import measurements
 
 
@@ -17,7 +17,7 @@ def read_params_from_file(fname):
     dict
         A dict of parameters for the heat model.
     """
-    with open(fname, 'r') as fp:
+    with open(fname, "r") as fp:
         params = yaml.safe_load(fp)
 
     return params
@@ -31,8 +31,7 @@ def is_same_row(sub0, sub1):
     return sub0[0] == sub1[0]
 
 
-def channel_is_superelevated(z, riv, behind, channel_depth,
-                             super_ratio, sea_level):
+def channel_is_superelevated(z, riv, behind, channel_depth, super_ratio, sea_level):
     """Check if a channel location is super-elevated.
 
     Parameters
@@ -56,10 +55,10 @@ def channel_is_superelevated(z, riv, behind, channel_depth,
     z_bankfull = z[riv] + channel_depth
 
     # cross-shore river orientation
-    if behind[0]+1 == riv[0]:
+    if behind[0] + 1 == riv[0]:
         if riv[1] == 0:
             adj1 = z[riv[0], riv[1] + 1]
-            adj2 = z[riv[0], riv[1] + 1] # not sure if this needs to be included
+            adj2 = z[riv[0], riv[1] + 1]  # not sure if this needs to be included
         elif riv[1] == z.shape[1] - 1:
             adj1 = z[riv[0], riv[1] - 1]
             adj2 = z[riv[0], riv[1] - 1]
@@ -91,8 +90,8 @@ def channel_is_superelevated(z, riv, behind, channel_depth,
     return superelev
 
 
-def get_link_lengths(path, dx=1., dy=1.):
-    DIAGONAL_LENGTH = np.sqrt(dx ** 2. + dy ** 2.)
+def get_link_lengths(path, dx=1.0, dy=1.0):
+    DIAGONAL_LENGTH = np.sqrt(dx ** 2.0 + dy ** 2.0)
 
     lengths = np.empty(len(path[0]) - 1, dtype=np.float)
     ij_last = path[0][0], path[1][0]
@@ -107,32 +106,45 @@ def get_link_lengths(path, dx=1., dy=1.):
     return lengths
 
 
-def get_channel_distance(path, dx=1., dy=1.):
+def get_channel_distance(path, dx=1.0, dy=1.0):
     total_distance = get_link_lengths(path, dx=dx, dy=dy).cumsum()
     return np.append(0, total_distance)
 
-def find_path_length(n, path, sea_level, ch_depth, slope, dx=1., dy=1.):
-    beach_len = find_new_beach_length(n, (path[0][-2], path[1][-2]),
-                                  (path[0][-1], path[1][-1]), sea_level,
-                                  dx=dx, dy=dy)
 
-    lengths = (get_link_lengths(path, dx=dx, dy=dy))
-    lengths[-1] = np.divide(lengths[-1], 2.) + beach_len
+def find_path_length(n, path, sea_level, ch_depth, slope, dx=1.0, dy=1.0):
+    beach_len = find_new_beach_length(
+        n,
+        (path[0][-2], path[1][-2]),
+        (path[0][-1], path[1][-1]),
+        sea_level,
+        dx=dx,
+        dy=dy,
+    )
+
+    lengths = get_link_lengths(path, dx=dx, dy=dy)
+    lengths[-1] = np.divide(lengths[-1], 2.0) + beach_len
     riv_length = lengths.sum()
 
-    return (riv_length)
+    return riv_length
 
 
-def find_riv_path_length(n, path, sea_level, ch_depth, slope, dx=1., dy=1.):
-    beach_len = find_beach_length_riv_cell (n, (path[0][-2], path[1][-2]),
-                                  (path[0][-1], path[1][-1]), sea_level,
-                                  ch_depth, slope, dx=dx, dy=dy)
+def find_riv_path_length(n, path, sea_level, ch_depth, slope, dx=1.0, dy=1.0):
+    beach_len = find_beach_length_riv_cell(
+        n,
+        (path[0][-2], path[1][-2]),
+        (path[0][-1], path[1][-1]),
+        sea_level,
+        ch_depth,
+        slope,
+        dx=dx,
+        dy=dy,
+    )
 
-    lengths = (get_link_lengths(path, dx=dx, dy=dy))
-    lengths[-1] = np.divide(lengths[-1], 2.) + beach_len
+    lengths = get_link_lengths(path, dx=dx, dy=dy)
+    lengths[-1] = np.divide(lengths[-1], 2.0) + beach_len
     riv_length = lengths.sum()
 
-    return (riv_length)
+    return riv_length
 
 
 def find_point_in_path(path, sub):
@@ -164,7 +176,7 @@ def find_point_in_path(path, sub):
         return None
 
 
-def set_linear_profile(z, riv_ij, dx=1., dy=1.):
+def set_linear_profile(z, riv_ij, dx=1.0, dy=1.0):
     """Set elevations along a path to be linear.
 
     Examples
@@ -200,7 +212,8 @@ def set_linear_profile(z, riv_ij, dx=1., dy=1.):
 
     return z
 
-def set_linear_slope(z, riv_ij, dx=1., dy=1.):
+
+def set_linear_slope(z, riv_ij, dx=1.0, dy=1.0):
     """Set slope along a path to be linear."""
 
     if len(riv_ij) > 1:
@@ -214,7 +227,8 @@ def set_linear_slope(z, riv_ij, dx=1., dy=1.):
 
     return z
 
-def fill_upstream(z, riv_ij, dx=1., dy=1.):
+
+def fill_upstream(z, riv_ij, dx=1.0, dy=1.0):
     """Fill depressions upstream of a pit.
 
     Exammples
@@ -258,22 +272,23 @@ def sort_lowest_neighbors(n, sub):
     i, j = sub
 
     if j == n.shape[1] - 1:
-        di, dj  = np.array([0, 1, 1]), np.array([-1, -1, 0])
+        di, dj = np.array([0, 1, 1]), np.array([-1, -1, 0])
     elif j == 0:
-        di, dj  = np.array([1, 1, 0]), np.array([0, 1, 1])
+        di, dj = np.array([1, 1, 0]), np.array([0, 1, 1])
     else:
-        di, dj = np.array([0, 1, 1, 1, 0]),  np.array([-1, -1, 0, 1, 1])
+        di, dj = np.array([0, 1, 1, 1, 0]), np.array([-1, -1, 0, 1, 1])
 
     sorted = np.argsort(n[i + di, j + dj])
 
     return i + di[sorted], j + dj[sorted]
 
-def find_new_beach_length(n, sub0, sub1, sea_level, dx=1., dy=1.):
+
+def find_new_beach_length(n, sub0, sub1, sea_level, dx=1.0, dy=1.0):
 
     cell_elev = n[sub1] - sea_level
 
-    DIAGONAL_LENGTH = np.sqrt(dx ** 2. + dy ** 2.)
-    
+    DIAGONAL_LENGTH = np.sqrt(dx ** 2.0 + dy ** 2.0)
+
     if is_diagonal_neighbor(sub0, sub1):
         d_dist = DIAGONAL_LENGTH
 
@@ -285,8 +300,10 @@ def find_new_beach_length(n, sub0, sub1, sea_level, dx=1., dy=1.):
 
     return cell_elev * d_dist
 
-def find_beach_length_riv_cell (n, sub0, sub1, sea_level, channel_depth,
-                                slope, dx=1., dy=1.):
+
+def find_beach_length_riv_cell(
+    n, sub0, sub1, sea_level, channel_depth, slope, dx=1.0, dy=1.0
+):
     """Find length of beach in shoreline cell with river.
 
     Parameters
@@ -310,8 +327,8 @@ def find_beach_length_riv_cell (n, sub0, sub1, sea_level, channel_depth,
 
     max_cell_h = slope * dx
 
-    DIAGONAL_LENGTH = np.sqrt(dx ** 2. + dy ** 2.)
-    
+    DIAGONAL_LENGTH = np.sqrt(dx ** 2.0 + dy ** 2.0)
+
     if is_diagonal_neighbor(sub0, sub1):
         d_dist = DIAGONAL_LENGTH
 
@@ -325,7 +342,7 @@ def find_beach_length_riv_cell (n, sub0, sub1, sea_level, channel_depth,
 
 
 def lowest_cell_elev(n, sub):
-    i,j = sub
+    i, j = sub
 
     if j == 0 and i == 0:
         di, dj = np.array([1, 1, 0]), np.array([0, 1, 1])
@@ -336,15 +353,18 @@ def lowest_cell_elev(n, sub):
     elif j == n.shape[1] - 1 and i == n.shape[0] - 1:
         di, dj = np.array([0, -1, -1]), np.array([-1, -1, 0])
     elif j == n.shape[1] - 1:
-        di, dj  = np.array([-1, -1, 0, 1, 1]), np.array([0, -1, -1, -1, 0])
+        di, dj = np.array([-1, -1, 0, 1, 1]), np.array([0, -1, -1, -1, 0])
     elif j == 0:
-        di, dj  = np.array([-1, -1, 0, 1, 1]), np.array([0, 1, 1, 1, 0])
+        di, dj = np.array([-1, -1, 0, 1, 1]), np.array([0, 1, 1, 1, 0])
     elif i == n.shape[0] - 1:
         di, dj = np.array([0, -1, -1, -1, 0]), np.array([-1, -1, 0, 1, 1])
     elif i == 0:
         di, dj = np.array([0, 1, 1, 1, 0]), np.array([-1, -1, 0, 1, 1])
     else:
-        di, dj = np.array([0, -1, -1, -1, 0, 1, 1, 1]),  np.array([-1, -1, 0, 1, 1, 1, 0, -1])
+        di, dj = (
+            np.array([0, -1, -1, -1, 0, 1, 1, 1]),
+            np.array([-1, -1, 0, 1, 1, 1, 0, -1]),
+        )
 
     lowest = np.amin(n[i + di, j + dj])
 
@@ -352,7 +372,7 @@ def lowest_cell_elev(n, sub):
 
 
 def lowest_face(n, sub):
-    i,j = sub
+    i, j = sub
 
     shore_cell = 0
 
@@ -365,15 +385,15 @@ def lowest_face(n, sub):
     elif j == n.shape[1] - 1 and i == n.shape[0] - 1:
         di, dj = np.array([0, -1]), np.array([-1, 0])
     elif j == n.shape[1] - 1:
-        di, dj  = np.array([-1, 0, 1]), np.array([0, -1, 0])
+        di, dj = np.array([-1, 0, 1]), np.array([0, -1, 0])
     elif j == 0:
-        di, dj  = np.array([-1, 0, 1]), np.array([0, 1, 0])
+        di, dj = np.array([-1, 0, 1]), np.array([0, 1, 0])
     elif i == n.shape[0] - 1:
         di, dj = np.array([0, -1, 0]), np.array([-1, 0, 1])
     elif i == 0:
         di, dj = np.array([0, 1, 0]), np.array([-1, 0, 1])
     else:
-        di, dj = np.array([0, -1, 0, 1]),  np.array([-1, 0, 1, 0])
+        di, dj = np.array([0, -1, 0, 1]), np.array([-1, 0, 1, 0])
 
     lowest_face = np.amin(n[i + di, j + dj])
 
@@ -385,7 +405,7 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand, SL
     test_elev = z - sea_level
     max_cell_h = slope * dx
     riv_prof = test_elev[riv_i, riv_j]
-    test_elev[riv_i, riv_j] += 2*ch_depth
+    test_elev[riv_i, riv_j] += 2 * ch_depth
 
     # set new subaerial cells to marsh elevation
     test_elev[test_elev == 0] = max_cell_h
@@ -408,33 +428,38 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand, SL
     # ocean_and_shore[test_elev > 0] = 0
 
     # create mask for pond cells and fix them
-    area = measurements.sum(ocean_mask, labeled_ponds, index=np.arange(labeled_ponds.max() + 1))
+    area = measurements.sum(
+        ocean_mask, labeled_ponds, index=np.arange(labeled_ponds.max() + 1)
+    )
     areaPonds = area[labeled_ponds]
     labeled_ponds[areaPonds == areaPonds.max()] = 0
 
-    #finish creating ocean and shoreline mask
+    # finish creating ocean and shoreline mask
     ocean_and_shore[areaPonds != areaPonds.max()] = 0
 
     # something here to get rid of ocean cells
     test_elev[labeled_ponds > 0] = max_cell_h + SLRR + (np.random.rand() * max_rand)
 
     # raise cells close to sea level above it
-    test_elev[(test_elev >= max_cell_h) & (test_elev <= (max_cell_h + SLRR))] = \
-        (max_cell_h + SLRR + (np.random.rand() * max_rand))
+    test_elev[(test_elev >= max_cell_h) & (test_elev <= (max_cell_h + SLRR))] = (
+        max_cell_h + SLRR + (np.random.rand() * max_rand)
+    )
 
     riv_buffer = np.zeros_like(test_elev)
     riv_buffer[riv_i, riv_j] = 1
-    riv_buffer[riv_i[1:]-1, riv_j[1:]] = 1
+    riv_buffer[riv_i[1:] - 1, riv_j[1:]] = 1
 
-    for i in range(1, test_elev.shape[0]-1):
+    for i in range(1, test_elev.shape[0] - 1):
         for j in range(test_elev.shape[1]):
-            if (not ocean_and_shore[i, j]
-                and not ocean_and_shore[i-1, j]
-                and not ocean_and_shore[i+1, j]
-                and not riv_buffer[i, j]):
-                if test_elev[i+1, j] >= test_elev[i, j]:
-                    test_elev[i, j] = test_elev[i+1, j] + (np.random.rand() * slope)
-    
+            if (
+                not ocean_and_shore[i, j]
+                and not ocean_and_shore[i - 1, j]
+                and not ocean_and_shore[i + 1, j]
+                and not riv_buffer[i, j]
+            ):
+                if test_elev[i + 1, j] >= test_elev[i, j]:
+                    test_elev[i, j] = test_elev[i + 1, j] + (np.random.rand() * slope)
+
     test_elev[riv_i, riv_j] = riv_prof
 
     z = test_elev + sea_level
@@ -442,43 +467,48 @@ def fix_elevations(z, riv_i, riv_j, ch_depth, sea_level, slope, dx, max_rand, SL
     return z
 
 
-def fill_abandoned_channel(breach_loc, n, new, riv_i, riv_j, current_SL,
-                           ch_depth, slope, dx):
+def fill_abandoned_channel(
+    breach_loc, n, new, riv_i, riv_j, current_SL, ch_depth, slope, dx
+):
 
     new_profile = n[new[0], new[1]]
-    
+
     max_shorecell_h = current_SL + (slope * dx)
     riv_cells = np.zeros_like(n)
-    riv_cells[riv_i,riv_j] = 1
-    riv_cells[new[0],new[1]] = 1
+    riv_cells[riv_i, riv_j] = 1
+    riv_cells[new[0], new[1]] = 1
 
-    n[riv_i[-1],riv_j[-1]] += ch_depth
+    n[riv_i[-1], riv_j[-1]] += ch_depth
 
     if len(riv_i) - breach_loc > 1:
-        for k in range(breach_loc, len(riv_i)-1):
+        for k in range(breach_loc, len(riv_i) - 1):
             if (riv_j[k] == n.shape[1] - 1) or (riv_j[k] == 0):
                 n[riv_i[k], riv_j[k]] = max_shorecell_h + (np.random.rand() * slope)
-            elif (riv_cells[riv_i[k], riv_j[k]+1] and riv_cells[riv_i[k], riv_j[k]-1]):
+            elif (
+                riv_cells[riv_i[k], riv_j[k] + 1] and riv_cells[riv_i[k], riv_j[k] - 1]
+            ):
                 n[riv_i[k], riv_j[k]] = max_shorecell_h + (np.random.rand() * slope)
-            elif riv_cells[riv_i[k], riv_j[k]+1]:
-                if n[riv_i[k], riv_j[k]-1] <= max_shorecell_h:
+            elif riv_cells[riv_i[k], riv_j[k] + 1]:
+                if n[riv_i[k], riv_j[k] - 1] <= max_shorecell_h:
                     n[riv_i[k], riv_j[k]] = max_shorecell_h + (np.random.rand() * slope)
                 else:
-                    n[riv_i[k], riv_j[k]] = (n[riv_i[k], riv_j[k]-1]
-                                             + (np.random.rand() * slope))
-            elif riv_cells[riv_i[k], riv_j[k]-1]:
-                if n[riv_i[k], riv_j[k]+1] <= max_shorecell_h:
+                    n[riv_i[k], riv_j[k]] = n[riv_i[k], riv_j[k] - 1] + (
+                        np.random.rand() * slope
+                    )
+            elif riv_cells[riv_i[k], riv_j[k] - 1]:
+                if n[riv_i[k], riv_j[k] + 1] <= max_shorecell_h:
                     n[riv_i[k], riv_j[k]] = max_shorecell_h + (np.random.rand() * slope)
                 else:
-                    n[riv_i[k], riv_j[k]] = (n[riv_i[k], riv_j[k]+1]
-                                             + (np.random.rand() * slope))
-            elif ((n[riv_i[k], riv_j[k]+1] <= max_shorecell_h) or
-                  (n[riv_i[k], riv_j[k]-1] <= max_shorecell_h)):
-                  n[riv_i[k], riv_j[k]] = max_shorecell_h + (np.random.rand() * slope)
+                    n[riv_i[k], riv_j[k]] = n[riv_i[k], riv_j[k] + 1] + (
+                        np.random.rand() * slope
+                    )
+            elif (n[riv_i[k], riv_j[k] + 1] <= max_shorecell_h) or (
+                n[riv_i[k], riv_j[k] - 1] <= max_shorecell_h
+            ):
+                n[riv_i[k], riv_j[k]] = max_shorecell_h + (np.random.rand() * slope)
             else:
-                n[riv_i[k], riv_j[k]] = (((n[riv_i[k], riv_j[k]+1]
-                                           + n[riv_i[k], riv_j[k]-1])/2)
-                                           + (np.random.rand() * slope))
+                n[riv_i[k], riv_j[k]] = (
+                    (n[riv_i[k], riv_j[k] + 1] + n[riv_i[k], riv_j[k] - 1]) / 2
+                ) + (np.random.rand() * slope)
 
     n[new[0], new[1]] = new_profile
-

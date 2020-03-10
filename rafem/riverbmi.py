@@ -3,7 +3,6 @@
 
 import numpy as np
 import yaml
-
 from bmipy import Bmi
 
 from .rivermodule import RiverModule

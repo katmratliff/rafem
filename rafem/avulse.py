@@ -1,23 +1,24 @@
 #! /usr/local/bin/python
 
-import numpy as np
 import math
 
-from . import steep_desc, downcut, FP
+import numpy as np
 
-from .diffuse import calc_crevasse_dep
+from . import FP, downcut, steep_desc
 from .avulsion_utils import (
-    find_point_in_path,
     channel_is_superelevated,
+    fill_abandoned_channel,
     find_path_length,
+    find_point_in_path,
     find_riv_path_length,
     set_linear_slope,
-    fill_abandoned_channel,
 )
+from .diffuse import calc_crevasse_dep
 
 
-def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
-                       slope, dx=1., dy=1.,):
+def avulse_to_new_path(
+    z, old, new, sea_level, channel_depth, avulsion_type, slope, dx=1.0, dy=1.0,
+):
     """Avulse the river to a new path.
 
     Given two river paths, *old* and *new*, avulse the river to a new river
@@ -102,7 +103,7 @@ def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
     old_i, old_j = old
     new_i, new_j = new
     # sets avulsion to be regional, may be updated again below (if local)
-            
+
     # maybe this should be len(test_old_x)-1?
     ind = find_point_in_path((old_i, old_j), (new_i[-1], new_j[-1]))
 
@@ -111,23 +112,35 @@ def avulse_to_new_path(z, old, new, sea_level, channel_depth, avulsion_type,
 
         downcut.cut_local(new_i, new_j, z, dx=dx, dy=dy)
 
-        new_i = np.append(new_i, old_i[ind + 1:])
-        new_j = np.append(new_j, old_j[ind + 1:])
+        new_i = np.append(new_i, old_i[ind + 1 :])
+        new_j = np.append(new_j, old_j[ind + 1 :])
     else:
         max_cell_h = slope * dx
         if (z[new_i[-1], new_j[-1]] - sea_level) < (0.001 * max_cell_h):
             z[new_i[-1], new_j[-1]] = (0.001 * max_cell_h) + sea_level
-        
-        downcut.cut_new(new_i, new_j, z, sea_level, channel_depth,
-                        dx=dx, dy=dy)
+
+        downcut.cut_new(new_i, new_j, z, sea_level, channel_depth, dx=dx, dy=dy)
 
     return (new_i, new_j), avulsion_type
 
 
 # determines if there is an avulsion along river course
-def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
-                  short_path, splay_type, slope, splay_depth, 
-                  nu, dt, dx=1., dy=1.):
+def find_avulsion(
+    riv_i,
+    riv_j,
+    n,
+    super_ratio,
+    current_SL,
+    ch_depth,
+    short_path,
+    splay_type,
+    slope,
+    splay_depth,
+    nu,
+    dt,
+    dx=1.0,
+    dy=1.0,
+):
     new = riv_i, riv_j
     old = riv_i, riv_j
     avulsion_type = 0
@@ -142,49 +155,77 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
     path_diff = np.zeros(0)
     path_difference = 0
 
-    old_length = find_riv_path_length(n, old, current_SL, ch_depth,
-                                      slope, dx=dx, dy=dy)
+    old_length = find_riv_path_length(n, old, current_SL, ch_depth, slope, dx=dx, dy=dy)
 
-    for a in range(1, len(riv_i)-1):
-        if channel_is_superelevated(n, (riv_i[a], riv_j[a]),
-                                    (riv_i[a-1], riv_j[a-1]),
-                                    ch_depth, super_ratio, current_SL):
+    for a in range(1, len(riv_i) - 1):
+        if channel_is_superelevated(
+            n,
+            (riv_i[a], riv_j[a]),
+            (riv_i[a - 1], riv_j[a - 1]),
+            ch_depth,
+            super_ratio,
+            current_SL,
+        ):
 
             # if superelevation greater than trigger ratio, determine
             # new steepest descent path
-            new = steep_desc.find_course(n, riv_i, riv_j, a, ch_depth,
-                                         sea_level=current_SL)
+            new = steep_desc.find_course(
+                n, riv_i, riv_j, a, ch_depth, sea_level=current_SL
+            )
 
             if n[new[0][-1], new[1][-1]] < current_SL:
-                new_length = find_riv_path_length(n, new, current_SL, ch_depth,
-                                                  slope, dx=dx, dy=dy)
+                new_length = find_riv_path_length(
+                    n, new, current_SL, ch_depth, slope, dx=dx, dy=dy
+                )
             else:
-                new_length = find_path_length(n, new, current_SL, ch_depth,
-                                              slope, dx=dx, dy=dy)
+                new_length = find_path_length(
+                    n, new, current_SL, ch_depth, slope, dx=dx, dy=dy
+                )
 
             if new_length < old_length:
                 # calculate slope of new path
 
                 if len(new[0][a:]) <= 1:
-                    avulsed_length = find_path_length(n, (new[0][a-1:], new[1][a-1:]),
-                                                      current_SL, ch_depth, slope,
-                                                      dx=dx, dy=dy)
-                    slope_new_path = ((n[new[0][-2], new[1][-2]] - n[new[0][-1], new[1][-1]])
-                                  / avulsed_length)
+                    avulsed_length = find_path_length(
+                        n,
+                        (new[0][a - 1 :], new[1][a - 1 :]),
+                        current_SL,
+                        ch_depth,
+                        slope,
+                        dx=dx,
+                        dy=dy,
+                    )
+                    slope_new_path = (
+                        n[new[0][-2], new[1][-2]] - n[new[0][-1], new[1][-1]]
+                    ) / avulsed_length
 
                 elif n[new[0][-1], new[1][-1]] < current_SL:
-                    avulsed_length = find_riv_path_length(n, (new[0][a:], new[1][a:]),
-                                                      current_SL, ch_depth,
-                                                      slope, dx=dx, dy=dy)
-                    slope_new_path = ((n[new[0][a], new[1][a]] - n[new[0][-1], new[1][-1]])
-                                      / avulsed_length)
+                    avulsed_length = find_riv_path_length(
+                        n,
+                        (new[0][a:], new[1][a:]),
+                        current_SL,
+                        ch_depth,
+                        slope,
+                        dx=dx,
+                        dy=dy,
+                    )
+                    slope_new_path = (
+                        n[new[0][a], new[1][a]] - n[new[0][-1], new[1][-1]]
+                    ) / avulsed_length
 
                 else:
-                    avulsed_length = find_path_length(n, (new[0][a:], new[1][a:]),
-                                                      current_SL, ch_depth, slope,
-                                                      dx=dx, dy=dy)
-                    slope_new_path = ((n[new[0][a], new[1][a]] - n[new[0][-1], new[1][-1]])
-                                      / avulsed_length)
+                    avulsed_length = find_path_length(
+                        n,
+                        (new[0][a:], new[1][a:]),
+                        current_SL,
+                        ch_depth,
+                        slope,
+                        dx=dx,
+                        dy=dy,
+                    )
+                    slope_new_path = (
+                        n[new[0][a], new[1][a]] - n[new[0][-1], new[1][-1]]
+                    ) / avulsed_length
 
                 avul_locs = np.append(avul_locs, a)
                 path_slopes = np.append(path_slopes, slope_new_path)
@@ -192,8 +233,7 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
 
             crevasse_locs = np.vstack((crevasse_locs, [new[0][a], new[1][a], a]))
 
-
-    if (crevasse_locs.sum() > 0):
+    if crevasse_locs.sum() > 0:
         crevasse_locs = np.delete(crevasse_locs, 0, 0)
 
     if avul_locs.size > 0:
@@ -202,28 +242,35 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
         loc = avul_locs[max_slope]
         path_difference = path_diff[max_slope]
 
-        new = steep_desc.find_course(n, riv_i, riv_j, loc, ch_depth,
-                                     sea_level=current_SL)
+        new = steep_desc.find_course(
+            n, riv_i, riv_j, loc, ch_depth, sea_level=current_SL
+        )
 
         avulsion_type = 1
 
-        new, avulsion_type = avulse_to_new_path(n,
-                                 (riv_i[loc - 1:], riv_j[loc - 1:]),
-                                 (new[0][loc - 1:], new[1][loc - 1:]),
-                                 current_SL, ch_depth, avulsion_type,
-                                 slope, dx=dx, dy=dy)
+        new, avulsion_type = avulse_to_new_path(
+            n,
+            (riv_i[loc - 1 :], riv_j[loc - 1 :]),
+            (new[0][loc - 1 :], new[1][loc - 1 :]),
+            current_SL,
+            ch_depth,
+            avulsion_type,
+            slope,
+            dx=dx,
+            dy=dy,
+        )
 
-        new = (np.append(riv_i[:loc - 1], new[0]),
-               np.append(riv_j[:loc - 1], new[1]))
+        new = (np.append(riv_i[: loc - 1], new[0]), np.append(riv_j[: loc - 1], new[1]))
 
-        avulse_length = find_riv_path_length(n, (riv_i[loc:], riv_j[loc:]),
-                                             current_SL, ch_depth,
-                                             slope, dx=dx, dy=dy)
+        avulse_length = find_riv_path_length(
+            n, (riv_i[loc:], riv_j[loc:]), current_SL, ch_depth, slope, dx=dx, dy=dy
+        )
 
         # fill up old channel... could be some fraction in the future
         # (determines whether channels are repellors or attractors)
-        fill_abandoned_channel(loc, n, new, riv_i, riv_j, current_SL,
-                               ch_depth, slope, dx)
+        fill_abandoned_channel(
+            loc, n, new, riv_i, riv_j, current_SL, ch_depth, slope, dx
+        )
 
         crevasse_locs = np.delete(crevasse_locs, max_slope, 0)
 
@@ -240,12 +287,27 @@ def find_avulsion(riv_i, riv_j, n, super_ratio, current_SL, ch_depth,
 
         for i in range(crevasse_locs.shape[0]):
 
-            splay_dep = calc_crevasse_dep(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n,
-                                          current_SL, slope, crevasse_locs[i][2])
+            splay_dep = calc_crevasse_dep(
+                dx,
+                dy,
+                nu,
+                dt,
+                ch_depth,
+                riv_i,
+                riv_j,
+                n,
+                current_SL,
+                slope,
+                crevasse_locs[i][2],
+            )
 
             if splay_dep > 0:
-                FP.dep_splay(n, (crevasse_locs[i][0], crevasse_locs[i][1]),
-                             splay_dep, splay_type=splay_type)
+                FP.dep_splay(
+                    n,
+                    (crevasse_locs[i][0], crevasse_locs[i][1]),
+                    splay_dep,
+                    splay_type=splay_type,
+                )
 
         # n[riv_i, riv_j] = old_river_elevations
         n[new[0], new[1]] = new_river_elevations

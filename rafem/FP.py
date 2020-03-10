@@ -23,8 +23,10 @@ def add_to_neighboring_cells(z, sub, inc, win=1):
     >>> x = np.zeros((4, 5))
     >>> add_around_cell(x, (0, 0), 1)
     """
-    z[max(0, sub[0] - win): min(z.shape[0], sub[0] + win + 1),
-      max(0, sub[1] - win): min(z.shape[1], sub[1] + win + 1)] += inc
+    z[
+        max(0, sub[0] - win) : min(z.shape[0], sub[0] + win + 1),
+        max(0, sub[1] - win) : min(z.shape[1], sub[1] + win + 1),
+    ] += inc
 
 
 def dep_blanket(current_SL, blanket_rate, n, riv_i, riv_j, ch_depth):
@@ -50,16 +52,16 @@ def dep_blanket(current_SL, blanket_rate, n, riv_i, riv_j, ch_depth):
     # deposit "blanket" deposition on qualified cells
     n[depo_flag == 1] += blanket_rate
 
-    #dn_fp = depo_flag * blanket_rate
+    # dn_fp = depo_flag * blanket_rate
 
-    #return n, dn_fp
+    # return n, dn_fp
 
 
 def distance_to_river(y, y0):
     return np.absolute(y - y0)
 
 
-def within_wetland(y, riv_ind, wetland_width=0.):
+def within_wetland(y, riv_ind, wetland_width=0.0):
     dy = distance_to_river(y, y[riv_ind])
     is_wetland = dy <= wetland_width
     is_wetland[riv_ind] = False
@@ -113,8 +115,8 @@ def dep_splay(n, ij_fail, splay_dep, splay_type=1):
 
     if splay_type == 1:  # splay deposition just at first failed river cell
         n[ij_fail] += splay_dep
-    if splay_type == 2:     # splay deposition at first failed river cell
-                            # and the adjacent cells
+    if splay_type == 2:  # splay deposition at first failed river cell
+        # and the adjacent cells
         add_to_neighboring_cells(n, ij_fail, splay_dep)
 
 
@@ -138,22 +140,26 @@ def dep_fines(n, riv_i, riv_j, dn_rc, frac_fines, SL):
             elif riv_j[k] == n.shape[1] - 1 and riv_i[k] == n.shape[0] - 1:
                 di, dj = np.array([0, -1, -1]), np.array([-1, -1, 0])
             elif riv_j[k] == n.shape[1] - 1:
-                di, dj  = np.array([-1, -1, 0, 1, 1]), np.array([0, -1, -1, -1, 0])
+                di, dj = np.array([-1, -1, 0, 1, 1]), np.array([0, -1, -1, -1, 0])
             elif riv_j[k] == 0:
-                di, dj  = np.array([-1, -1, 0, 1, 1]), np.array([0, 1, 1, 1, 0])
+                di, dj = np.array([-1, -1, 0, 1, 1]), np.array([0, 1, 1, 1, 0])
             elif riv_i[k] == n.shape[0] - 1:
                 di, dj = np.array([0, -1, -1, -1, 0]), np.array([-1, -1, 0, 1, 1])
             elif riv_i[k] == 0:
                 di, dj = np.array([0, 1, 1, 1, 0]), np.array([-1, -1, 0, 1, 1])
             else:
-                di, dj = np.array([0, -1, -1, -1, 0, 1, 1, 1]),  np.array([-1, -1, 0, 1, 1, 1, 0, -1])
+                di, dj = (
+                    np.array([0, -1, -1, -1, 0, 1, 1, 1]),
+                    np.array([-1, -1, 0, 1, 1, 1, 0, -1]),
+                )
 
             for m in range(len(di)):
-                if ((fine_dep[riv_i[k]+di[m], riv_j[k]+dj[m]] < dep_rate)
-                    and (n[riv_i[k]+di[m], riv_j[k]+dj[m]] > SL)):
-                    fine_dep[riv_i[k]+di[m], riv_j[k]+dj[m]] = dep_rate
+                if (fine_dep[riv_i[k] + di[m], riv_j[k] + dj[m]] < dep_rate) and (
+                    n[riv_i[k] + di[m], riv_j[k] + dj[m]] > SL
+                ):
+                    fine_dep[riv_i[k] + di[m], riv_j[k] + dj[m]] = dep_rate
 
-    fine_dep[riv_i,riv_j] = 0
+    fine_dep[riv_i, riv_j] = 0
     n += fine_dep
 
     return
