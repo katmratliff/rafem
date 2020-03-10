@@ -50,5 +50,11 @@ install:
 script:
 - rafem --version
 - rafem --help
+- rafem show --help
+- rafem setup --help
+- rafem run --help
+- rafem plot --help
+- rafem show rafem
 - rafem ./input-files/default.yaml --save --days=7
+- mkdir example && rafem --cd example setup run
 after_success: coveralls
