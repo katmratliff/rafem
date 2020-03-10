@@ -2,7 +2,7 @@
 """Basic Model Interface implementation for River Module"""
 
 import numpy as np
-from six.moves import range
+import yaml
 
 from bmipy import Bmi
 
@@ -38,7 +38,13 @@ class BmiRiverModule(Bmi):
         self._var_units = {}
 
     def initialize(self, config_file):
-        self._model = RiverModule.from_path(config_file)
+        with open(config_file, "r") as fp:
+            params = yaml.safe_load(fp)
+
+        self._n_days = params.pop("days", np.finfo("d").max)
+        self._model = RiverModule(**params)
+
+        # self._model = RiverModule.from_path(config_file)
 
         self._values = {
             "channel_centerline__x_coordinate": lambda: self._model.river_x_coordinates,
@@ -234,11 +240,17 @@ class BmiRiverModule(Bmi):
     def get_output_var_names(self):
         return self._output_var_names
 
+    def get_input_item_count(self):
+        return len(self._input_var_names)
+
+    def get_output_item_count(self):
+        return len(self._output_var_names)
+
     def get_start_time(self):
         return 0.0
 
     def get_end_time(self):
-        return np.finfo("d").max
+        return self._n_days
 
     def get_current_time(self):
         return self._model.time
@@ -260,6 +272,9 @@ class BmiRiverModule(Bmi):
 
     def get_grid_edge_nodes(self, grid, edge_nodes):
         raise NotImplementedError("get_grid_edge_nodes")
+
+    def get_grid_face_edges(self, grid, face_edges):
+        raise NotImplementedError("get_grid_face_edges")
 
     def get_grid_face_nodes(self, grid, face_nodes):
         raise NotImplementedError("get_grid_edge_nodes")
