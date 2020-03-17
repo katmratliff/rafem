@@ -191,7 +191,20 @@ def rafem(cd) -> None:
 @click.option("-v", "--verbose", is_flag=True, help="Emit status messages to stderr.")
 @click.option("--dry-run", is_flag=True, help="Do not actually run the model")
 def run(dry_run: bool, verbose: bool) -> None:
-    run_dir = str(pathlib.Path.cwd())
+    """Run a simulation."""
+    run_dir = pathlib.Path.cwd()
+    config_file = run_dir / "rafem.yaml"
+
+    message = []
+    if not config_file.is_file():
+        message.append("missing RAFEM configuration file: {0}".format(config_file))
+    if (run_dir / "output").exists():
+        message.append(
+            "RAFEM output directory already exists: {0}".format(run_dir / "output")
+        )
+    if message:
+        err(os.linesep.join(message))
+        raise click.Abort(os.linesep.join(message))
 
     if dry_run:
         out("Nothing to do. 😴")
@@ -215,7 +228,7 @@ def run(dry_run: bool, verbose: bool) -> None:
 
             with click.progressbar(
                 range(n_steps),
-                label=" ".join(["🚀", run_dir]),
+                label=" ".join(["🚀", str(run_dir)]),
                 item_show_func=lambda step: "day {0} of {1}".format(
                     int(0 if step is None else step * avulsion.get_time_step()), n_days
                 ),
@@ -246,7 +259,7 @@ def setup() -> None:
     if existing_files:
         for name in existing_files:
             err(
-                f"{name}: File exists. Either remove and then rerun or choose a different destination folder",
+                f"{name}: File exists. Either remove and then rerun or setup in a different folder",
             )
     else:
         for fname in files:
@@ -254,7 +267,7 @@ def setup() -> None:
                 print(_contents_of_input_file(fname.stem), file=fp)
 
     if existing_files:
-        sys.exit(len(existing_files))
+        raise click.Abort()
 
 
 def _contents_of_input_file(infile: str) -> str:
