@@ -128,7 +128,13 @@ There are three main sets of output files. These are writen to the
 *  *output/profile*: elevations along the river profile
 *  *output/river*: x, and y coordinates of the river profile
 
-Each of these files is a CSV formatted text file.
+Each of these files is a CSV formatted text file. To create a plot
+of one of these output files, use the *plot* subcommand. For example::
+
+  $ rafem plot elevation
+
+will plot the final elevations for the simulation in the current directory.
+Use *rafem plot --help* to see further options.
 
 Examples
 --------
