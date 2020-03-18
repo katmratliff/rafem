@@ -2,11 +2,7 @@
 
 import numpy as np
 
-from .avulsion_utils import (
-    is_diagonal_neighbor,
-    get_channel_distance,
-    find_beach_length_riv_cell,
-)
+from .avulsion_utils import find_beach_length_riv_cell, get_channel_distance
 
 
 def solve_second_derivative(x, y):
@@ -36,9 +32,11 @@ def solve_second_derivative(x, y):
     x3_minus_x2 = x[2:] - x[1:-1]
     x3_minus_x1 = x[2:] - x[:-2]
 
-    return 2 * (y[:-2] / (x2_minus_x1 * x3_minus_x1) -
-                y[1:-1] / (x3_minus_x2 * x2_minus_x1) +
-                y[2:] / (x3_minus_x2 * x3_minus_x1))
+    return 2 * (
+        y[:-2] / (x2_minus_x1 * x3_minus_x1)
+        - y[1:-1] / (x3_minus_x2 * x2_minus_x1)
+        + y[2:] / (x3_minus_x2 * x3_minus_x1)
+    )
 
 
 def smooth_rc(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n, sea_level, slope):
@@ -62,10 +60,16 @@ def smooth_rc(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n, sea_level, slope):
         2D array of grid elevations.
     """
 
-    beach_len = find_beach_length_riv_cell(n, (riv_i[-2], riv_j[-2]),
-                                  (riv_i[-1], riv_j[-1]), sea_level,
-                                  ch_depth, slope, dx=dx, dy=dy)
-
+    beach_len = find_beach_length_riv_cell(
+        n,
+        (riv_i[-2], riv_j[-2]),
+        (riv_i[-1], riv_j[-1]),
+        sea_level,
+        ch_depth,
+        slope,
+        dx=dx,
+        dy=dy,
+    )
 
     n_river = n[riv_i, riv_j]
     n_river[-1] = sea_level - ch_depth
@@ -78,13 +82,20 @@ def smooth_rc(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n, sea_level, slope):
 
     return dn_rc
 
-def calc_crevasse_dep(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n,
-                      sea_level, slope, loc):
+
+def calc_crevasse_dep(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n, sea_level, slope, loc):
     """Calculate crevasse splay deposition rate."""
 
-    beach_len = find_beach_length_riv_cell(n, (riv_i[-2], riv_j[-2]),
-                                  (riv_i[-1], riv_j[-1]), sea_level,
-                                  ch_depth, slope, dx=dx, dy=dy)
+    beach_len = find_beach_length_riv_cell(
+        n,
+        (riv_i[-2], riv_j[-2]),
+        (riv_i[-1], riv_j[-1]),
+        sea_level,
+        ch_depth,
+        slope,
+        dx=dx,
+        dy=dy,
+    )
 
     n_river = n[riv_i, riv_j]
     n_river[-1] = sea_level - ch_depth
@@ -96,11 +107,11 @@ def calc_crevasse_dep(dx, dy, nu, dt, ch_depth, riv_i, riv_j, n,
     # average deposition in 3 cells above 'breach' to find
     # crevasse splay deposition rate
     if len(dn_rc[:loc]) >= 3:
-        splay_dep = np.average(dn_rc[loc-3:loc])
-    else: splay_dep = dn_rc[loc-1]
+        splay_dep = np.average(dn_rc[loc - 3 : loc])
+    else:
+        splay_dep = dn_rc[loc - 1]
 
     if splay_dep < 0:
         splay_dep = 0
 
     return splay_dep
-

@@ -1,2 +1,4 @@
 include versioneer.py
 include rafem/_version.py
+include requirements.txt
+include LICENSE

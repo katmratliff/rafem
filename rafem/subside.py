@@ -8,7 +8,7 @@ def linear_subsidence(n, riv_i, riv_j, ch_depth, sub_rate, sub_start, SL):
     Updated version could be to subside at an increasing rate towards ocean. """
 
     subside_cells = np.zeros_like(n)
-    subside_cells[sub_start:,:] = 1
+    subside_cells[sub_start:, :] = 1
 
     subaerial_elev = np.copy(n)
     subaerial_elev[riv_i, riv_j] += ch_depth
@@ -16,4 +16,3 @@ def linear_subsidence(n, riv_i, riv_j, ch_depth, sub_rate, sub_start, SL):
     subside_cells[subaerial_elev <= SL] = 0
 
     n[subside_cells == 1] -= sub_rate
-    

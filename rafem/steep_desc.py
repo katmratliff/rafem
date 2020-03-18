@@ -1,8 +1,5 @@
 #! /usr/local/bin/python
-import warnings
-
 import numpy as np
-from six.moves import range
 
 from . import downcut
 from .avulsion_utils import lowest_cell_elev, sort_lowest_neighbors
@@ -24,11 +21,11 @@ def lowest_neighbor(n, sub):
     i, j = sub
 
     if j == n.shape[1] - 1:
-        di, dj  = np.array([0, 1, 1]), np.array([-1, -1, 0])
+        di, dj = np.array([0, 1, 1]), np.array([-1, -1, 0])
     elif j == 0:
-        di, dj  = np.array([1, 1, 0]), np.array([0, 1, 1])
+        di, dj = np.array([1, 1, 0]), np.array([0, 1, 1])
     else:
-        di, dj = np.array([0, 1, 1, 1, 0]),  np.array([-1, -1, 0, 1, 1])
+        di, dj = np.array([0, 1, 1, 1, 0]), np.array([-1, -1, 0, 1, 1])
 
     lowest = np.argmin(n[i + di, j + dj])
 
@@ -39,13 +36,11 @@ def lowest_neighbor_prograde(n, sub):
     i, j = sub
 
     if j == n.shape[1] - 1:
-        di, dj  = np.array([0, 1, 1]), np.array([-1, -1, 0])
+        di, dj = np.array([0, 1, 1]), np.array([-1, -1, 0])
     elif j == 0:
-        di, dj  = np.array([1, 1, 0]), np.array([0, 1, 1])
+        di, dj = np.array([1, 1, 0]), np.array([0, 1, 1])
     else:
-        di, dj = np.array([0, 1, 1, 1, 0]),  np.array([-1, -1, 0, 1, 1])
-
-    subaerial_cells = np.where(n[i + di, j + dj] > 0)
+        di, dj = np.array([0, 1, 1, 1, 0]), np.array([-1, -1, 0, 1, 1])
 
     subaerial_low = min(x for x in (n[i + di, j + dj]) if x > 0)
     lowest = np.where((n[i + di, j + dj]) == subaerial_low)[0][0]
@@ -89,6 +84,7 @@ def at_river_mouth(z, sub, z0):
     except IndexError:
         return True
 
+
 def at_end_of_domain(z, sub):
     """Check if a cell a river mouth at the end of domain.
     Parameters
@@ -106,6 +102,7 @@ def at_end_of_domain(z, sub):
         return sub[0] == z.shape[0] - 1
     except IndexError:
         return True
+
 
 def riv_cell_at_sea_level(z, sub, z0):
     """Check if a river cell is at sea level.
@@ -126,6 +123,7 @@ def riv_cell_at_sea_level(z, sub, z0):
         below_sea_level(z[sub], z0)
     except IndexError:
         return True
+
 
 def find_course(z, riv_i, riv_j, SE_loc, channel_depth, sea_level=None):
     """Find the course of a river.
@@ -177,10 +175,10 @@ def find_course(z, riv_i, riv_j, SE_loc, channel_depth, sea_level=None):
     riv_i = riv_i[:SE_loc]
     riv_j = riv_j[:SE_loc]
 
-    assert(riv_i.size > 0 and riv_j.size > 0)
+    assert riv_i.size > 0 and riv_j.size > 0
 
     if sea_level is None:
-        sea_level = - np.finfo(float).max
+        sea_level = -np.finfo(float).max
 
     for n in range(1, riv_i.size):
         if at_end_of_domain(z, (riv_i[n - 1], riv_j[n - 1])):
@@ -193,8 +191,8 @@ def find_course(z, riv_i, riv_j, SE_loc, channel_depth, sea_level=None):
     new_i = np.empty(z.size, dtype=np.int)
     new_j = np.empty(z.size, dtype=np.int)
 
-    new_i[:len(riv_j)] = riv_i[:]
-    new_j[:len(riv_i)] = riv_j[:]
+    new_i[: len(riv_j)] = riv_i[:]
+    new_j[: len(riv_i)] = riv_j[:]
 
     pits = True
     while pits:
@@ -209,16 +207,24 @@ def find_course(z, riv_i, riv_j, SE_loc, channel_depth, sea_level=None):
 
             sorted_n = sort_lowest_neighbors(n_levee, (new_i[n - 1], new_j[n - 1]))
 
-            if (sorted_n[0][0], sorted_n[1][0]) not in zip(new_i[:n - 1], new_j[:n - 1]):
+            if (sorted_n[0][0], sorted_n[1][0]) not in zip(
+                new_i[: n - 1], new_j[: n - 1]
+            ):
                 downstream_ij = (sorted_n[0][0], sorted_n[1][0])
-            elif (sorted_n[0][1], sorted_n[1][1]) not in zip(new_i[:n - 1], new_j[:n - 1]):
+            elif (sorted_n[0][1], sorted_n[1][1]) not in zip(
+                new_i[: n - 1], new_j[: n - 1]
+            ):
                 downstream_ij = (sorted_n[0][1], sorted_n[1][1])
-            elif (sorted_n[0][2], sorted_n[1][2]) not in zip(new_i[:n - 1], new_j[:n - 1]):
+            elif (sorted_n[0][2], sorted_n[1][2]) not in zip(
+                new_i[: n - 1], new_j[: n - 1]
+            ):
                 downstream_ij = (sorted_n[0][2], sorted_n[1][2])
             else:
-                raise RuntimeError('river course is going crazy!')
+                raise RuntimeError("river course is going crazy!")
 
-            if downstream_ij not in old_course and below_sea_level(z[downstream_ij], sea_level):
+            if downstream_ij not in old_course and below_sea_level(
+                z[downstream_ij], sea_level
+            ):
                 pits = False
                 break
 
@@ -230,22 +236,22 @@ def find_course(z, riv_i, riv_j, SE_loc, channel_depth, sea_level=None):
 
             if z[downstream_ij] > z[new_i[n - 1], new_j[n - 1]]:
                 new_i[n], new_j[n] = downstream_ij
-                z[new_i[n - 1], new_j[n - 1]] +=  1e-6
+                z[new_i[n - 1], new_j[n - 1]] += 1e-6
             else:
                 new_i[n], new_j[n] = downstream_ij
 
             # new_i[n], new_j[n] = lowest_neighbor(z, (new_i[n - 1], new_j[n - 1]))
 
     if n == 0:
-        raise RuntimeError('new river length is zero!')
+        raise RuntimeError("new river length is zero!")
 
     return new_i[:n], new_j[:n]
 
 
-def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.):
+def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1.0, dy=1.0):
 
     if sea_level is None:
-        sea_level = - np.finfo(float).max
+        sea_level = -np.finfo(float).max
 
     course_update = 0
 
@@ -259,23 +265,27 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
     low_adj_cell = lowest_cell_elev(test_elev, (riv_i[-1], riv_j[-1]))
 
     # check for coastal avulsion (happens if river is prograding too far alongshore)
-    if ((riv_i[-1] == riv_i[-2] == riv_i[-3] == riv_i[-4] == riv_i[-5]) and   # if last 5 river cells flowing alongshore
+    if (
+        (
+            riv_i[-1] == riv_i[-2] == riv_i[-3] == riv_i[-4] == riv_i[-5]
+        )  # if last 5 river cells flowing alongshore
+        and (z[riv_i[-2] + 1, riv_j[-2]] > sea_level)
         # (z[riv_i[-1+1],riv_j[-1]] > sea_level) and  # if land between river and ocean for last 3 cells
-        (z[riv_i[-2]+1,riv_j[-2]] > sea_level) and
-        (z[riv_i[-3]+1,riv_j[-3]] > sea_level) and
-        (z[riv_i[-4]+1,riv_j[-4]] > sea_level) and
-        (z[riv_i[-5]+1,riv_j[-5]] > sea_level) and
-        (z[riv_i[-1]+2,riv_j[-1]] <= sea_level) and
-        (z[riv_i[-2]+2,riv_j[-2]] <= sea_level) and
-        (z[riv_i[-3]+2,riv_j[-3]] <= sea_level) and
-        (z[riv_i[-4]+2,riv_j[-4]] <= sea_level) and
-        (z[riv_i[-5]+2,riv_j[-5]] <= sea_level)):
+        and (z[riv_i[-3] + 1, riv_j[-3]] > sea_level)
+        and (z[riv_i[-4] + 1, riv_j[-4]] > sea_level)
+        and (z[riv_i[-5] + 1, riv_j[-5]] > sea_level)
+        and (z[riv_i[-1] + 2, riv_j[-1]] <= sea_level)
+        and (z[riv_i[-2] + 2, riv_j[-2]] <= sea_level)
+        and (z[riv_i[-3] + 2, riv_j[-3]] <= sea_level)
+        and (z[riv_i[-4] + 2, riv_j[-4]] <= sea_level)
+        and (z[riv_i[-5] + 2, riv_j[-5]] <= sea_level)
+    ):
 
         # fill up old river mouth
-        z[riv_i[-1],riv_j[-1]] += ch_depth
+        z[riv_i[-1], riv_j[-1]] += ch_depth
 
         # turn river towards ocean
-        riv_i[-1] = riv_i[-2]+1
+        riv_i[-1] = riv_i[-2] + 1
         riv_j[-1] = riv_j[-2]
 
         if (z[riv_i[-1], riv_j[-1]] - sea_level) < (0.001 * max_cell_h):
@@ -283,20 +293,20 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
 
         # z[riv_i[-1],riv_j[-1]] -= ch_depth
 
-        downcut.cut_new(riv_i[-3:], riv_j[-3:], z, sea_level, ch_depth,
-                        dx=dx, dy=dy)
+        downcut.cut_new(riv_i[-3:], riv_j[-3:], z, sea_level, ch_depth, dx=dx, dy=dy)
 
-        course_update = 7   # coastal avulsion
+        course_update = 7  # coastal avulsion
 
     elif last_elev <= 0:
         riv_i = riv_i[:-1]
         riv_j = riv_j[:-1]
-        course_update = 4   # shortened course
+        course_update = 4  # shortened course
 
     # if river mouth surrounded by land
     elif low_adj_cell > 0:
-        new_riv_i, new_riv_j = find_course(z, riv_i, riv_j, len(riv_i), 
-                                           ch_depth, sea_level=sea_level)
+        new_riv_i, new_riv_j = find_course(
+            z, riv_i, riv_j, len(riv_i), ch_depth, sea_level=sea_level
+        )
 
         new_riv_length = new_riv_i.size - riv_i.size
 
@@ -307,17 +317,24 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
             if (z[riv_i[-1], riv_j[-1]] - sea_level) < (0.001 * max_cell_h):
                 z[riv_i[-1], riv_j[-1]] = (0.001 * max_cell_h) + sea_level
 
-            downcut.cut_new(riv_i[-(new_riv_length+2):], riv_j[-(new_riv_length+2):],
-                                z, sea_level, ch_depth, dx=dx, dy=dy)
+            downcut.cut_new(
+                riv_i[-(new_riv_length + 2) :],
+                riv_j[-(new_riv_length + 2) :],
+                z,
+                sea_level,
+                ch_depth,
+                dx=dx,
+                dy=dy,
+            )
 
-            course_update = 6 # lengthened land-locked course
-        
+            course_update = 6  # lengthened land-locked course
+
         else:
             riv_i = riv_i
             riv_j = riv_j
 
     # if river mouth needs to prograde
-    elif last_elev >= max_cell_h:       
+    elif last_elev >= max_cell_h:
         sorted_n = sort_lowest_neighbors(test_elev, (riv_i[-1], riv_j[-1]))
         subaerial_loc = np.where(test_elev[sorted_n] > 0)
 
@@ -330,12 +347,13 @@ def update_course(z, riv_i, riv_j, ch_depth, slope, sea_level=None, dx=1., dy=1.
 
                 if (z[riv_i[-1], riv_j[-1]] - sea_level) < (0.001 * max_cell_h):
                     z[riv_i[-1], riv_j[-1]] = (0.001 * max_cell_h) + sea_level
-                
-                ### line below not needed if downcutting ###
+
+                # line below not needed if downcutting
                 # z[riv_i[-1], riv_j[-1]] -= ch_depth
 
-                downcut.cut_new(riv_i[-3:], riv_j[-3:], z, sea_level, ch_depth,
-                                dx=dx, dy=dy)
+                downcut.cut_new(
+                    riv_i[-3:], riv_j[-3:], z, sea_level, ch_depth, dx=dx, dy=dy
+                )
 
                 course_update = 5
 
