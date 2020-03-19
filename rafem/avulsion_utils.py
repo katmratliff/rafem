@@ -224,8 +224,8 @@ def set_linear_slope(z, riv_ij, dx=1.0, dy=1.0):
 def fill_upstream(z, riv_ij, dx=1.0, dy=1.0):
     """Fill depressions upstream of a pit.
 
-    Exammples
-    ---------
+    Examples
+    --------
     >>> import numpy as np
     >>> z = np.array([[3, 3, 3, 3, 3],
     ...               [2, 2, 2, 2, 2],
