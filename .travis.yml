@@ -56,4 +56,5 @@ script:
 - rafem plot --help
 - rafem show rafem
 - mkdir example && rafem --cd example setup run
+- mkdir bmi-test && rafem --cd bmi-test setup && bmi-test rafem:BmiRiverModule --config-file=rafem.yaml --root-dir=bmi-test
 after_success: coveralls
