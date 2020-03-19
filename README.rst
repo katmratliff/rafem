@@ -2,14 +2,14 @@
 RAFEM: River Avulsion and Floodplain Evolution Model
 ====================================================
 
-.. image:: https://img.shields.io/travis/sequence-dev/sequence.svg
-        :target: https://travis-ci.org/sequence-dev/sequence
+.. image:: https://img.shields.io/travis/mcflugen/rafem.svg
+        :target: https://travis-ci.org/mcflugen/rafem
 
 .. image:: https://ci.appveyor.com/api/projects/status/380ox1dv8hekefq9?svg=true
-    :target: https://ci.appveyor.com/project/mcflugen/sequence/branch/develop
+    :target: https://ci.appveyor.com/project/mcflugen/rafem/branch/master
 
-.. image:: https://readthedocs.org/projects/sequence/badge/?version=latest
-        :target: https://sequence.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/rafem/badge/?version=latest
+        :target: https://rafem.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
 About
@@ -18,9 +18,12 @@ About
 The River Avulsion and Floodplain Evolution Model (RAFEM) is a morphodynamic
 model designed to be coupled with the Coastline Evolution Model (CEM).
 
-Documentation is currently being updated (5/9/19). Please see our paper,
-`Exploring Wave and Sea‐Level Rise Effects on Delta Morphodynamics With a Coupled River‐Ocean Model <https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2018JF004757>`_ for a detailed model description. 
+Documentation is currently being updated (5/9/19). Please see `our paper`_,
+*Exploring Wave and Sea‐Level Rise Effects on Delta Morphodynamics With a
+Coupled River‐Ocean Model* for a detailed model description. 
 
+
+.. _our paper: https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2018JF004757
 
 Requirements
 ------------
@@ -83,7 +86,7 @@ print a sample *Rafem* parameter file::
 
   $ rafem show rafem
 
-..code :: yaml
+.. code:: yaml
 
   shape:
   - 120
