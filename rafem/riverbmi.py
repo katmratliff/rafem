@@ -163,12 +163,6 @@ class BmiRiverModule(Bmi):
 
         return shape
 
-        # if out is None:
-        #     return shape
-        # else:
-        #     out[:] = shape
-        #     return out
-
     def get_grid_spacing(self, grid, spacing):
         if grid == 0:
             spacing[:] = self._model.grid_spacing
@@ -176,23 +170,12 @@ class BmiRiverModule(Bmi):
             raise KeyError(grid)
         return spacing
 
-        # if out is None:
-        #     return self._model.grid_spacing
-        # else:
-        #     out[:] = self._model.grid_spacing
-        #     return out
-
     def get_grid_origin(self, grid, origin):
         if grid == 0:
             origin[:] = (0.0, 0.0)
         else:
             raise KeyError(grid)
         return origin
-        # if out is None:
-        #     return origin
-        # else:
-        #     out[:] = origin
-        #     return out
 
     def get_grid_type(self, grid):
         if grid == 0:
@@ -263,7 +246,14 @@ class BmiRiverModule(Bmi):
         return "d"
 
     def get_grid_node_count(self, grid):
-        raise NotImplementedError("get_grid_node_count")
+        if grid == 0:
+            return int(np.prod(self._model.grid_shape))
+        elif grid == 1:
+            return len(self._model.river_x_coordinates)
+        elif grid == 2:
+            return 1
+        else:
+            raise KeyError(grid)
 
     def get_grid_edge_count(self, grid):
         raise NotImplementedError("get_grid_edge_count")
