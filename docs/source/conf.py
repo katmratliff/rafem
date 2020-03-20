@@ -15,6 +15,13 @@
 # sys.path.insert(0, os.path.abspath('.'))
 
 
+if os.environ.get('READTHEDOCS', ''):
+    # RTD doesn't use the repo's Makefile to build docs.
+    import subprocess
+
+    subprocess.run(["sphinx-apidoc", "--force", "-o", "./api", "../../rafem"])
+
+
 # -- Project information -----------------------------------------------------
 
 project = 'RAFEM'
