@@ -12,6 +12,14 @@ env:
   - MINICONDA_URL_BASE="https://repo.continuum.io/miniconda/Miniconda3-latest"
 sudo: false
 jobs:
+  - stage: docs
+    os: linux
+    install:
+    - pip install -e .
+    - pip install -r requirements-docs.txt
+    script:
+    - make -C docs clean html
+
   include:
   - stage: deploy
     if: tag =~ v.*$
