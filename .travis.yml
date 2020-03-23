@@ -48,6 +48,7 @@ before_install:
 install:
 - pip install .
 script:
+- pip install -r requirements-testing.txt
 - rafem --version
 - rafem --help
 - rafem show --help
@@ -56,4 +57,5 @@ script:
 - rafem plot --help
 - rafem show rafem
 - mkdir example && rafem --cd example setup run
+- mkdir bmi-test && rafem --cd bmi-test setup && bmi-test rafem:BmiRiverModule --config-file=rafem.yaml --root-dir=bmi-test
 after_success: coveralls
