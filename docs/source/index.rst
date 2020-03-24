@@ -4,6 +4,14 @@
     :alt: RAFEM
     :target: https://rafem.readthedocs.org/
 
+
+.. image:: _static/rafem-output.png
+    :align: center
+    :scale: 50%
+    :alt: RAFEM
+    :target: https://rafem.readthedocs.org/
+
+
 The River Avulsion and Floodplain Evolution Model (RAFEM) is a morphodynamic
 model designed to be coupled with the Coastline Evolution Model (CEM).
 
