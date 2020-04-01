@@ -45,5 +45,5 @@ splay_type: 2  # size/type of splay
 # splay_type = 2: first failed cell and adjacent cells
 
 # Saving information
-saveavulsions: False  # flag for saving avulsion info
+saveavulsions: True  # flag for saving avulsion info
 savecourseupdates: False  # flag for saving course updates

@@ -67,7 +67,7 @@ class RiverModule(object):
         blanket_rate_m=0.0,
         fine_dep_frac=0.0,
         splay_type=2,
-        saveavulsions=False,
+        saveavulsions=True,
         savecourseupdates=False,
     ):
         """The RAFEM.

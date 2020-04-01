@@ -175,7 +175,7 @@ save_avulsions:
   description: File to save avulsion info into (or False)
   value:
     type: str
-    default: False
+    default: True
 
 save_course_updates:
   description: File to save course updates into (or False)
