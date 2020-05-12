@@ -204,13 +204,14 @@ class RiverModule(object):
 
         # Saving information
         self._saveavulsions = saveavulsions
+        self._avulsionfile = os.path.abspath("../output_data/avulsion_info.out")
         self._saveupdates = savecourseupdates
         self._save_splay_deposit = False
 
         if self._saveupdates:
             make_empty_file(self._saveupdates)
         if self._saveavulsions:
-            make_empty_file(self._saveavulsions)
+            make_empty_file(self._avulsionfile)
         if self._save_splay_deposit:
             make_empty_file(self._savesplay_deposit)
 
@@ -391,7 +392,7 @@ class RiverModule(object):
 
         """ Save avulsion record. """
         if self._saveavulsions and self._avulsion_type > 0:
-            with open(self._saveavulsions, "a") as file:
+            with open(self._avulsionfile, "a") as file:
                 file.write(
                     "%.5f %i %i %.5f %.5f\n"
                     % (
